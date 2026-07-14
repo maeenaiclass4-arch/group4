@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>سباق البرق | Turbo Rush Racer</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏎️%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div id="app">
+  <canvas id="sky"></canvas>
+  <canvas id="game"></canvas>
+
+  <!-- START SCREEN -->
+  <div id="startScreen" class="overlay">
+    <div class="title-wrap">
+      <h1 class="game-title"><span class="t-turbo">TURBO</span><span class="t-rush">RUSH</span></h1>
+      <p class="subtitle">سباق سيارات فائق السرعة</p>
+    </div>
+    <div class="menu-card">
+      <div class="best-time" id="bestTimeDisplay">أفضل وقت: --:--:--</div>
+      <button id="startBtn" class="btn btn-primary">🏁 ابدأ السباق</button>
+      <div class="diff-row">
+        <span class="diff-label">مستوى الصعوبة</span>
+        <div class="diff-buttons" id="diffButtons">
+          <button class="diff-btn" data-diff="0.8">سهل</button>
+          <button class="diff-btn active" data-diff="1">عادي</button>
+          <button class="diff-btn" data-diff="1.35">صعب</button>
+        </div>
+      </div>
+      <button id="soundBtn" class="btn btn-ghost">🔊 الصوت: يعمل</button>
+      <div class="controls-help">
+        <div class="controls-title">التحكم</div>
+        <div class="controls-grid">
+          <div><kbd>▲</kbd>/<kbd>W</kbd> تسريع</div>
+          <div><kbd>▼</kbd>/<kbd>S</kbd> فرامل</div>
+          <div><kbd>◀▶</kbd>/<kbd>A D</kbd> توجيه</div>
+          <div><kbd>Space</kbd> نيترو</div>
+          <div><kbd>P</kbd> إيقاف مؤقت</div>
+          <div><kbd>R</kbd> إعادة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-top-left">
+      <div class="lap-box">
+        <div class="lap-label">اللفة</div>
+        <div class="lap-value"><span id="lapCurrent">1</span>/<span id="lapTotal">3</span></div>
+      </div>
+      <div class="time-box">
+        <div class="time-label">الوقت</div>
+        <div class="time-value" id="timeValue">00:00.000</div>
+      </div>
+    </div>
+
+    <div class="hud-top-right">
+      <div class="pos-badge" id="posBadge">1<span class="pos-sup">st</span></div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="nitro-wrap">
+        <div class="nitro-label">NITRO</div>
+        <div class="nitro-bar"><div class="nitro-fill" id="nitroFill"></div></div>
+      </div>
+      <div class="speedo-wrap">
+        <svg viewBox="0 0 200 120" class="speedo-arc">
+          <path d="M15,105 A90,90 0 0,1 185,105" class="speedo-track"/>
+          <path d="M15,105 A90,90 0 0,1 185,105" class="speedo-fill" id="speedoFill"/>
+        </svg>
+        <div class="speedo-value"><span id="speedValue">0</span><span class="speedo-unit">كم/س</span></div>
+      </div>
+      <div class="gear-wrap">
+        <div class="gear-label">GEAR</div>
+        <div class="gear-value" id="gearValue">1</div>
+      </div>
+    </div>
+
+    <div id="crashFlash"></div>
+    <div id="boostFlash"></div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pauseScreen" class="overlay hidden">
+    <div class="menu-card">
+      <h2>إيقاف مؤقت</h2>
+      <button id="resumeBtn" class="btn btn-primary">▶ استئناف</button>
+      <button id="restartFromPauseBtn" class="btn btn-ghost">🔄 إعادة السباق</button>
+      <button id="menuFromPauseBtn" class="btn btn-ghost">🏠 القائمة الرئيسية</button>
+    </div>
+  </div>
+
+  <!-- FINISH SCREEN -->
+  <div id="finishScreen" class="overlay hidden">
+    <div class="menu-card">
+      <h2 id="finishTitle">🏆 انتهى السباق!</h2>
+      <div class="results">
+        <div class="result-row"><span>الوقت الإجمالي</span><b id="finalTime">00:00.000</b></div>
+        <div class="result-row"><span>أفضل لفة</span><b id="bestLap">00:00.000</b></div>
+        <div class="result-row"><span>أعلى سرعة</span><b id="topSpeed">0 كم/س</b></div>
+        <div class="result-row"><span>الاصطدامات</span><b id="crashCount">0</b></div>
+      </div>
+      <button id="raceAgainBtn" class="btn btn-primary">🔄 سباق آخر</button>
+      <button id="menuFromFinishBtn" class="btn btn-ghost">🏠 القائمة الرئيسية</button>
+    </div>
+  </div>
+
+  <!-- MOBILE TOUCH CONTROLS -->
+  <div id="touchControls" class="hidden">
+    <div class="touch-left">
+      <button id="tLeft" class="tbtn">◀</button>
+      <button id="tRight" class="tbtn">▶</button>
+    </div>
+    <div class="touch-right">
+      <button id="tNitro" class="tbtn tnitro">🔥</button>
+      <button id="tBrake" class="tbtn">⬇</button>
+      <button id="tGas" class="tbtn tgas">⬆</button>
+    </div>
+  </div>
+
+  <div id="pauseHint" class="pause-hint hidden">P للإيقاف المؤقت</div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
