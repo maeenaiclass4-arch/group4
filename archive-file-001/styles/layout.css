@@ -54,9 +54,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  /* "safe center": centers when it fits, but falls back to start-aligned
+     (scrollable) rather than plain "center" once content overflows —
+     plain centered flex content that overflows clips at the top with no
+     way to scroll up to it, which is exactly the failure mode a 9-row
+     Main Menu hits on a short phone viewport. */
+  justify-content: safe center;
   padding: var(--space-6);
   text-align: center;
+  overflow-y: auto;
 }
 
 .screen[hidden] {
@@ -141,10 +147,22 @@
   }
 }
 
-/* Portrait mobile keeps the 16:9 stage intact and shrinks rather than
-   forcing rotation (GDD §22) — menus stack via flex-direction already set above. */
+/* Portrait mobile: a strict 16:9 letterbox squeezes the stage into a sliver
+   only ~180px tall on a 320-wide phone (320 * 9/16) — unusable for menus
+   with more than two or three rows. Rather than force landscape rotation
+   (poor mobile UX, GDD §22), the stage instead fills the full portrait
+   viewport here; every screen inside already reflows via the ".stack"/flex
+   patterns, so nothing looks cropped — there's no source image to crop
+   yet (GDD §16, scene art is procedural CSS until Milestone 4). Once
+   illustrated 16:9 room backgrounds exist, RoomView's own scene container
+   should get its own contained aspect box within this full-bleed shell,
+   rather than reverting the whole stage to a fixed ratio. */
 @media (orientation: portrait) and (max-width: 599px) {
   .stage {
-    max-height: calc(100dvw * (9 / 16));
+    aspect-ratio: auto;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
   }
 }

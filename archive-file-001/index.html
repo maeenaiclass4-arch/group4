@@ -27,6 +27,12 @@
 <link rel="stylesheet" href="/styles/components/loading-screen.css" />
 <link rel="stylesheet" href="/styles/components/menu.css" />
 <link rel="stylesheet" href="/styles/components/settings.css" />
+<link rel="stylesheet" href="/styles/components/room.css" />
+<link rel="stylesheet" href="/styles/components/inventory-dock.css" />
+<link rel="stylesheet" href="/styles/components/terminal.css" />
+<link rel="stylesheet" href="/styles/components/reader.css" />
+<link rel="stylesheet" href="/styles/components/puzzle.css" />
+<link rel="stylesheet" href="/styles/components/cinematic.css" />
 </head>
 <body>
 <div id="app">
@@ -36,18 +42,30 @@
     <!-- Screens: exactly one visible at a time, driven by GameStateManager. -->
     <section id="screen-loading" class="screen loading-screen" data-screen="LOADING"></section>
     <section id="screen-main-menu" class="screen main-menu" data-screen="MAIN_MENU" hidden></section>
-    <section
-      id="screen-room-placeholder"
-      class="screen room-view-placeholder"
-      data-screen="PLAYING"
-      hidden
-    ></section>
+    <section id="screen-room" class="screen room-screen" data-screen="PLAYING" hidden>
+      <div class="room-view">
+        <div class="room-scene" id="room-scene" data-layer="physical"></div>
+        <div class="room-hotspots" id="room-hotspots"></div>
+        <div class="room-caption" id="room-caption" hidden></div>
+        <button class="btn btn-icon room-view__layer" id="room-layer-btn" aria-label="Toggle Memory Layer">◈</button>
+        <button class="btn btn-icon room-view__pause" id="room-pause-btn" aria-label="Pause">⏸</button>
+      </div>
+      <div class="inventory-dock-region" id="inventory-dock-region"></div>
+    </section>
 
     <!-- Overlays: dismissible, never more than one deep (GDD §12). -->
     <div id="overlay-settings" class="overlay" data-overlay="settings" hidden></div>
     <div id="overlay-pause" class="overlay" data-overlay="pause" hidden></div>
     <div id="overlay-checkpoints" class="overlay" data-overlay="checkpoints" hidden></div>
     <div id="overlay-confirm" class="overlay" data-overlay="confirm" hidden></div>
+    <div id="overlay-terminal" class="overlay" data-overlay="terminal" hidden></div>
+    <div id="overlay-puzzle" class="overlay" data-overlay="puzzle" hidden></div>
+    <div id="overlay-reader" class="overlay" data-overlay="reader" hidden></div>
+
+    <!-- Full-stage, not a dismissible-overlay pattern: intro cards and
+         cinematic beats own the whole frame and resolve a Promise on skip. -->
+    <div id="layer-intro" hidden></div>
+    <div id="layer-cinematic" hidden></div>
 
     <div class="toast-region" id="toast-region" aria-live="polite"></div>
   </div>

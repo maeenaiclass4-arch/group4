@@ -1,0 +1,15 @@
+{
+  "id": "pz_ch1_intake_drawer",
+  "type": "code",
+  "roomId": "ch1_intake",
+  "hotspotId": "hs_drawer",
+  "digits": 4,
+  "solution": "0231",
+  "titleKey": "puzzle.drawer.title",
+  "promptKey": "puzzle.drawer.prompt",
+  "hints": [
+    "puzzle.drawer.hint1",
+    "puzzle.drawer.hint2",
+    "puzzle.drawer.hint3"
+  ]
+}

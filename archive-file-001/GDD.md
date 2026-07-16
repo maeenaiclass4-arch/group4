@@ -2,7 +2,7 @@
 ### Game Design Document — v1.1 (Pre-Production)
 **Studio Roles:** Game Direction · Software Architecture · UI/UX · Narrative Design
 **Platform:** Browser (Desktop + Mobile, responsive HTML5)
-**Status:** Design-only through §12.12. Milestone 1 (production foundation) is implemented — see `/archive-file-001/src`. No gameplay, puzzle, or room content has been written yet.
+**Status:** Design document through §12.12; Milestones 1–2 implemented — see `/archive-file-001/src`. A playable vertical slice exists (intro, Prologue, and Chapter 1's first room with a working terminal, puzzle, and Classified File); most content, puzzle types, and collection-screen UI still lie ahead (§25).
 
 ---
 
@@ -372,26 +372,35 @@ archive-file-001/
 │  │  ├─ GameStateManager.js
 │  │  ├─ EventBus.js
 │  │  ├─ SaveManager.js
+│  │  ├─ SessionStore.js      ← live save-state; turns gameplay events into persisted state
 │  │  ├─ InputManager.js      ← unifies mouse/touch/keyboard
 │  │  ├─ AudioManager.js
+│  │  ├─ i18n.js
 │  │  └─ Config.js            ← constants, event names, storage keys
 │  ├─ systems/
-│  │  ├─ RoomSystem.js
-│  │  ├─ HotspotSystem.js
+│  │  ├─ RoomSystem.js        ← current room + room graph (data/state only)
+│  │  ├─ HotspotSystem.js     ← pure hotspot visibility/state resolution
 │  │  ├─ InventorySystem.js
-│  │  ├─ PuzzleEngine.js
+│  │  ├─ PuzzleEngine.js      ← puzzle-type registry; "code" archetype implemented
 │  │  ├─ NotebookSystem.js
 │  │  ├─ LayerToggleSystem.js
 │  │  ├─ AchievementSystem.js   ← §12.1, listens only, never called into
 │  │  ├─ StatsSystem.js         ← §12.6, aggregates playtime/hints/collectibles
 │  │  ├─ TerminalSystem.js      ← §12.11, data-driven terminal instances
-│  │  └─ CinematicSystem.js     ← §12.9, playBeat(beatId)
+│  │  └─ CinematicSystem.js     ← §12.9, playBeat(beatId), also owns its own overlay render
 │  ├─ ui/
+│  │  ├─ dom.js                ← tiny h()/mount() element-builder shared by every component
 │  │  ├─ LoadingScreen.js
 │  │  ├─ MainMenu.js
 │  │  ├─ PauseMenu.js
 │  │  ├─ SettingsPanel.js
+│  │  ├─ ConfirmModal.js
+│  │  ├─ CheckpointsPanel.js
+│  │  ├─ RoomView.js           ← the one place a room actually gets drawn + interacted with
+│  │  ├─ SceneArt.js           ← procedural CSS/DOM room backgrounds (pre-illustrated-art)
+│  │  ├─ IntroSequence.js      ← the cinematic intro's title cards
 │  │  ├─ InventoryDock.js
+│  │  ├─ PuzzleOverlay.js      ← "code" puzzle keypad UI
 │  │  ├─ ReaderOverlay.js
 │  │  ├─ AudioLogPlayer.js
 │  │  ├─ TerminalOverlay.js
@@ -403,6 +412,7 @@ archive-file-001/
 │  │  ├─ AchievementToast.js    ← §12.1
 │  │  └─ PhotoMode.js           ← §12.12
 │  ├─ data/                   ← pure content, no logic
+│  │  ├─ index.js             ← central registry; import.meta.glob auto-registers rooms/puzzles/terminals
 │  │  ├─ rooms/               ← one JSON per room (incl. secret rooms)
 │  │  ├─ puzzles/             ← one JSON per puzzle definition
 │  │  ├─ terminals/           ← one JSON per terminal instance, §12.11
@@ -612,18 +622,17 @@ Three-role type system, self-hosted subsets (no runtime CDN dependency, better p
 | Milestone | Scope | Exit Criteria |
 |---|---|---|
 | **M0 — Pre-Production** *(this document)* | Vision, story, systems, architecture, visual identity, and the v1.1 refinement pass (§12.1–§12.12) all defined. | GDD v1.1 approved. |
-| **M1 — Core Engine & Production Foundation** *(current)* | `GameStateManager`, `EventBus`, `InputManager`, `SaveManager` (v2 schema), `AudioManager`, `Config` implemented; responsive stage/letterbox shell; Loading Screen (with lore ticker), Main Menu, Settings Menu fully functional; scaffolding stubs created for `RoomSystem`, `PuzzleEngine`, `InventorySystem`, `NotebookSystem`, `AchievementSystem`, `StatsSystem`, `TerminalSystem`, `CinematicSystem` so later milestones extend rather than restructure. | Menu → Settings → Save/Load flow works end-to-end on desktop + mobile with no gameplay content; Lighthouse baseline passes. |
-| **M2 — Puzzle & Inventory Systems** | `PuzzleEngine` with all 8 puzzle-type classes (placeholder art), `InventorySystem` + dock/sheet UI, `NotebookSystem`, Document Reader, Audio Log Player, `TerminalOverlay` (functional, placeholder content), `AchievementSystem` + toast wired to real events, `StatsSystem` tracking begins. | One fully playable placeholder room demonstrating pickup → combine → solve → unlock → Commendation toast, on both input modes. |
-| **M3 — Menu & UX Shell Completion** | Pause Menu, Codex (incl. redacted Classified File covers), Hint Drawer, Progress Tracker, Chapter Completion Screen, End-Game Statistics screen, save-slot UI. | Full UI flow (§12) navigable end-to-end with no dead ends, keyboard- and touch-operable. |
-| **M4 — Vertical Slice (Prologue + Chapter 1)** | Final art, audio, and narrative content for 3 rooms; layer-toggle mechanic, one Terminal, one Cinematic Beat, one Classified File, and dynamic ambient audio stems fully realized. | Prologue–Ch.1 playable start-to-finish at final visual/audio bar — this slice sets the quality benchmark for all remaining content. |
-| **M5 — Content Production Ch.2–3** | 4 rooms, secret room #1, remaining Cinematic Beats for these chapters, puzzles/art/audio/narrative. | Ch.2–3 integrated, playtested internally; secret room #1 discoverable. |
-| **M6 — Content Production Ch.4–5 + Epilogue** | Remaining 5 rooms, both primary endings, hidden ending trail (§12.8), Deep Archive remix variants, second-playthrough-only content (§12.7) stubbed behind `hasCompletedOnce`. | Full critical path completable; all three endings reachable and saved distinctly. |
-| **M7 — Responsive & Accessibility Pass** | Full audit across the 4-device test matrix; colorblind mode, reduced motion (incl. Cinematic Beat fallback), subtitle/text-size, RTL (Arabic) pass. | No cropped/stretched layout at any tested viewport; accessibility settings verified functional. |
-| **M8 — Performance & Polish** | Asset compression pass, Lighthouse budget compliance, animation timing pass, audio mix pass, VFX pooling, Photo Mode, Developer Commentary Mode. | Meets §23 performance budgets; Lighthouse ≥ 90. |
-| **M9 — QA / Bug Bash** | Full linear playthrough ×4 (fresh state, mid-save resume, Deep Archive, hidden-ending trail), soft-lock audit, save-corruption/migration resilience test. | Zero known soft-locks; save/load verified across all 12 critical-path rooms + 2 secret rooms. |
-| **M10 — Launch** | Deploy to web (itch.io-style hosting), analytics/error logging wired, marketing/store page assets. | Public release of ARCHIVE : FILE-001. |
+| **M1 — Core Engine & Production Foundation** *(done)* | `GameStateManager`, `EventBus`, `InputManager`, `SaveManager` (v2 schema), `AudioManager`, `Config` implemented; responsive stage/letterbox shell; Loading Screen (with lore ticker), Main Menu, Settings Menu fully functional. | Menu → Settings → Save/Load flow verified end-to-end on desktop + mobile with no gameplay content. |
+| **M2 — Vertical Slice: Prologue + First Room** *(done)* | Real `RoomSystem`/`HotspotSystem`/`LayerToggleSystem`, `InventorySystem` + dock, `PuzzleEngine` (the "code" lock archetype), `TerminalOverlay` (typed responses, command queueing, HELP/LOG/STATUS/SEARCH incl. one Easter egg), `ReaderOverlay` with the Classified File declassify reveal, `CinematicSystem` + `IntroSequence`, `AchievementSystem` condition-matching wired to 2 real Commendations, `SessionStore` (live save state + autosave). Content: a cinematic intro, the Prologue "Reception" room, and Chapter 1's "Intake Records" room (one terminal, one puzzle, one Classified File, one item), all rendered with procedural CSS/DOM scene art (no illustrated assets yet — GDD §16). | Full loop verified in a real browser, desktop + mobile: intro → Prologue → Memory Layer toggle → Ch.1 room → terminal commands → puzzle solve → cinematic → document reveal → inventory → item-on-door → Pause → Main Menu → Continue resumes with state intact. Zero console errors either platform. |
+| **M3 — Puzzle & System Breadth** | Remaining puzzle-type classes (cipher, audio, layer, sequence, combination, pattern-recall), `NotebookSystem` viewer, Codex (incl. redacted Classified File covers), Progress Tracker, Chapter Completion Screen, End-Game Statistics screen, Audio Log Player, `HintDrawer` as a standalone component. | Puzzle variety demonstrated across a second room; full UI flow (§12) navigable end-to-end with no dead ends, keyboard- and touch-operable. |
+| **M4 — Content Production Ch.2–3** | 4 rooms, secret room #1, Cinematic Beats for these chapters, puzzles/narrative; first illustrated-art pass begins (replacing procedural CSS scene art — GDD §16). | Ch.2–3 integrated, playtested internally; secret room #1 discoverable. |
+| **M5 — Content Production Ch.4–5 + Epilogue** | Remaining 5 rooms, both primary endings, hidden ending trail (§12.8), Deep Archive remix variants, second-playthrough-only content (§12.7) stubbed behind `hasCompletedOnce`. | Full critical path completable; all three endings reachable and saved distinctly. |
+| **M6 — Responsive & Accessibility Pass** | Full audit across the 4-device test matrix; colorblind mode, reduced motion (incl. Cinematic Beat fallback), subtitle/text-size, RTL (Arabic) pass. | No cropped/stretched layout at any tested viewport; accessibility settings verified functional. |
+| **M7 — Performance & Polish** | Asset compression pass, Lighthouse budget compliance, animation timing pass, audio mix pass, VFX pooling, Photo Mode, Developer Commentary Mode. | Meets §23 performance budgets; Lighthouse ≥ 90. |
+| **M8 — QA / Bug Bash** | Full linear playthrough ×4 (fresh state, mid-save resume, Deep Archive, hidden-ending trail), soft-lock audit, save-corruption/migration resilience test. | Zero known soft-locks; save/load verified across all 12 critical-path rooms + 2 secret rooms. |
+| **M9 — Launch** | Deploy to web (itch.io-style hosting), analytics/error logging wired, marketing/store page assets. | Public release of ARCHIVE : FILE-001. |
 | **Post-Launch** | Monitor telemetry/error reports, hotfix window, begin FILE-002 pre-production using this same engine. | Stable live build; FILE-002 GDD kicked off. |
 
 ---
 
-*End of Game Design Document — v1.1. Design and architecture foundation for all production milestones. Milestone 1 (core engine + production foundation) has been implemented in `/archive-file-001/src`; no gameplay, puzzle, or room content exists yet.*
+*End of Game Design Document — v1.1. Design and architecture foundation for all production milestones. Milestones 1–2 are implemented in `/archive-file-001/src`: the production foundation plus a playable vertical slice (cinematic intro, the Prologue room, and Chapter 1's first room with a working terminal, puzzle, Classified File, and inventory item). Room art is procedural CSS/DOM pending Milestone 4's illustrated-asset pass; puzzle variety, the Notebook/Codex/Progress Tracker viewers, and further chapters begin at Milestone 3.*

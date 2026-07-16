@@ -1,0 +1,8 @@
+[
+  {
+    "id": "brass_key",
+    "nameKey": "item.brass_key.name",
+    "descriptionKey": "item.brass_key.description",
+    "icon": "key"
+  }
+]

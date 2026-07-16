@@ -1,27 +1,37 @@
 /**
- * HotspotSystem.js — SCAFFOLDING, filled in at Milestone 2 (GDD §25).
- *
- * Intended responsibilities (GDD §8, §22):
- *  - Convert a room's percentage-based hotspot polygons into hit-testable
- *    DOM regions that stay correctly positioned as the letterboxed stage
- *    resizes (desktop resize, mobile orientation change).
- *  - Translate InputManager's normalized pointer events into
- *    `interact(hotspotId)` calls — the point where input becomes gameplay.
- *  - Drive the idle-glint affordance animation (GDD §21) and its
- *    Accessibility "always visible" toggle.
+ * HotspotSystem.js
+ * Pure resolution logic: given a room's hotspot list, the active Memory
+ * Layer state, and the current session flags, decide which hotspots are
+ * visible right now and what visual/interaction state each is in. No DOM
+ * here — RoomView consumes this to decide what to render, which keeps the
+ * "what's true about this room" logic testable independent of rendering.
  */
 export class HotspotSystem {
-  /** @param {import('../core/EventBus.js').EventBus} eventBus */
-  constructor(eventBus) {
-    this.eventBus = eventBus;
+  /**
+   * @param {object[]} hotspots room.hotspots
+   * @param {'physical'|'memory'} layer
+   * @returns {object[]} hotspots visible on the current layer
+   */
+  getVisible(hotspots, layer) {
+    return hotspots.filter((hotspot) => hotspot.layer === 'both' || hotspot.layer === layer);
   }
 
-  /** @param {object[]} hotspotDefs */
-  mount(hotspotDefs) {
-    console.warn('[HotspotSystem] mount() — no room content yet (Milestone 2+).', hotspotDefs);
-  }
-
-  unmount() {
-    // No-op until hotspots exist to tear down.
+  /**
+   * Resolves a hotspot's effective state ('locked' | 'open' | 'default')
+   * by combining its JSON-declared default with session flags recorded
+   * once its puzzle has been solved or its exit opened.
+   * @param {object} hotspot
+   * @param {object} sessionState
+   */
+  resolveState(hotspot, sessionState) {
+    if (hotspot.action?.type === 'puzzle') {
+      const solved = sessionState.flags[`puzzle_solved_${hotspot.action.puzzleId}`] === true;
+      return solved ? 'open' : (hotspot.state ?? 'default');
+    }
+    if (hotspot.action?.type === 'useItem') {
+      const opened = sessionState.flags[`hotspot_opened_${hotspot.id}`] === true;
+      return opened ? 'open' : (hotspot.state ?? 'default');
+    }
+    return hotspot.state ?? 'default';
   }
 }

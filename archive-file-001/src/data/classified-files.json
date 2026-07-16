@@ -1,0 +1,8 @@
+[
+  {
+    "id": "cf_ch1_intake",
+    "chapterId": "ch1",
+    "titleKey": "cf.ch1_intake.title",
+    "bodyKeys": ["cf.ch1_intake.body1", "cf.ch1_intake.body2", "cf.ch1_intake.body3"]
+  }
+]

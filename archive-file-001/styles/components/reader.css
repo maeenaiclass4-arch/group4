@@ -1,0 +1,54 @@
+/**
+ * reader.css — GDD §5, §12.2 declassify reveal.
+ */
+
+.reader-panel {
+  width: min(480px, 100%);
+  background: var(--paper-100);
+  color: var(--ink-950);
+  font-family: var(--font-document);
+}
+
+.reader-panel__content {
+  position: relative;
+  margin-bottom: var(--space-5);
+}
+
+.reader-panel__title {
+  font-weight: 600;
+  font-size: var(--fs-heading);
+  margin-bottom: var(--space-4);
+}
+
+.reader-panel__body {
+  margin-bottom: var(--space-3);
+  line-height: 1.6;
+}
+
+.reader-panel__cover {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  background: var(--ink-950);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-terminal);
+  letter-spacing: 0.2em;
+  font-size: var(--fs-small);
+  color: var(--memory-cyan);
+  z-index: 2;
+}
+.reader-panel__cover.is-declassifying {
+  animation: declassify-wipe 900ms var(--ease-standard) 350ms forwards;
+}
+@keyframes declassify-wipe {
+  to {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+}
+[data-reduce-motion='true'] .reader-panel__cover.is-declassifying {
+  animation-duration: 1ms;
+  animation-delay: 400ms;
+}

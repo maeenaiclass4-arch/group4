@@ -1,0 +1,33 @@
+{
+  "id": "prologue_entrance",
+  "chapterId": "prologue",
+  "title": "Reception",
+  "scene": "prologue_entrance",
+  "ambientAudio": { "base": null, "tension": null, "discovery": null, "memoryLayer": null },
+  "hotspots": [
+    {
+      "id": "hs_plaque",
+      "type": "observe",
+      "coords": { "x": 30, "y": 38, "w": 22, "h": 12 },
+      "layer": "physical",
+      "action": { "type": "narration", "textKey": "prologue.plaque" }
+    },
+    {
+      "id": "hs_inscription",
+      "type": "observe",
+      "coords": { "x": 30, "y": 38, "w": 22, "h": 12 },
+      "layer": "memory",
+      "action": { "type": "narration", "textKey": "prologue.inscription" }
+    },
+    {
+      "id": "hs_door",
+      "type": "exit",
+      "coords": { "x": 62, "y": 22, "w": 18, "h": 58 },
+      "layer": "both",
+      "action": { "type": "exit", "targetRoom": "ch1_intake", "textKey": "prologue.doorOpens" }
+    }
+  ],
+  "isSecret": false,
+  "discoveredVia": null,
+  "requiresCompletionFlag": null
+}

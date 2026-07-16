@@ -1,0 +1,122 @@
+{
+  "app.title": "ARCHIVE : FILE-001",
+  "app.tagline": "You are not restoring a file. You are restoring yourself.",
+
+  "loading.status": "ACCESSING ARCHIVE…",
+  "loading.ticker": [
+    "INTAKE FORM #0231 — REDACTED",
+    "MEMORY CHAMBER STATUS: SEALED",
+    "ARCHIVIST CREDENTIALS: PROVISIONAL",
+    "FILE-001 INTEGRITY: FRAGMENTED",
+    "CUSTODIAN SYSTEMS: DORMANT",
+    "LAST ACCESS: UNKNOWN"
+  ],
+
+  "menu.newArchive": "New Archive",
+  "menu.continue": "Continue",
+  "menu.checkpoints": "Checkpoints",
+  "menu.chapterSelect": "Chapter Select",
+  "menu.progressTracker": "Progress Tracker",
+  "menu.codex": "Codex",
+  "menu.photoMode": "Photo Mode",
+  "menu.settings": "Settings",
+  "menu.credits": "Credits",
+  "menu.locked": "Unlocks after the Prologue",
+
+  "confirm.overwrite.title": "Start a New Archive?",
+  "confirm.overwrite.body": "An existing session will be overwritten. This cannot be undone.",
+  "confirm.overwrite.confirm": "Overwrite",
+  "confirm.overwrite.cancel": "Cancel",
+
+  "settings.title": "Settings",
+  "settings.tab.audio": "Audio",
+  "settings.tab.text": "Text & Subtitles",
+  "settings.tab.accessibility": "Accessibility",
+  "settings.tab.controls": "Controls",
+  "settings.audio.master": "Master Volume",
+  "settings.audio.music": "Music",
+  "settings.audio.sfx": "Sound Effects",
+  "settings.audio.voice": "Voice",
+  "settings.text.subtitles": "Subtitles",
+  "settings.text.size": "Text Size",
+  "settings.text.language": "Language",
+  "settings.accessibility.layerAssist": "Layer-Toggle Assist Glow",
+  "settings.accessibility.reduceMotion": "Reduce Motion",
+  "settings.accessibility.colorblindSafe": "Colorblind-Safe Puzzle Mode",
+  "settings.accessibility.hintFrequency": "Hint Frequency",
+  "settings.controls.hint": "Desktop: point & click, Space to toggle the Memory Layer, Esc to pause. Mobile: tap to interact, dedicated Layer button.",
+  "settings.back": "Back",
+
+  "credits.title": "Credits",
+  "credits.body": "ARCHIVE : FILE-001 — a premium browser puzzle-mystery. Milestone 2 vertical slice.",
+
+  "pause.title": "Paused",
+  "pause.resume": "Resume",
+  "pause.settings": "Settings",
+  "pause.mainMenu": "Return to Main Menu",
+
+  "common.close": "Close",
+  "common.back": "Back",
+  "common.skip": "Skip",
+
+  "intro.card1": "Every memory you have chosen to forget is stored somewhere.",
+  "intro.card2": "The Archive keeps them. Sealed. Cataloged. Waiting.",
+  "intro.card3": "You were not told your own name before you accepted this contract.",
+  "intro.card4": "SESSION INITIATED — RETRIEVE FILE-001",
+  "intro.skipHint": "Tap or press Esc to skip",
+
+  "prologue.plaque": "A brass plaque, worn smooth: \"THE ARCHIVE — ALL THAT IS FORGOTTEN IS KEPT.\"",
+  "prologue.inscription": "Beneath the plaque, scratched in a hand that might be your own: \"You already know the way in.\"",
+  "prologue.doorOpens": "The door opens onto a corridor lined with drawers, each one a sealed room of its own.",
+
+  "ch1.exitOpens": "The brass key turns. The door gives way onto a corridor that goes further than one room should.",
+  "ch1.exitLocked": "Sealed. Whatever opens this isn't in your hands yet.",
+
+  "hotspot.terminal.label": "Intake Terminal",
+  "hotspot.drawer.label": "Sealed Drawer",
+  "hotspot.drawer.labelOpen": "Open Drawer",
+  "hotspot.door.label": "Heavy Door",
+  "hotspot.exitDoor.label": "Corridor Door",
+
+  "puzzle.drawer.title": "SEALED DRAWER",
+  "puzzle.drawer.prompt": "A four-digit lock. Something in this room remembers the code.",
+  "puzzle.drawer.hint1": "The intake terminal keeps a record of every case processed in this room.",
+  "puzzle.drawer.hint2": "Read the terminal's LOG.",
+  "puzzle.drawer.hint3": "The code is 0231.",
+  "puzzle.drawer.wrong": "The lock doesn't move. Not yet.",
+  "puzzle.hint.reveal": "Hint",
+  "puzzle.confirm": "Enter",
+  "puzzle.clear": "Clear",
+
+  "term.ch1.boot1": "ARCHIVE INTAKE TERMINAL — CASE FILE ACCESS",
+  "term.ch1.boot2": "Type HELP for available commands.",
+  "term.ch1.help": "AVAILABLE COMMANDS: LOG, STATUS, SEARCH <term>",
+  "term.ch1.log": "INTAKE LOG — CASE 0231. SUBJECT DECLINED TO STATE NAME. DRAWER SEALED PER STANDARD PROCEDURE. — Archivist on duty",
+  "term.ch1.status": "ARCHIVE STATUS: 1 FILE ACTIVE. INTEGRITY: FRAGMENTED.",
+  "term.ch1.search.default": "NO RECORD FOUND.",
+  "term.ch1.search.nitro": "UNRELATED RECORD FOUND: VEHICLE FILE — CLASSIFICATION: JOYRIDE. ...this does not belong in this Archive.",
+  "term.ch1.unknown": "COMMAND NOT RECOGNIZED. TYPE HELP.",
+  "terminal.inputPlaceholder": "TYPE A COMMAND…",
+  "terminal.send": "Send",
+
+  "notebook.caseCode": "Case number, from the intake log: 0231.",
+
+  "cf.ch1_intake.title": "Intake Form — Case 0231",
+  "cf.ch1_intake.body1": "SUBJECT: [REDACTED]",
+  "cf.ch1_intake.body2": "REASON GIVEN: \"I don't want to remember choosing this.\"",
+  "cf.ch1_intake.body3": "PROCESSING NOTE: Subject requested confirmation the memory could never be returned. Confirmation given. Subject seemed relieved. — FILING ARCHIVIST: [SIGNATURE ILLEGIBLE]",
+  "reader.declassify": "DECLASSIFYING…",
+
+  "item.brass_key.name": "Brass Key",
+  "item.brass_key.description": "A small key, worn smooth from handling. It fits something old.",
+  "inventory.empty": "Nothing collected yet.",
+  "inventory.title": "Inventory",
+
+  "cinematic.firstDocument": "The first fragment. Real, and not yours to keep.",
+  "cinematic.sliceEnd": "— END OF THIS SESSION'S RECORDS —",
+
+  "achv.first_key.title": "First Retrieval",
+  "achv.first_key.description": "Opened the intake drawer and recovered its contents.",
+  "achv.nitro.title": "Wrong Archive",
+  "achv.nitro.description": "Found a record that doesn't belong here."
+}

@@ -1,0 +1,53 @@
+/**
+ * cinematic.css — discovery beats (GDD §12.9) and the intro sequence.
+ * No video/desaturation-filter-on-the-scene-behind trick here (that would
+ * need targeting sibling layers) — a near-opaque held frame with a single
+ * line of text reads as a contemplative pause just as well, at zero
+ * asset cost.
+ */
+
+/* Both mount points are plain <div>s in index.html whose only content is
+   one of the two blocks below — without an explicit box of their own,
+   a bare block parent containing only an absolutely-positioned child
+   collapses to zero size, which is harmless for painting (the child
+   still renders relative to .stage) but makes the container look
+   "invisible" to anything that checks its bounding box. */
+#layer-intro,
+#layer-cinematic {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-modal);
+}
+
+.cinematic-beat,
+.intro-sequence {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background: rgba(6, 7, 9, 0.94);
+  text-align: center;
+  padding: var(--space-6);
+  cursor: pointer;
+}
+
+.cinematic-beat__text,
+.intro-sequence__line {
+  font-family: var(--font-document);
+  font-style: italic;
+  font-size: var(--fs-heading);
+  max-width: 26ch;
+  color: var(--paper-100);
+}
+
+.cinematic-beat__hint,
+.intro-sequence__hint {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--stone-600);
+}

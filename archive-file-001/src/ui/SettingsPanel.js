@@ -49,6 +49,9 @@ export class SettingsPanel {
     if ('reduceMotion' in patch) {
       document.documentElement.dataset.reduceMotion = String(this.#settings.reduceMotion);
     }
+    if ('layerAssist' in patch) {
+      document.documentElement.dataset.layerAssist = String(this.#settings.layerAssist);
+    }
     this.#render();
   }
 

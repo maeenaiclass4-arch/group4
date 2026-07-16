@@ -1,0 +1,52 @@
+{
+  "id": "ch1_intake",
+  "chapterId": "ch1",
+  "title": "Intake Records",
+  "scene": "ch1_intake",
+  "ambientAudio": { "base": null, "tension": null, "discovery": null, "memoryLayer": null },
+  "hotspots": [
+    {
+      "id": "hs_terminal",
+      "type": "terminal",
+      "coords": { "x": 10, "y": 42, "w": 22, "h": 30 },
+      "layer": "both",
+      "action": { "type": "terminal", "terminalId": "term_ch1_intake" }
+    },
+    {
+      "id": "hs_drawer",
+      "type": "puzzle",
+      "coords": { "x": 42, "y": 55, "w": 20, "h": 22 },
+      "layer": "both",
+      "state": "locked",
+      "action": {
+        "type": "puzzle",
+        "puzzleId": "pz_ch1_intake_drawer",
+        "onSolve": {
+          "grantItems": ["brass_key"],
+          "grantClassifiedFile": "cf_ch1_intake",
+          "setState": "open",
+          "cinematicBeat": "cin_first_document"
+        }
+      }
+    },
+    {
+      "id": "hs_exit_door",
+      "type": "exit",
+      "coords": { "x": 70, "y": 18, "w": 20, "h": 62 },
+      "layer": "both",
+      "state": "locked",
+      "action": {
+        "type": "useItem",
+        "requiresItem": "brass_key",
+        "onSuccess": {
+          "textKey": "ch1.exitOpens",
+          "cinematicBeat": "cin_slice_end"
+        },
+        "onFailure": { "textKey": "ch1.exitLocked" }
+      }
+    }
+  ],
+  "isSecret": false,
+  "discoveredVia": null,
+  "requiresCompletionFlag": null
+}

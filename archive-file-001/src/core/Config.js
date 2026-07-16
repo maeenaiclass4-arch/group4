@@ -78,6 +78,7 @@ export const EVENTS = Object.freeze({
   FLAG_SET: 'flag:set',
   NOTEBOOK_ENTRY_ADDED: 'notebook:entryAdded',
   TERMINAL_COMMAND_RUN: 'terminal:commandRun',
+  LAYER_CHANGED: 'layer:changed',
 });
 
 /** Layout breakpoints in px, matching GDD §22. */

@@ -1,20 +1,19 @@
+import { EVENTS } from '../core/Config.js';
+import { puzzles } from '../data/index.js';
+
 /**
- * PuzzleEngine.js — SCAFFOLDING, filled in at Milestone 2 (GDD §25).
+ * PuzzleEngine.js
+ * GDD §6. One puzzle type is implemented for this vertical slice — the
+ * numeric "code" lock (mechanical lock archetype). Additional archetypes
+ * (cipher, audio, layer, sequence, combination, pattern-recall) register
+ * the same way: a type string, a matching UI overlay, and a
+ * checkSolution() rule — no engine change required to add one.
  *
- * Intended responsibilities (GDD §6, §15):
- *  - Registry of puzzle-type classes (CipherPuzzle, LockPuzzle,
- *    SequencePuzzle, ObservationPuzzle, AudioPuzzle, LayerPuzzle,
- *    CombinationPuzzle, PatternRecallPuzzle) — one class per archetype,
- *    instantiated from room JSON (`type: "cipher"`), never one-off
- *    per-room scripts.
- *  - Each puzzle type implements: render(container), checkSolution(input),
- *    serialize()/deserialize() — the contract every future puzzle type
- *    must satisfy to plug into this engine.
- *  - Emits EVENTS.PUZZLE_SOLVED on success; never punishes a wrong
- *    attempt beyond a neutral "not yet" cue (GDD §6 design rules).
+ * Design rule carried over from the GDD: wrong attempts are never
+ * punished — checkSolution() is a pure comparison with no fail-state
+ * side effects; the calling UI decides how to present "not yet."
  */
 export class PuzzleEngine {
-  #registry = new Map(); // type string -> puzzle class
   #eventBus;
 
   /** @param {import('../core/EventBus.js').EventBus} eventBus */
@@ -22,14 +21,19 @@ export class PuzzleEngine {
     this.#eventBus = eventBus;
   }
 
-  /** @param {string} type @param {new (...args: any[]) => object} PuzzleClass */
-  registerType(type, PuzzleClass) {
-    this.#registry.set(type, PuzzleClass);
+  getPuzzle(puzzleId) {
+    return puzzles.get(puzzleId) ?? null;
   }
 
-  /** @param {object} puzzleDef */
-  instantiate(puzzleDef) {
-    console.warn(`[PuzzleEngine] instantiate() — no puzzle content yet (Milestone 2+).`, puzzleDef);
-    return null;
+  /** @param {object} puzzleDef @param {string} input */
+  checkSolution(puzzleDef, input) {
+    if (puzzleDef.type === 'code') return input === puzzleDef.solution;
+    console.warn(`[PuzzleEngine] unknown puzzle type "${puzzleDef.type}"`);
+    return false;
+  }
+
+  /** @param {object} puzzleDef @param {string} roomId */
+  solve(puzzleDef, roomId) {
+    this.#eventBus.emit(EVENTS.PUZZLE_SOLVED, { puzzleId: puzzleDef.id, roomId });
   }
 }

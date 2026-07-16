@@ -1,0 +1,279 @@
+/**
+ * room.css — RoomView chrome + SceneArt shape primitives (GDD §8, §21, §22).
+ * See src/ui/SceneArt.js for why rooms are built from these primitives
+ * instead of illustrated backgrounds: no art assets exist yet.
+ */
+
+.room-screen {
+  padding: 0;
+  display: block;
+}
+
+.room-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.room-scene {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(160deg, var(--ink-900), var(--ink-950));
+}
+
+.scene-layer {
+  position: absolute;
+  inset: 0;
+  transition: opacity var(--duration-base) var(--ease-standard), filter var(--duration-base) var(--ease-standard);
+}
+
+.room-scene[data-layer='physical'] .scene-layer--memory {
+  opacity: 0;
+}
+.room-scene[data-layer='physical'] .scene-layer--physical {
+  opacity: 1;
+}
+.room-scene[data-layer='memory'] .scene-layer--memory {
+  opacity: 1;
+}
+.room-scene[data-layer='memory'] .scene-layer--physical {
+  opacity: 0.2;
+  filter: saturate(0.3);
+}
+
+.scene-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 42%, transparent 35%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+}
+
+.scene-light {
+  position: absolute;
+  left: 30%;
+  top: -15%;
+  width: 50%;
+  height: 55%;
+  background: radial-gradient(ellipse at center, rgba(217, 165, 92, 0.16), transparent 70%);
+  pointer-events: none;
+}
+
+.scene-shape {
+  position: absolute;
+  border: 1.5px solid rgba(232, 226, 214, 0.32);
+  background: rgba(18, 21, 26, 0.4);
+  border-radius: var(--radius-sm);
+}
+.scene-shape.accent {
+  border-color: var(--memory-cyan);
+  box-shadow: 0 0 26px rgba(79, 227, 208, 0.25);
+}
+.scene-shape--door .scene-door-seam {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  bottom: 6%;
+  width: 1px;
+  background: rgba(232, 226, 214, 0.25);
+}
+.scene-shape--door.is-open {
+  background: linear-gradient(90deg, rgba(79, 227, 208, 0.1), transparent);
+  border-color: rgba(79, 227, 208, 0.5);
+}
+.scene-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(232, 226, 214, 0.5);
+}
+
+.scene-inscription {
+  position: absolute;
+  color: var(--memory-cyan);
+  font-family: var(--font-terminal);
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(79, 227, 208, 0.7);
+  opacity: 0.9;
+}
+
+.scene-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(0deg, rgba(79, 227, 208, 0.05) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(79, 227, 208, 0.05) 0 1px, transparent 1px 32px);
+  pointer-events: none;
+}
+
+.scene-particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--memory-cyan);
+  box-shadow: 0 0 6px var(--memory-cyan);
+  animation: particle-pulse 3s ease-in-out infinite;
+}
+@keyframes particle-pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-6px);
+  }
+}
+
+.scene-lock-icon {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(232, 226, 214, 0.6);
+  border-radius: 3px;
+}
+.scene-lock-icon::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: -6px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid rgba(232, 226, 214, 0.6);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.scene-desk {
+  position: absolute;
+  border-top: 2px solid rgba(232, 226, 214, 0.4);
+  background: linear-gradient(to bottom, rgba(232, 226, 214, 0.05), transparent);
+}
+
+.scene-monitor {
+  position: absolute;
+  inset: 14% 10% 30% 10%;
+  border: 1.5px solid rgba(79, 227, 208, 0.5);
+  border-radius: 2px;
+  background: rgba(10, 20, 20, 0.7);
+  box-shadow: inset 0 0 20px rgba(79, 227, 208, 0.15);
+}
+.scene-cursor {
+  position: absolute;
+  left: 10%;
+  top: 15%;
+  width: 6px;
+  height: 10px;
+  background: var(--memory-cyan);
+  animation: pulse-glow 1.2s steps(2) infinite;
+}
+
+.scene-shape--drawer .scene-drawer-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: rgba(232, 226, 214, 0.25);
+}
+.scene-shape--drawer.is-open {
+  background: rgba(79, 227, 208, 0.08);
+  border-color: rgba(79, 227, 208, 0.45);
+}
+
+/* ---- hotspots ---- */
+
+.room-hotspots {
+  position: absolute;
+  inset: 0;
+}
+
+.room-hotspot {
+  position: absolute;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  min-width: var(--hit-target-min);
+  min-height: var(--hit-target-min);
+}
+.room-hotspot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(79, 227, 208, 0.18), transparent 70%);
+  animation: hotspot-glint 4s ease-in-out infinite;
+}
+.room-hotspot:hover::after,
+.room-hotspot:focus-visible::after {
+  opacity: 0.6;
+  animation: none;
+}
+@keyframes hotspot-glint {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+[data-layer-assist='true'] .room-hotspot::after {
+  opacity: 0.35;
+  animation: none;
+}
+
+/* ---- chrome: pause / layer toggle / caption ---- */
+
+.room-view__pause,
+.room-view__layer {
+  position: absolute;
+  top: var(--space-4);
+  z-index: var(--z-ui);
+}
+.room-view__pause {
+  right: var(--space-4);
+}
+.room-view__layer {
+  right: calc(var(--space-4) + var(--hit-target-primary) + var(--space-2));
+}
+html[dir='rtl'] .room-view__pause {
+  right: auto;
+  left: var(--space-4);
+}
+html[dir='rtl'] .room-view__layer {
+  right: auto;
+  left: calc(var(--space-4) + var(--hit-target-primary) + var(--space-2));
+}
+.room-view__layer.is-memory {
+  color: var(--memory-cyan);
+  background: rgba(79, 227, 208, 0.18);
+}
+
+.room-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 14%;
+  transform: translateX(-50%);
+  max-width: min(560px, 80%);
+  background: rgba(11, 13, 16, 0.82);
+  border: 1px solid rgba(232, 226, 214, 0.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-5);
+  font-family: var(--font-document);
+  font-style: italic;
+  text-align: center;
+  z-index: var(--z-ui);
+}
+.room-caption[hidden] {
+  display: none;
+}
+
+@media (max-width: 599px) {
+  .room-caption {
+    bottom: 22%;
+    max-width: 90%;
+  }
+}

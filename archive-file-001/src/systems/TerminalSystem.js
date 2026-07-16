@@ -1,23 +1,57 @@
+import { EVENTS } from '../core/Config.js';
+import { terminals } from '../data/index.js';
+
 /**
- * TerminalSystem.js — SCAFFOLDING, filled in at Milestone 2 (GDD §12.11, §25).
- *
- * Intended responsibilities:
- *  - Load a terminal instance's command set from data/terminals/<id>.json.
- *  - Drive the typed-out (not instant) response renderer used by
- *    TerminalOverlay, including the fixed HELP/LOG/STATUS/SEARCH commands
- *    plus room-specific unlocked commands.
- *  - Serve as the entry interface for cipher/code puzzles that are
- *    "typed in" rather than dialed, and as the Easter-egg surface for
- *    hidden SEARCH terms.
+ * TerminalSystem.js
+ * GDD §12.11. Parses a typed command against a terminal's data-driven
+ * command set. Returns a string *key* (not display text) so the UI layer
+ * stays the only thing that knows about i18n — this class is pure logic.
  */
 export class TerminalSystem {
+  #eventBus;
+
   /** @param {import('../core/EventBus.js').EventBus} eventBus */
   constructor(eventBus) {
-    this.eventBus = eventBus;
+    this.#eventBus = eventBus;
   }
 
-  /** @param {string} terminalId */
-  async loadTerminal(terminalId) {
-    console.warn(`[TerminalSystem] loadTerminal("${terminalId}") — no terminal content yet (Milestone 2+).`);
+  loadTerminal(terminalId) {
+    const def = terminals.get(terminalId);
+    if (!def) console.error(`[TerminalSystem] unknown terminal "${terminalId}"`);
+    return def ?? null;
+  }
+
+  /**
+   * @param {object} def terminal definition
+   * @param {string} rawInput
+   * @returns {string|null} a string key to display, or null for empty input
+   */
+  runCommand(def, rawInput) {
+    const trimmed = rawInput.trim();
+    if (!trimmed) return null;
+
+    const [word, ...rest] = trimmed.split(/\s+/);
+    const command = word.toUpperCase();
+    this.#eventBus.emit(EVENTS.TERMINAL_COMMAND_RUN, { terminalId: def.id, command });
+
+    if (command === 'SEARCH') {
+      const term = rest.join(' ').toLowerCase();
+      const match = def.searchTerms?.[term];
+      if (match) {
+        if (match.easterEggId) {
+          this.#eventBus.emit(EVENTS.EASTER_EGG_TRIGGERED, { easterEggId: match.easterEggId });
+        }
+        return match.responseKey;
+      }
+      return def.searchDefaultKey;
+    }
+
+    const known = def.commands?.[command];
+    if (!known) return def.unknownKey;
+
+    if (known.onRun?.addNotebookEntry) {
+      this.#eventBus.emit(EVENTS.NOTEBOOK_ENTRY_ADDED, { entryId: known.onRun.addNotebookEntry });
+    }
+    return known.responseKey;
   }
 }

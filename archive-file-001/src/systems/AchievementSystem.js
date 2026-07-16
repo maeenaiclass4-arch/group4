@@ -1,15 +1,13 @@
 import { EVENTS } from '../core/Config.js';
+import { t } from '../core/i18n.js';
 
 /**
- * AchievementSystem.js — SCAFFOLDING, wired for real content at Milestone 2 (GDD §12.1, §25).
- *
- * Design constraint carried over from the GDD: this system only ever
- * *listens*. It subscribes to the gameplay events below and cross-references
- * data/achievements.json (currently empty — no content has been authored
- * yet) — no other system ever calls into AchievementSystem directly, and
- * AchievementSystem never calls into anything but EventBus.emit(). That
- * one-way dependency is what lets new Commendations be added later as pure
- * data without touching puzzle/room/inventory code.
+ * AchievementSystem.js
+ * GDD §12.1 — "Commendations." Strictly one-way: this class only ever
+ * *listens* to gameplay events and cross-references data/achievements.json
+ * condition rules; nothing else ever calls into it. That's what lets new
+ * Commendations be added later as pure data, with zero changes to
+ * whatever system emits the event they key off of.
  */
 const WATCHED_EVENTS = [
   EVENTS.PUZZLE_SOLVED,
@@ -45,11 +43,18 @@ export class AchievementSystem {
   }
 
   #evaluate(eventName, payload) {
-    if (this.#definitions.length === 0) return; // no Commendations authored yet
-    console.info(`[AchievementSystem] observed "${eventName}"`, payload);
-    // Milestone 2+: match payload against data/achievements.json condition
-    // rules, and on a match: this.#unlocked.add(id);
-    // this.#eventBus.emit(EVENTS.ACHIEVEMENT_UNLOCKED, { id });
+    for (const def of this.#definitions) {
+      if (def.eventName !== eventName || this.#unlocked.has(def.id)) continue;
+      if (this.#matches(def.match, payload)) {
+        this.#unlocked.add(def.id);
+        this.#eventBus.emit(EVENTS.ACHIEVEMENT_UNLOCKED, { id: def.id, title: t(def.titleKey) });
+      }
+    }
+  }
+
+  #matches(match, payload) {
+    if (!match) return true;
+    return Object.entries(match).every(([key, value]) => payload?.[key] === value);
   }
 
   get unlockedIds() {

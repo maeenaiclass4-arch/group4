@@ -1,16 +1,15 @@
+import { EVENTS } from '../core/Config.js';
+
 /**
- * LayerToggleSystem.js — SCAFFOLDING, filled in at Milestone 2 (GDD §25).
- *
- * Intended responsibilities (GDD §3, §5, §21):
- *  - Own the Physical ⇄ Memory layer cross-fade — the game's signature,
- *    most-repeated mechanic and animation.
- *  - Bound to InputManager's "toggleLayer" semantic action (Space on
- *    desktop, a dedicated UI button on both platforms).
- *  - Reports current layer to AudioManager.setRoomState() so the ambient
- *    memory-layer stem (§12.10) fades in/out in sync.
+ * LayerToggleSystem.js
+ * Owns the Physical ⇄ Memory layer state — the game's signature mechanic
+ * (GDD §3, §5, §21). Reset to 'physical' on every room entry so a layer
+ * choice never silently carries across rooms. Bound to InputManager's
+ * "toggleLayer" semantic action (Space) by main.js, and to the on-screen
+ * layer button by RoomView — both just call toggle().
  */
 export class LayerToggleSystem {
-  #layer = 'physical'; // 'physical' | 'memory'
+  #layer = 'physical';
   #eventBus;
 
   /** @param {import('../core/EventBus.js').EventBus} eventBus */
@@ -22,7 +21,14 @@ export class LayerToggleSystem {
     return this.#layer;
   }
 
+  reset() {
+    this.#layer = 'physical';
+    this.#eventBus.emit(EVENTS.LAYER_CHANGED, { layer: this.#layer });
+  }
+
   toggle() {
-    console.warn('[LayerToggleSystem] toggle() — no room content yet (Milestone 2+).');
+    this.#layer = this.#layer === 'physical' ? 'memory' : 'physical';
+    this.#eventBus.emit(EVENTS.LAYER_CHANGED, { layer: this.#layer });
+    return this.#layer;
   }
 }

@@ -1,29 +1,39 @@
 import { EVENTS } from '../core/Config.js';
+import { rooms } from '../data/index.js';
 
 /**
- * RoomSystem.js — SCAFFOLDING, filled in at Milestone 2 (GDD §25).
- *
- * Intended responsibilities (GDD §8, §15):
- *  - Load a room's JSON definition + physical/memory image pair.
- *  - Render hotspots as percentage-positioned DOM elements over the stage.
- *  - Own the Physical ⇄ Memory layer cross-fade (LayerToggleSystem hooks in here).
- *  - Emit EVENTS.ROOM_ENTERED so AchievementSystem/StatsSystem/CinematicSystem
- *    can react without RoomSystem knowing they exist.
- *
- * Kept as an explicit class now (rather than added later) so main.js's
- * composition root and the EventBus wiring pattern don't change shape
- * when real room content lands — only the method bodies below do.
+ * RoomSystem.js
+ * Data/state authority for "what room is the player in." Rendering (scene
+ * art, hotspots, chrome) lives in the RoomView UI component — this class
+ * only knows the room graph and the current position in it, so it stays
+ * trivially testable and reusable if the renderer ever changes.
  */
 export class RoomSystem {
   #eventBus;
+  #currentRoom = null;
 
   /** @param {import('../core/EventBus.js').EventBus} eventBus */
   constructor(eventBus) {
     this.#eventBus = eventBus;
   }
 
+  get currentRoom() {
+    return this.#currentRoom;
+  }
+
   /** @param {string} roomId */
-  async loadRoom(roomId) {
-    console.warn(`[RoomSystem] loadRoom("${roomId}") — no room content yet (Milestone 2+).`);
+  loadRoom(roomId) {
+    const def = rooms.get(roomId);
+    if (!def) {
+      console.error(`[RoomSystem] unknown room "${roomId}"`);
+      return null;
+    }
+    this.#currentRoom = def;
+    this.#eventBus.emit(EVENTS.ROOM_ENTERED, { roomId });
+    return def;
+  }
+
+  getHotspot(hotspotId) {
+    return this.#currentRoom?.hotspots.find((h) => h.id === hotspotId) ?? null;
   }
 }

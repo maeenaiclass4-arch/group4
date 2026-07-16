@@ -1,0 +1,20 @@
+[
+  {
+    "id": "comm_first_key",
+    "tier": "story",
+    "titleKey": "achv.first_key.title",
+    "descriptionKey": "achv.first_key.description",
+    "secret": false,
+    "eventName": "puzzle:solved",
+    "match": { "puzzleId": "pz_ch1_intake_drawer" }
+  },
+  {
+    "id": "comm_curiosity_nitro",
+    "tier": "curiosity",
+    "titleKey": "achv.nitro.title",
+    "descriptionKey": "achv.nitro.description",
+    "secret": true,
+    "eventName": "easterEgg:triggered",
+    "match": { "easterEggId": "egg_nitro_rush" }
+  }
+]
