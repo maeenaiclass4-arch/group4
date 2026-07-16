@@ -12,13 +12,13 @@
 
 .slider::-webkit-slider-runnable-track {
   height: 4px;
-  background: rgba(232, 226, 214, 0.15);
+  background: color-mix(in srgb, var(--paper-100) 15%, transparent);
   border-radius: 999px;
 }
 
 .slider::-moz-range-track {
   height: 4px;
-  background: rgba(232, 226, 214, 0.15);
+  background: color-mix(in srgb, var(--paper-100) 15%, transparent);
   border-radius: 999px;
 }
 

@@ -3,7 +3,7 @@ import { h, mount } from './dom.js';
 
 const CARD_DURATION_MS = 3200;
 const REDUCED_DURATION_MS = 1200;
-const CARD_KEYS = ['intro.card1', 'intro.card2', 'intro.card3', 'intro.card4'];
+const CARD_KEYS = ['intro.card1', 'intro.card2', 'intro.card3', 'intro.card4', 'intro.card5'];
 
 /**
  * IntroSequence.js

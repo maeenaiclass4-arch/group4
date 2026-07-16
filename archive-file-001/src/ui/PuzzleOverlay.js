@@ -70,6 +70,7 @@ export class PuzzleOverlay {
       onSolved?.();
       return;
     }
+    this.#eventBus.emit(EVENTS.PUZZLE_FAILED, { puzzleId: this.#puzzleDef.id });
     this.#shake = true;
     this.#render();
     setTimeout(() => {

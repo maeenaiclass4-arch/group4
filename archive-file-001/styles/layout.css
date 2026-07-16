@@ -104,7 +104,7 @@
   max-height: min(640px, 90%);
   overflow-y: auto;
   background: var(--ink-900);
-  border: 1px solid rgba(79, 227, 208, 0.15);
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, transparent);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-elevated);
   padding: var(--space-6);

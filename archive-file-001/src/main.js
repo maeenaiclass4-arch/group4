@@ -50,8 +50,6 @@ function byId(id) {
 }
 
 function boot() {
-  setLanguage('en');
-
   const eventBus = new EventBus();
   const saveManager = new SaveManager(eventBus);
   const sessionStore = new SessionStore(eventBus, saveManager);
@@ -88,7 +86,8 @@ function boot() {
   checkpointsPanel.mount(byId('overlay-checkpoints'));
 
   const settingsPanel = new SettingsPanel(eventBus, gameStateManager, saveManager, audioManager);
-  // Apply persisted accessibility/audio settings before the first paint of any screen.
+  // Apply persisted language/accessibility/audio settings before the first paint of any screen.
+  setLanguage(settingsPanel.settings.language);
   audioManager.applyVolumes(settingsPanel.settings);
   document.documentElement.dataset.reduceMotion = String(settingsPanel.settings.reduceMotion);
   document.documentElement.dataset.layerAssist = String(settingsPanel.settings.layerAssist);
@@ -201,6 +200,19 @@ function boot() {
     }
   });
 
+  // Language can change mid-session (Settings, GDD §14/§20 RTL support).
+  // i18n.setLanguage() already flipped document dir/lang; this re-renders
+  // every other currently-mounted piece of UI so the switch is visible
+  // immediately everywhere, not just the next time each screen opens.
+  // SettingsPanel re-renders itself already, inside its own #commit().
+  eventBus.on(EVENTS.LANGUAGE_CHANGED, () => {
+    if (gameStateManager.state === GAME_STATES.MAIN_MENU) {
+      mainMenu.mount(byId('screen-main-menu'));
+    }
+    if (pauseMounted) pauseMenu.mount(overlayPause);
+    inventoryDock.render();
+  });
+
   // Global semantic-action handling (GDD §12): Esc closes the topmost open
   // surface first, then falls back to pause; Space toggles the Memory Layer.
   eventBus.on(EVENTS.INPUT_ACTION, ({ action }) => {
@@ -224,6 +236,19 @@ function boot() {
         break;
     }
   });
+
+  // ---- polish: synthesized UI feedback (GDD Priority 7 — no audio assets
+  // exist yet, so these are short Web Audio tones, not recordings) ----
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('button, .room-hotspot')) audioManager.playSfx('click');
+  });
+  eventBus.on(EVENTS.PUZZLE_SOLVED, () => audioManager.playSfx('success'));
+  eventBus.on(EVENTS.PUZZLE_FAILED, () => audioManager.playSfx('deny'));
+  eventBus.on(EVENTS.ACTION_DENIED, () => audioManager.playSfx('deny'));
+  eventBus.on(EVENTS.ITEM_COLLECTED, () => audioManager.playSfx('pickup'));
+  eventBus.on(EVENTS.ACHIEVEMENT_UNLOCKED, () => audioManager.playSfx('achievement'));
+  eventBus.on(EVENTS.LAYER_CHANGED, () => audioManager.playSfx('layer'));
+  eventBus.on(EVENTS.ROOM_ENTERED, () => audioManager.playSfx('door'));
 
   loadingScreen.mount(byId('screen-loading'));
   gameStateManager.transition(GAME_STATES.LOADING);

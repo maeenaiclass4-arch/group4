@@ -1,12 +1,15 @@
 /**
- * terminal.css — GDD §12.11 interactive archive terminal.
+ * terminal.css — GDD §12.11 interactive archive terminal, restyled as a
+ * classic monochrome-phosphor CRT display (a distinct "analog tech" voice
+ * from the brass UI chrome and the verdigris Memory Layer) — pure story
+ * flavor now, selected by button rather than typed command.
  */
 
 .terminal-panel {
   width: min(560px, 100%);
   font-family: var(--font-terminal);
-  background: #08110f;
-  border-color: rgba(79, 227, 208, 0.3);
+  background: #0d130d;
+  border-color: color-mix(in srgb, var(--phosphor) 30%, transparent);
 }
 
 .terminal-panel__log {
@@ -24,38 +27,39 @@
   white-space: pre-wrap;
 }
 .terminal-line--boot {
-  color: var(--memory-cyan-dim);
+  color: color-mix(in srgb, var(--phosphor) 55%, transparent);
 }
 .terminal-line--command {
   color: var(--paper-100);
 }
 .terminal-line--response {
-  color: var(--memory-cyan);
-  text-shadow: 0 0 6px rgba(79, 227, 208, 0.4);
+  color: var(--phosphor);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--phosphor) 45%, transparent);
 }
 
-.terminal-panel__input-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  border-top: 1px solid rgba(79, 227, 208, 0.2);
+.terminal-panel__hint {
+  font-size: var(--fs-small);
+  color: var(--stone-600);
+  border-top: 1px solid color-mix(in srgb, var(--phosphor) 20%, transparent);
   padding-top: var(--space-3);
   margin-top: var(--space-2);
 }
 
-.terminal-panel__prompt {
-  color: var(--memory-cyan);
+.terminal-panel__records {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
-.terminal-panel__input {
-  flex: 1;
-  min-height: var(--hit-target-min);
-  background: transparent;
-  border: none;
-  color: var(--paper-100);
+.terminal-panel__record-btn {
   font-family: var(--font-terminal);
-  font-size: var(--fs-body);
+  font-size: var(--fs-small);
+  border-color: color-mix(in srgb, var(--phosphor) 35%, transparent);
+  color: var(--phosphor);
 }
-.terminal-panel__input:focus {
-  outline: none;
+.terminal-panel__record-btn:hover:not(:disabled) {
+  border-color: var(--phosphor);
+  color: var(--phosphor);
+  background: color-mix(in srgb, var(--phosphor) 12%, transparent);
 }

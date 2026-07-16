@@ -4,13 +4,14 @@ import { h, mount } from './dom.js';
 
 /**
  * MainMenu.js
- * GDD §11. Re-renders on every MAIN_MENU entry (main.js re-invokes mount())
- * so "Continue" reflects the freshest save state without a manual refresh
- * mechanism — the whole component is cheap enough to just rebuild.
+ * GDD §11. Presented as a case-file index rather than an app menu: one
+ * stamped primary action, the rest a ledger of rows. Re-renders on every
+ * MAIN_MENU entry (main.js re-invokes mount()) so "Continue" reflects the
+ * freshest save state without a manual refresh mechanism.
  *
  * Codex / Progress Tracker / Chapter Select / Photo Mode are locked here
  * because the story content that unlocks them (GDD §7, §12.5, §12.12)
- * doesn't exist yet — they're wired as disabled nav items so their final
+ * doesn't exist yet — they're wired as disabled rows so their final
  * position/behavior doesn't need to be redesigned when Milestone 4 lands.
  */
 export class MainMenu {
@@ -39,37 +40,49 @@ export class MainMenu {
 
     mount(
       this.#container,
-      h('div', { class: 'stack fade-in', style: 'gap: var(--space-7);' }, [
+      h('div', { class: 'stack fade-in', style: 'gap: var(--space-6);' }, [
+        h('div', { class: 'main-menu__seal', 'aria-hidden': 'true' }),
         h('h1', { class: 'main-menu__title' }, ['ARCHIVE : ', h('span', {}, ['FILE-001'])]),
         h('p', { class: 'main-menu__tagline' }, [t('app.tagline')]),
-        h('nav', { class: 'main-menu__nav' }, [
-          this.#navButton(t('menu.newArchive'), () => this.#onNewArchive(), { primary: true }),
-          this.#navButton(t('menu.continue'), () => this.#onContinue(), { disabled: !hasSave }),
-          this.#navButton(t('menu.checkpoints'), () => this.#checkpointsPanel.open({ allowSave: false })),
-          this.#lockedItem(t('menu.chapterSelect')),
-          this.#lockedItem(t('menu.progressTracker')),
-          this.#lockedItem(t('menu.codex')),
-          this.#lockedItem(t('menu.photoMode')),
-          this.#navButton(t('menu.settings'), () => this.#gameStateManager.transition(GAME_STATES.SETTINGS)),
-          this.#navButton(t('menu.credits'), () => this.#onCredits()),
+
+        h(
+          'button',
+          { class: 'main-menu__primary', onClick: () => this.#onNewArchive() },
+          [t('menu.newArchive')],
+        ),
+
+        h('nav', { class: 'main-menu__ledger' }, [
+          this.#row(t('menu.continue'), () => this.#onContinue(), { disabled: !hasSave }),
+          this.#row(t('menu.checkpoints'), () => this.#checkpointsPanel.open({ allowSave: false })),
+          this.#row(t('menu.chapterSelect'), null, { locked: true }),
+          this.#row(t('menu.progressTracker'), null, { locked: true }),
+          this.#row(t('menu.codex'), null, { locked: true }),
+          this.#row(t('menu.photoMode'), null, { locked: true }),
+          this.#row(t('menu.settings'), () => this.#gameStateManager.transition(GAME_STATES.SETTINGS)),
+          this.#row(t('menu.credits'), () => this.#onCredits()),
         ]),
-        h('div', { class: 'main-menu__footer' }, ['MILESTONE 1 — PRODUCTION FOUNDATION']),
+
+        h('div', { class: 'main-menu__footer' }, ['ARCHIVE SYSTEMS — INTAKE DIVISION']),
       ]),
     );
   }
 
-  #navButton(label, onClick, { primary = false, disabled = false } = {}) {
+  #row(label, onClick, { disabled = false, locked = false } = {}) {
     return h(
       'button',
-      { class: `btn btn-block ${primary ? 'btn-primary' : 'btn-secondary'}`, onClick, disabled },
-      [label],
+      {
+        class: `main-menu__row${locked ? ' is-locked' : ''}`,
+        onClick: onClick ?? undefined,
+        disabled: disabled || locked,
+        title: locked ? t('menu.locked') : undefined,
+      },
+      [
+        h('span', { class: 'main-menu__row-label' }, [label]),
+        locked
+          ? h('span', { class: 'main-menu__row-lock', 'aria-hidden': 'true' })
+          : h('span', { class: 'main-menu__row-arrow', 'aria-hidden': 'true' }, ['›']),
+      ],
     );
-  }
-
-  #lockedItem(label) {
-    return h('div', { class: 'main-menu__nav-item' }, [
-      h('button', { class: 'btn btn-block btn-secondary', disabled: true }, [label]),
-    ]);
   }
 
   async #onNewArchive() {

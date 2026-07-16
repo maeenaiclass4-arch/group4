@@ -1,10 +1,14 @@
 # ARCHIVE : FILE-001
-### Game Design Document — v1.1 (Pre-Production)
+### Game Design Document — v1.2 (Pre-Production)
 **Studio Roles:** Game Direction · Software Architecture · UI/UX · Narrative Design
 **Platform:** Browser (Desktop + Mobile, responsive HTML5)
-**Status:** Design document through §12.12; Milestones 1–2 implemented — see `/archive-file-001/src`. A playable vertical slice exists (intro, Prologue, and Chapter 1's first room with a working terminal, puzzle, and Classified File); most content, puzzle types, and collection-screen UI still lie ahead (§25).
+**Status:** Design document through §12.12; Milestones 1–2 implemented — see `/archive-file-001/src`. A playable vertical slice exists (intro, Prologue, and Chapter 1's first room with a working terminal, puzzle, and Classified File), now in its polished final-slice form (§18/§19 visual identity, gameplay fully mouse/touch-driven, Arabic/RTL localization live). Most content, puzzle types, and collection-screen UI still lie ahead (§25).
 
 ---
+
+### Revision Notes (v1.1 → v1.2 — Final Polish Pass)
+
+A full playtest of the v1.1 vertical slice found the *systems* sound but the *presentation* off-brand: the palette and glow language read as generic cyberpunk/neon rather than "government archive," the terminal required typing exact commands (a real first-time-player barrier), rooms were sparse geometric shapes rather than lived-in spaces, the Main Menu looked like a placeholder app menu, and the language selector was inert. This pass fixes all five without adding new systems: §18/§19 replace the neon-cyan identity with a warm brass/verdigris "Records Room" palette (sharp corners, paper-grain texture, a phosphor-green terminal voice distinct from the UI); SceneArt.js gained real set-dressing (filing shelves, an evidence corkboard with pinned photos and string, a banker's lamp, paper stacks, dust); the terminal became button-driven story flavor while the puzzle's clue moved to a directly-inspectable pinned note (no gameplay-critical typing anywhere); the Main Menu was rebuilt as a case-file index (wax seal, stamped primary action, ledger rows); and Arabic (`ar.json`) now ships with a live re-render on language change and full RTL verified across every screen. Also added: synthesized UI sfx (click/success/deny/pickup/achievement — no audio assets needed) and a room-entry settle/transition animation.
 
 ### Revision Notes (v1.0 → v1.1)
 
@@ -505,46 +509,61 @@ Asset production is chaptered: Ch.1 art/audio is a full vertical-slice pass befo
 
 ## 18. Visual Identity
 
-**Art direction: "Analog Futurism."** Brutalist concrete-and-paper archive architecture, photographed-collage texture work, intersected by a faint cyan holographic Memory Layer. Think *Control* meets *Firewatch* meets an old university records basement.
+**Art direction: "Records Room," not cyberpunk.** *(Revised in v1.2 — an early pass leaned on neon-cyan glows and read as generic sci-fi/cyberpunk rather than "government archive." The direction below replaces it.)* Reference points: FBI/government archive storage, the SCP Foundation's dry-bureaucratic-horror tone, an evidence room, real case-file furniture — file cabinets, corkboards with pinned photos and string, brass desk lamps, CRT monitors, dust in lamplight, kraft-paper folders, rubber stamps. Think *Control*'s Federal Bureau of Control offices meets a real 1970s records basement, not a hologram.
 
-- Compositions are **static, painterly, high-contrast**, always with one clear focal read even before any hotspot is found.
-- Every room has exactly **one accent color** drawn from the palette below, chosen to match its chapter's emotional beat (see §19).
-- UI chrome stays **consistent and restrained** across all 12 rooms — the environment art changes; the interface frame never distracts from it.
+- Compositions are **warm, dim, tactile** — walnut wood, aged paper, brass fittings — with a single desk-lamp light source per room rather than ambient sci-fi glow.
+- Every room has exactly **one accent color** drawn from the palette below, chosen to match its chapter's emotional beat (see §19); the Memory Layer is reframed as a forensic/UV-inspection effect (a patina, not a hologram), so toggling it never reads as "switching to hacker vision."
+- UI chrome is a **case-file index**, not an app menu: a stamped primary action, ledger-style rows, a wax-seal mark — restrained enough to stay out of the way of room art, distinctive enough to not read as a generic dark-mode UI kit.
+- Sharp corners throughout (radius tokens are 2–5px, not rounded-card sizes) — this is a paper/stamp/file-folder visual language.
 
 ---
 
 ## 19. Color Palette
 
-**Base neutrals (Physical Layer):**
-| Token | Hex | Use |
-|---|---|---|
-| `--ink-950` | `#0B0D10` | Deepest background / letterbox bars |
-| `--ink-900` | `#12151A` | Base room shadow tone |
-| `--paper-200` | `#E8E2D6` | Document/paper surfaces |
-| `--paper-100` | `#F5F1E8` | Reader overlay background |
-| `--stone-600` | `#4A4E57` | Architecture midtones |
+*(Revised in v1.2 — replaces the original neon-cyan palette; see §18.)*
 
-**Memory Layer accent (the signature hologram color):**
+**Base neutrals (Physical Layer) — warm dark wood/leather, aged paper:**
 | Token | Hex | Use |
 |---|---|---|
-| `--memory-cyan` | `#4FE3D0` | Default Memory Layer glow, hotspot highlight-assist |
-| `--memory-cyan-dim` | `#2B7A72` | Memory Layer shadow/secondary |
+| `--ink-950` | `#15110C` | Deepest background |
+| `--ink-900` | `#1F1912` | Base room shadow tone |
+| `--paper-200` | `#E3D6B4` | Document/paper surfaces |
+| `--paper-100` | `#F1E7CD` | Reader overlay background |
+| `--stone-600` | `#8A7A62` | Muted secondary text |
+
+**Memory Layer accent (oxidized copper / verdigris patina — a forensic tone, not a hologram):**
+| Token | Hex | Use |
+|---|---|---|
+| `--memory-cyan` | `#7FA392` | Memory Layer glow, hotspot highlight-assist |
+| `--memory-cyan-dim` | `#4C6459` | Memory Layer shadow/secondary |
+
+**Primary UI accent — brass desk-lamp gold:**
+| Token | Hex | Use |
+|---|---|---|
+| `--brass` / `--accent` | `#C2903F` | Primary buttons, hover states, focus rings, UI chrome |
+| `--brass-dim` / `--accent-dim` | `#8A6A30` | Secondary brass surfaces |
+
+**Recurring motif:**
+| Token | Hex | Use |
+|---|---|---|
+| `--stamp-red` | `#A3402B` | Ink-stamp accents, evidence-board string, "classified" marks |
+| `--phosphor` | `#83A862` | The interactive terminal's own monochrome-CRT voice (GDD §12.11) — deliberately distinct from both the brass UI and the verdigris Memory Layer |
 
 **Per-chapter emotional accents** (used sparingly — one accent object/light source per room, never a full wash):
 | Chapter | Accent | Hex | Meaning |
 |---|---|---|---|
-| Prologue / Ch.1 | Amber | `#D9A55C` | Warmth, invitation |
-| Ch.2 | Cyan (default) | `#4FE3D0` | Investigation, clarity |
-| Ch.3 | Violet | `#8B7FD6` | Uncertainty, memory distortion |
-| Ch.4 | Rust Red | `#B4543A` | Corruption, danger (used minimally — no jump-scare palette) |
-| Ch.5 / Epilogue | Warm White | `#F2EBDD` | Revelation, resolution |
+| Prologue / Ch.1 | Brass | `#C2903F` | Warmth, invitation |
+| Ch.2 | Verdigris (default) | `#7FA392` | Investigation, clarity |
+| Ch.3 | Dusty Violet | `#7C6F9E` | Uncertainty, memory distortion |
+| Ch.4 | Stamp Red | `#A8442E` | Corruption, danger (used minimally — no jump-scare palette) |
+| Ch.5 / Epilogue | Warm Parchment | `#F1E7CD` | Revelation, resolution |
 
 **Semantic / system colors:**
 | Token | Hex | Use |
 |---|---|---|
-| `--success` | `#6FCF97` | Puzzle solved, item combined |
-| `--deny` | `#C97A6A` | Invalid action (soft, never alarming red) |
-| `--hint` | `#E3C567` | Hint drawer accent |
+| `--success` | `#7C9A6A` | Puzzle solved, item combined |
+| `--deny` | `#A8442E` | Invalid action (soft, never alarming red) |
+| `--hint` | `#CC9C3F` | Hint drawer accent |
 
 **Accessibility:** all accent/semantic pairs are checked against `--ink-950`/`--paper-100` backgrounds for WCAG AA contrast; a colorblind-safe puzzle mode (§11 Settings) ensures no puzzle solution is color-only — always paired with shape/pattern/label.
 
@@ -635,4 +654,4 @@ Three-role type system, self-hosted subsets (no runtime CDN dependency, better p
 
 ---
 
-*End of Game Design Document — v1.1. Design and architecture foundation for all production milestones. Milestones 1–2 are implemented in `/archive-file-001/src`: the production foundation plus a playable vertical slice (cinematic intro, the Prologue room, and Chapter 1's first room with a working terminal, puzzle, Classified File, and inventory item). Room art is procedural CSS/DOM pending Milestone 4's illustrated-asset pass; puzzle variety, the Notebook/Codex/Progress Tracker viewers, and further chapters begin at Milestone 3.*
+*End of Game Design Document — v1.2. Design and architecture foundation for all production milestones. Milestones 1–2 are implemented in `/archive-file-001/src`: the production foundation plus a polished playable vertical slice (cinematic intro, the Prologue room, and Chapter 1's first room with a working terminal, puzzle, Classified File, and inventory item) in its "Records Room" visual identity, fully mouse/touch-driven, with live English/Arabic localization. Room art is procedural CSS/DOM pending Milestone 4's illustrated-asset pass; puzzle variety, the Notebook/Codex/Progress Tracker viewers, and further chapters begin at Milestone 3.*

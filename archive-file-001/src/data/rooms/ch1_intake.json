@@ -13,6 +13,17 @@
       "action": { "type": "terminal", "terminalId": "term_ch1_intake" }
     },
     {
+      "id": "hs_note",
+      "type": "observe",
+      "coords": { "x": 55, "y": 15, "w": 6, "h": 11 },
+      "layer": "both",
+      "action": {
+        "type": "narration",
+        "textKey": "ch1.note",
+        "onFirstView": { "addNotebookEntry": "note_case_0231" }
+      }
+    },
+    {
       "id": "hs_drawer",
       "type": "puzzle",
       "coords": { "x": 42, "y": 55, "w": 20, "h": 22 },

@@ -31,10 +31,12 @@ function typeInto(el, text) {
 
 /**
  * TerminalOverlay.js
- * Retro-CRT interactive terminal (GDD §12.11): typed-out responses,
- * scrollable log, a fixed command set backed by TerminalSystem. Renders
- * its shell once per open() and appends to the log directly afterward —
- * re-mounting on every keystroke would wipe scroll position and history.
+ * Retro-CRT terminal, restyled as pure story flavor (GDD Priority 3
+ * revision): the player selects a record from a fixed set of buttons —
+ * nothing to type, nothing to guess or misspell. Typed-out responses are
+ * kept for atmosphere. Renders its shell once per open() and appends to
+ * the log directly afterward — re-mounting on every selection would wipe
+ * scroll position and history.
  */
 export class TerminalOverlay {
   #terminalSystem;
@@ -60,7 +62,7 @@ export class TerminalOverlay {
     this.#renderShell();
     this.#container.hidden = false;
 
-    // Busy during boot too, so a command typed mid-boot queues instead of
+    // Busy during boot too, so a selection made mid-boot queues instead of
     // interleaving with the boot lines still being printed.
     this.#busy = true;
     for (const key of def.bootLines) {
@@ -71,13 +73,11 @@ export class TerminalOverlay {
 
     const next = this.#queue.shift();
     if (next !== undefined) this.#run(next);
-    this.#focusInput();
   }
 
   close() {
     this.#container.hidden = true;
     this.#def = null;
-    this.#queue = [];
   }
 
   get isOpen() {
@@ -85,29 +85,26 @@ export class TerminalOverlay {
   }
 
   /**
-   * A command submitted while the previous response is still typing is
-   * never dropped — it queues and runs the instant the terminal frees up.
-   * Silently swallowing fast input would look like the terminal ignored
-   * the player, which reads as broken rather than merely busy.
+   * A selection made while the previous response is still typing is never
+   * dropped — it queues and runs the instant the terminal frees up.
+   * @param {string} recordId
    */
-  async #run(raw) {
-    if (!raw.trim()) return;
+  async #run(recordId) {
     if (this.#busy) {
-      this.#queue.push(raw);
+      this.#queue.push(recordId);
       return;
     }
+    const record = this.#def.records.find((r) => r.id === recordId);
+    if (!record) return;
+
     this.#busy = true;
-    this.#appendStatic(`> ${raw}`, 'command');
-    const responseKey = this.#terminalSystem.runCommand(this.#def, raw);
+    this.#appendStatic(`▸ ${t(record.labelKey)}`, 'command');
+    const responseKey = this.#terminalSystem.runRecord(this.#def, recordId);
     if (responseKey) await this.#printLine(t(responseKey), 'response');
     this.#busy = false;
 
     const next = this.#queue.shift();
-    if (next !== undefined) {
-      this.#run(next);
-    } else {
-      this.#focusInput();
-    }
+    if (next !== undefined) this.#run(next);
   }
 
   #renderShell() {
@@ -115,28 +112,21 @@ export class TerminalOverlay {
       this.#container,
       h('div', { class: 'panel terminal-panel rise-in' }, [
         h('div', { class: 'terminal-panel__log' }),
+        h('p', { class: 'terminal-panel__hint' }, [t('terminal.hint')]),
         h(
-          'form',
-          {
-            class: 'terminal-panel__input-row',
-            onSubmit: (event) => {
-              event.preventDefault();
-              const input = event.target.elements.cmd;
-              this.#run(input.value);
-              input.value = '';
-            },
-          },
-          [
-            h('span', { class: 'terminal-panel__prompt' }, ['>']),
-            h('input', {
-              class: 'terminal-panel__input',
-              name: 'cmd',
-              autocomplete: 'off',
-              spellcheck: 'false',
-              placeholder: t('terminal.inputPlaceholder'),
-            }),
-            h('button', { class: 'btn btn-secondary', type: 'submit' }, [t('terminal.send')]),
-          ],
+          'div',
+          { class: 'terminal-panel__records' },
+          this.#def.records.map((record) =>
+            h(
+              'button',
+              {
+                class: 'btn btn-secondary terminal-panel__record-btn',
+                type: 'button',
+                onClick: () => this.#run(record.id),
+              },
+              [t(record.labelKey)],
+            ),
+          ),
         ),
         h('div', { class: 'settings-panel__footer' }, [
           h('button', { class: 'btn btn-secondary', type: 'button', onClick: () => this.close() }, [
@@ -163,9 +153,5 @@ export class TerminalOverlay {
     log.appendChild(line);
     await typeInto(line, text);
     log.scrollTop = log.scrollHeight;
-  }
-
-  #focusInput() {
-    this.#container.querySelector('.terminal-panel__input')?.focus();
   }
 }

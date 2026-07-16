@@ -46,6 +46,14 @@ export class RoomView {
       this.layerToggleSystem.reset();
       this.inventoryDock.clearSelection();
       this.render();
+      // A brief settle-in exclusively on a genuine new room, not on every
+      // layer-toggle re-render (which already has its own cross-fade) —
+      // restarted via the remove/reflow/add trick, same pattern as
+      // showCaption()'s fade.
+      this.sceneEl.classList.remove('is-transitioning', 'is-settling');
+      // eslint-disable-next-line no-void
+      void this.sceneEl.offsetWidth;
+      this.sceneEl.classList.add('is-settling');
     });
     this.eventBus.on(EVENTS.LAYER_CHANGED, ({ layer }) => {
       this.layerBtn.classList.toggle('is-memory', layer === 'memory');
@@ -89,10 +97,14 @@ export class RoomView {
     switch (action.type) {
       case 'narration':
         this.showCaption(t(action.textKey));
+        if (action.onFirstView?.addNotebookEntry) {
+          this.eventBus.emit(EVENTS.NOTEBOOK_ENTRY_ADDED, { entryId: action.onFirstView.addNotebookEntry });
+        }
         break;
 
       case 'exit':
         this.showCaption(t(action.textKey));
+        this.sceneEl.classList.add('is-transitioning');
         setTimeout(() => this.roomSystem.loadRoom(action.targetRoom), 700);
         break;
 
@@ -131,6 +143,7 @@ export class RoomView {
       this.renderHotspots();
       if (action.onSuccess.cinematicBeat) this.cinematicSystem.playBeat(action.onSuccess.cinematicBeat);
     } else {
+      this.eventBus.emit(EVENTS.ACTION_DENIED, { hotspotId: hotspot.id });
       this.showCaption(t(action.onFailure.textKey));
     }
   }

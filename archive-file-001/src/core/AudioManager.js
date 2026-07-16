@@ -88,7 +88,16 @@ export class AudioManager {
     this.applyVolumes({ [channel]: value });
   }
 
-  // ---- playback surface (stubs until §16 audio assets exist) ----
+  // ---- playback surface ----
+
+  /**
+   * Ambient beds and voice logs need real recorded audio, which doesn't
+   * exist yet (production hasn't started — GDD §16/§17); those stay
+   * stubs. UI sfx is different: a handful of short synthesized tones (no
+   * asset files) is enough to make the interface feel responsive, so
+   * playSfx() below is real. Swapping these for recorded one-shots later
+   * is a body-swap inside #playCue(), not a call-site change.
+   */
 
   /** @param {string} roomId @param {{base?:string, tension?:string, discovery?:string, memoryLayer?:string}} stems */
   playAmbient(roomId, stems) {
@@ -100,8 +109,73 @@ export class AudioManager {
     this.#eventBus.emit(EVENTS.AUDIO_ROOM_STATE_CHANGED, { roomId, stateFlags });
   }
 
+  /**
+   * Short synthesized UI feedback tones — no asset files required.
+   * @param {'click'|'deny'|'success'|'achievement'|'pickup'|'door'|'layer'} sfxId
+   */
   playSfx(sfxId) {
-    console.info(`[AudioManager] playSfx("${sfxId}") — no audio assets loaded yet.`);
+    if (!this.#context) return; // not unlocked yet (no user gesture received)
+    const now = this.#context.currentTime;
+    switch (sfxId) {
+      case 'click':
+        this.#tone({ freq: 640, start: now, duration: 0.05, type: 'triangle', peak: 0.18 });
+        break;
+      case 'deny':
+        this.#tone({ freq: 150, start: now, duration: 0.16, type: 'square', peak: 0.14 });
+        this.#tone({ freq: 110, start: now + 0.06, duration: 0.16, type: 'square', peak: 0.1 });
+        break;
+      case 'success':
+        this.#tone({ freq: 523, start: now, duration: 0.13, type: 'sine', peak: 0.2 });
+        this.#tone({ freq: 784, start: now + 0.1, duration: 0.18, type: 'sine', peak: 0.2 });
+        break;
+      case 'achievement':
+        this.#tone({ freq: 523, start: now, duration: 0.12, type: 'triangle', peak: 0.16 });
+        this.#tone({ freq: 659, start: now + 0.09, duration: 0.12, type: 'triangle', peak: 0.16 });
+        this.#tone({ freq: 880, start: now + 0.18, duration: 0.22, type: 'triangle', peak: 0.18 });
+        break;
+      case 'pickup':
+        this.#sweep({ from: 420, to: 720, start: now, duration: 0.14, type: 'sine', peak: 0.16 });
+        break;
+      case 'door':
+        this.#tone({ freq: 90, start: now, duration: 0.28, type: 'triangle', peak: 0.22 });
+        break;
+      case 'layer':
+        this.#sweep({ from: 300, to: 500, start: now, duration: 0.22, type: 'sine', peak: 0.12 });
+        break;
+      default:
+        console.warn(`[AudioManager] unknown sfx id "${sfxId}"`);
+    }
+  }
+
+  /** A single tone with a short attack/decay envelope, routed through the sfx bus. */
+  #tone({ freq, start, duration, type = 'sine', peak = 0.2 }) {
+    const osc = this.#context.createOscillator();
+    const gain = this.#context.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, start);
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peak, start + 0.008);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    osc.connect(gain);
+    gain.connect(this.#buses.audioSfx ?? this.#masterGain);
+    osc.start(start);
+    osc.stop(start + duration + 0.02);
+  }
+
+  /** A pitch-swept tone (rising/falling), used for pickups and the layer toggle. */
+  #sweep({ from, to, start, duration, type = 'sine', peak = 0.2 }) {
+    const osc = this.#context.createOscillator();
+    const gain = this.#context.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(from, start);
+    osc.frequency.linearRampToValueAtTime(to, start + duration);
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(peak, start + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    osc.connect(gain);
+    gain.connect(this.#buses.audioSfx ?? this.#masterGain);
+    osc.start(start);
+    osc.stop(start + duration + 0.02);
   }
 
   playVoice(logId) {
@@ -109,6 +183,6 @@ export class AudioManager {
   }
 
   stopAll() {
-    // No-op until real sources exist to stop.
+    // No-op until real ambient/voice sources exist to stop.
   }
 }

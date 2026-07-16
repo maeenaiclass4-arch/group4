@@ -23,12 +23,12 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  border: 2px solid rgba(232, 226, 214, 0.35);
+  border: 2px solid color-mix(in srgb, var(--paper-100) 35%, transparent);
 }
 .puzzle-code__dot.is-filled {
   background: var(--memory-cyan);
   border-color: var(--memory-cyan);
-  box-shadow: 0 0 8px rgba(79, 227, 208, 0.6);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent);
 }
 
 .puzzle-keypad {

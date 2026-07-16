@@ -64,6 +64,8 @@ export const EVENTS = Object.freeze({
   // AchievementSystem/StatsSystem/CinematicSystem can be wired as inert
   // listeners in M1 without churn when the emitting systems land later.
   PUZZLE_SOLVED: 'puzzle:solved',
+  PUZZLE_FAILED: 'puzzle:failed',
+  ACTION_DENIED: 'action:denied',
   ROOM_ENTERED: 'room:entered',
   ITEM_COLLECTED: 'item:collected',
   WHISPER_FOUND: 'whisper:found',
@@ -79,6 +81,7 @@ export const EVENTS = Object.freeze({
   NOTEBOOK_ENTRY_ADDED: 'notebook:entryAdded',
   TERMINAL_COMMAND_RUN: 'terminal:commandRun',
   LAYER_CHANGED: 'layer:changed',
+  LANGUAGE_CHANGED: 'language:changed',
 });
 
 /** Layout breakpoints in px, matching GDD §22. */

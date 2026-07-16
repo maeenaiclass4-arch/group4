@@ -30,7 +30,7 @@
 .loading-screen__bar {
   width: min(320px, 70vw);
   height: 2px;
-  background: rgba(232, 226, 214, 0.12);
+  background: color-mix(in srgb, var(--paper-100) 12%, transparent);
   overflow: hidden;
   border-radius: 999px;
 }

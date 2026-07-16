@@ -1,5 +1,5 @@
-import { GAME_STATES } from '../core/Config.js';
-import { t } from '../core/i18n.js';
+import { EVENTS, GAME_STATES } from '../core/Config.js';
+import { t, setLanguage } from '../core/i18n.js';
 import { h, mount } from './dom.js';
 
 const TABS = ['audio', 'text', 'accessibility', 'controls'];
@@ -51,6 +51,12 @@ export class SettingsPanel {
     }
     if ('layerAssist' in patch) {
       document.documentElement.dataset.layerAssist = String(this.#settings.layerAssist);
+    }
+    if ('language' in patch) {
+      setLanguage(this.#settings.language);
+      // Re-renders every other currently-mounted screen so the switch is
+      // visible everywhere immediately, not just next time each opens.
+      this.#eventBus.emit(EVENTS.LANGUAGE_CHANGED, { language: this.#settings.language });
     }
     this.#render();
   }
@@ -171,9 +177,18 @@ export class SettingsPanel {
       ]),
       h('div', { class: 'settings-row' }, [
         h('label', { class: 'settings-row__label', for: 'language' }, [t('settings.text.language')]),
-        h('select', { id: 'language', class: 'select-input', disabled: true }, [
-          h('option', { value: 'en', selected: true }, ['English']),
-        ]),
+        h(
+          'select',
+          {
+            id: 'language',
+            class: 'select-input',
+            onChange: (event) => this.#commit({ language: event.target.value }),
+          },
+          [
+            h('option', { value: 'en', selected: this.#settings.language === 'en' }, ['English']),
+            h('option', { value: 'ar', selected: this.#settings.language === 'ar' }, ['العربية']),
+          ],
+        ),
       ]),
     ]);
   }

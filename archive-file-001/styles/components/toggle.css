@@ -24,7 +24,7 @@
 .toggle__track {
   position: absolute;
   inset: 0;
-  background: rgba(232, 226, 214, 0.15);
+  background: color-mix(in srgb, var(--paper-100) 15%, transparent);
   border-radius: 999px;
   transition: background-color var(--duration-fast) var(--ease-standard);
   /* Purely decorative — the input beneath must receive the click, not this layer. */

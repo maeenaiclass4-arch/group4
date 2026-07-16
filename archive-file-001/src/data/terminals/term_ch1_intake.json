@@ -2,14 +2,9 @@
   "id": "term_ch1_intake",
   "roomId": "ch1_intake",
   "bootLines": ["term.ch1.boot1", "term.ch1.boot2"],
-  "commands": {
-    "HELP": { "responseKey": "term.ch1.help" },
-    "LOG": { "responseKey": "term.ch1.log", "onRun": { "addNotebookEntry": "note_case_0231" } },
-    "STATUS": { "responseKey": "term.ch1.status" }
-  },
-  "searchDefaultKey": "term.ch1.search.default",
-  "searchTerms": {
-    "nitro": { "responseKey": "term.ch1.search.nitro", "easterEggId": "egg_nitro_rush" }
-  },
-  "unknownKey": "term.ch1.unknown"
+  "records": [
+    { "id": "log", "labelKey": "terminal.btn.log", "responseKey": "term.ch1.log" },
+    { "id": "status", "labelKey": "terminal.btn.status", "responseKey": "term.ch1.status" },
+    { "id": "search", "labelKey": "terminal.btn.search", "responseKey": "term.ch1.search.nitro", "easterEggId": "egg_nitro_rush" }
+  ]
 }

@@ -2,39 +2,57 @@
  * tokens.css — Design tokens (GDD §19 color palette, §20 typography).
  * Every other stylesheet reads from these custom properties; no hex value
  * or magic number should appear anywhere outside this file.
+ *
+ * Visual identity: "Records Room," not "cyberpunk terminal." The palette
+ * is built from things that actually exist in a real archive — walnut
+ * shelving, kraft folders, brass desk-lamp light, a red ink stamp, the
+ * pale verdigris patina on old copper fittings (that patina, not a neon
+ * hologram, is what "Memory Layer" borrows its color from).
  */
 :root {
-  /* ---- color: base neutrals (Physical Layer) ---- */
-  --ink-950: #0b0d10;
-  --ink-900: #12151a;
-  --paper-200: #e8e2d6;
-  --paper-100: #f5f1e8;
-  --stone-600: #4a4e57;
+  /* ---- color: base neutrals (Physical Layer) — warm dark wood/leather, aged paper ---- */
+  --ink-950: #15110c;
+  --ink-900: #1f1912;
+  --paper-200: #e3d6b4;
+  --paper-100: #f1e7cd;
+  --stone-600: #8a7a62;
 
-  /* ---- color: Memory Layer accent ---- */
-  --memory-cyan: #4fe3d0;
-  --memory-cyan-dim: #2b7a72;
+  /* ---- color: Memory Layer accent — oxidized copper / verdigris patina, not neon ---- */
+  --memory-cyan: #7fa392;
+  --memory-cyan-dim: #4c6459;
 
   /* ---- color: per-chapter emotional accents ---- */
-  --accent-prologue: #d9a55c;
+  --accent-prologue: #c2903f;
   --accent-ch2: var(--memory-cyan);
-  --accent-ch3: #8b7fd6;
-  --accent-ch4: #b4543a;
-  --accent-ch5: #f2ebdd;
+  --accent-ch3: #7c6f9e;
+  --accent-ch4: #a8442e;
+  --accent-ch5: var(--paper-100);
 
   /* ---- color: semantic ---- */
-  --success: #6fcf97;
-  --deny: #c97a6a;
-  --hint: #e3c567;
+  --success: #7c9a6a;
+  --deny: #a8442e;
+  --hint: #cc9c3f;
 
-  /* Default UI accent — reused across the Milestone 1 menu shell */
-  --accent: var(--memory-cyan);
-  --accent-dim: var(--memory-cyan-dim);
+  /* ---- color: recurring archive motifs ---- */
+  --stamp-red: #a3402b;
+  --brass: #c2903f;
+  --brass-dim: #8a6a30;
+  /* Classic monochrome CRT phosphor — the terminal's own voice, distinct
+     from both the brass UI chrome and the verdigris Memory Layer. */
+  --phosphor: #83a862;
+
+  /* Default UI accent — brass desk-lamp gold, the primary interactive color */
+  --accent: var(--brass);
+  --accent-dim: var(--brass-dim);
 
   /* ---- typography ---- */
   --font-document: 'Spectral', Georgia, 'Times New Roman', serif;
   --font-terminal: 'IBM Plex Mono', 'Courier New', monospace;
-  --font-ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Humanist, official-document-adjacent sans as the fallback chain (Optima/
+     Candara read like a government form, not a startup dashboard) — keeps
+     a sans/serif contrast against --font-document until Sora itself is
+     self-hosted (GDD §20, Milestone 4). */
+  --font-ui: 'Sora', Optima, Candara, 'Noto Sans', -apple-system, sans-serif;
   --font-ui-rtl: 'Tajawal', var(--font-ui);
 
   --fs-body: clamp(0.9rem, 0.82rem + 0.35vw, 1.05rem);
@@ -53,10 +71,17 @@
   --space-8: 4rem;
 
   /* ---- radius / elevation ---- */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.45);
+  /* Sharp-cornered by design: this is a paper/stamp/file-folder language,
+     not a rounded-card app language. */
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 5px;
+  --shadow-elevated: 0 14px 36px rgba(0, 0, 0, 0.5);
+
+  /* Subtle paper-grain texture, layered under content via background-image.
+     A single reusable fractal-noise SVG at low opacity — cheaper and more
+     convincing than a bitmap, and free of asset production dependencies. */
+  --paper-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   /* ---- motion ---- */
   --duration-fast: 150ms;

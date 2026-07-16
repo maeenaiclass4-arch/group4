@@ -1,13 +1,50 @@
 /**
- * menu.css — Main Menu (GDD §11) and the placeholder Room View / Pause Menu
- * shells built for Milestone 1 verification.
+ * menu.css — Main Menu (GDD §11) and the Pause Menu. Presented as a
+ * case-file index: a wax-seal mark, a stamped primary action, and a
+ * ledger of rows rather than a stack of identical app buttons.
  */
 
 .main-menu {
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(79, 227, 208, 0.08), transparent 70%),
+  background: radial-gradient(ellipse 55% 45% at 50% 8%, color-mix(in srgb, var(--brass) 10%, transparent), transparent 70%),
     var(--ink-950);
-  gap: var(--space-7);
+  gap: var(--space-6);
+}
+.main-menu::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--paper-grain);
+  opacity: 0.025;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.main-menu__seal {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--brass) 55%, transparent);
+  position: relative;
+  opacity: 0.8;
+}
+.main-menu__seal::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid color-mix(in srgb, var(--brass) 40%, transparent);
+  border-radius: 50%;
+}
+.main-menu__seal::after {
+  content: '001';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-terminal);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--brass) 80%, var(--paper-100));
 }
 
 .main-menu__title {
@@ -15,6 +52,7 @@
   font-size: var(--fs-display);
   letter-spacing: 0.12em;
   color: var(--paper-100);
+  text-wrap: balance;
 }
 
 .main-menu__title span {
@@ -26,66 +64,134 @@
   font-style: italic;
   color: var(--stone-600);
   max-width: 32ch;
+  margin-bottom: var(--space-2);
 }
 
-.main-menu__nav {
+.main-menu__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(320px, 80vw);
+  min-height: var(--hit-target-primary);
+  padding: var(--space-3) var(--space-5);
+  background: var(--accent);
+  color: var(--ink-950);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  transition: transform var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+.main-menu__primary:hover {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--accent) 85%, white);
+}
+.main-menu__primary:active {
+  transform: translateY(0);
+}
+
+.main-menu__ledger {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   width: min(320px, 80vw);
+  border-top: 1px solid color-mix(in srgb, var(--brass) 22%, transparent);
 }
 
-.main-menu__nav-item {
+.main-menu__row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--hit-target-min);
+  padding: var(--space-3) var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--paper-100) 10%, transparent);
+  color: var(--paper-100);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  text-align: left;
+  position: relative;
+  transition: padding-left var(--duration-fast) var(--ease-standard), color var(--duration-fast) var(--ease-standard);
+}
+html[dir='rtl'] .main-menu__row {
+  text-align: right;
 }
 
-.main-menu__lock-hint {
-  font-size: var(--fs-small);
+.main-menu__row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  transform: scaleY(0);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+html[dir='rtl'] .main-menu__row::before {
+  left: auto;
+  right: 0;
+}
+
+.main-menu__row:not(:disabled):hover {
+  padding-left: var(--space-3);
+  color: var(--accent);
+}
+html[dir='rtl'] .main-menu__row:not(:disabled):hover {
+  padding-left: var(--space-2);
+  padding-right: var(--space-3);
+}
+.main-menu__row:not(:disabled):hover::before {
+  transform: scaleY(1);
+}
+
+.main-menu__row:disabled {
   color: var(--stone-600);
-  margin-top: var(--space-1);
+  cursor: not-allowed;
+}
+
+.main-menu__row-arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+  color: var(--accent);
+}
+html[dir='rtl'] .main-menu__row-arrow {
+  transform: translateX(4px) scaleX(-1);
+}
+.main-menu__row:not(:disabled):hover .main-menu__row-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.main-menu__row-lock {
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid color-mix(in srgb, var(--stone-600) 80%, transparent);
+  border-radius: 2px;
+  position: relative;
+  flex-shrink: 0;
+}
+.main-menu__row-lock::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: -5px;
+  width: 5px;
+  height: 5px;
+  border: 1.5px solid color-mix(in srgb, var(--stone-600) 80%, transparent);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
 }
 
 .main-menu__footer {
   font-family: var(--font-terminal);
   font-size: var(--fs-small);
+  letter-spacing: 0.08em;
   color: var(--stone-600);
-}
-
-/* ---- Placeholder Room View (Milestone 1 verification surface only) ---- */
-
-.room-view-placeholder {
-  background: linear-gradient(160deg, var(--ink-900), var(--ink-950));
-  gap: var(--space-4);
-}
-
-.room-view-placeholder__badge {
-  font-family: var(--font-terminal);
-  font-size: var(--fs-small);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--accent);
-  border: 1px solid var(--accent-dim);
-  border-radius: 999px;
-  padding: var(--space-1) var(--space-4);
-}
-
-.room-view-placeholder__body {
-  max-width: 48ch;
-  color: var(--stone-600);
-}
-
-.room-view-placeholder__pause {
-  position: absolute;
-  top: var(--space-4);
-  right: var(--space-4);
-  z-index: var(--z-ui);
-}
-
-html[dir='rtl'] .room-view-placeholder__pause {
-  right: auto;
-  left: var(--space-4);
 }
 
 /* ---- Pause Menu ---- */
@@ -110,7 +216,8 @@ html[dir='rtl'] .room-view-placeholder__pause {
     gap: var(--space-5);
   }
 
-  .main-menu__nav {
+  .main-menu__primary,
+  .main-menu__ledger {
     width: 100%;
   }
 }

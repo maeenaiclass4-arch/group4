@@ -45,7 +45,7 @@
 .btn-secondary {
   background: transparent;
   color: var(--paper-100);
-  border-color: rgba(232, 226, 214, 0.25);
+  border-color: color-mix(in srgb, var(--paper-100) 25%, transparent);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -73,12 +73,12 @@
   min-height: var(--hit-target-primary);
   padding: 0;
   border-radius: 999px;
-  background: rgba(232, 226, 214, 0.08);
+  background: color-mix(in srgb, var(--paper-100) 8%, transparent);
   color: var(--paper-100);
   font-size: 1.2rem;
 }
 
 .btn-icon:hover:not(:disabled) {
-  background: rgba(79, 227, 208, 0.18);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
   color: var(--accent);
 }
