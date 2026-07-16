@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="ARCHIVE : FILE-001 — a premium browser puzzle-mystery. Recover a sealed memory, one locked room at a time." />
+<meta name="theme-color" content="#0b0d10" />
+<title>ARCHIVE : FILE-001</title>
+
+<!-- No runtime font CDN dependency by design (GDD §20): tokens.css's
+     font-family stacks fall back to system serif/mono/sans until
+     self-hosted Spectral / IBM Plex Mono / Sora / Tajawal subsets are
+     produced as real assets at Milestone 4. This keeps the foundation
+     free of external network dependencies. -->
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🗄️</text></svg>" />
+
+<link rel="stylesheet" href="/styles/tokens.css" />
+<link rel="stylesheet" href="/styles/base.css" />
+<link rel="stylesheet" href="/styles/layout.css" />
+<link rel="stylesheet" href="/styles/animations.css" />
+<link rel="stylesheet" href="/styles/components/buttons.css" />
+<link rel="stylesheet" href="/styles/components/toggle.css" />
+<link rel="stylesheet" href="/styles/components/slider.css" />
+<link rel="stylesheet" href="/styles/components/modal.css" />
+<link rel="stylesheet" href="/styles/components/toast.css" />
+<link rel="stylesheet" href="/styles/components/loading-screen.css" />
+<link rel="stylesheet" href="/styles/components/menu.css" />
+<link rel="stylesheet" href="/styles/components/settings.css" />
+</head>
+<body>
+<div id="app">
+  <div class="stage" id="stage">
+    <canvas class="vfx-layer" id="vfx-canvas" aria-hidden="true"></canvas>
+
+    <!-- Screens: exactly one visible at a time, driven by GameStateManager. -->
+    <section id="screen-loading" class="screen loading-screen" data-screen="LOADING"></section>
+    <section id="screen-main-menu" class="screen main-menu" data-screen="MAIN_MENU" hidden></section>
+    <section
+      id="screen-room-placeholder"
+      class="screen room-view-placeholder"
+      data-screen="PLAYING"
+      hidden
+    ></section>
+
+    <!-- Overlays: dismissible, never more than one deep (GDD §12). -->
+    <div id="overlay-settings" class="overlay" data-overlay="settings" hidden></div>
+    <div id="overlay-pause" class="overlay" data-overlay="pause" hidden></div>
+    <div id="overlay-checkpoints" class="overlay" data-overlay="checkpoints" hidden></div>
+    <div id="overlay-confirm" class="overlay" data-overlay="confirm" hidden></div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

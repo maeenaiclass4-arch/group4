@@ -1,0 +1,69 @@
+/**
+ * loading-screen.css — GDD §12.12 lore ticker + boot progress.
+ */
+
+.loading-screen {
+  gap: var(--space-6);
+  background: var(--ink-950);
+}
+
+.loading-screen__mark {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-heading);
+  letter-spacing: 0.35em;
+  color: var(--paper-100);
+  text-transform: uppercase;
+}
+
+.loading-screen__mark span {
+  color: var(--accent);
+}
+
+.loading-screen__status {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  letter-spacing: 0.15em;
+  color: var(--stone-600);
+  text-transform: uppercase;
+}
+
+.loading-screen__bar {
+  width: min(320px, 70vw);
+  height: 2px;
+  background: rgba(232, 226, 214, 0.12);
+  overflow: hidden;
+  border-radius: 999px;
+}
+
+.loading-screen__bar-fill {
+  height: 100%;
+  width: 35%;
+  background: var(--accent);
+  animation: loading-sweep 1.4s ease-in-out infinite;
+}
+
+[data-reduce-motion='true'] .loading-screen__bar-fill {
+  animation: none;
+  width: 60%;
+}
+
+@keyframes loading-sweep {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.loading-screen__ticker {
+  height: 1.4em;
+  overflow: hidden;
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  color: var(--stone-600);
+}
+
+.loading-screen__ticker-line {
+  animation: fade-in var(--duration-slow) var(--ease-standard) both;
+}

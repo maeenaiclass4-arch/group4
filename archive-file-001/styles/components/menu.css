@@ -1,0 +1,116 @@
+/**
+ * menu.css — Main Menu (GDD §11) and the placeholder Room View / Pause Menu
+ * shells built for Milestone 1 verification.
+ */
+
+.main-menu {
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 20%, rgba(79, 227, 208, 0.08), transparent 70%),
+    var(--ink-950);
+  gap: var(--space-7);
+}
+
+.main-menu__title {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-display);
+  letter-spacing: 0.12em;
+  color: var(--paper-100);
+}
+
+.main-menu__title span {
+  color: var(--accent);
+}
+
+.main-menu__tagline {
+  font-family: var(--font-document);
+  font-style: italic;
+  color: var(--stone-600);
+  max-width: 32ch;
+}
+
+.main-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: min(320px, 80vw);
+}
+
+.main-menu__nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.main-menu__lock-hint {
+  font-size: var(--fs-small);
+  color: var(--stone-600);
+  margin-top: var(--space-1);
+}
+
+.main-menu__footer {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  color: var(--stone-600);
+}
+
+/* ---- Placeholder Room View (Milestone 1 verification surface only) ---- */
+
+.room-view-placeholder {
+  background: linear-gradient(160deg, var(--ink-900), var(--ink-950));
+  gap: var(--space-4);
+}
+
+.room-view-placeholder__badge {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent-dim);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-4);
+}
+
+.room-view-placeholder__body {
+  max-width: 48ch;
+  color: var(--stone-600);
+}
+
+.room-view-placeholder__pause {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-ui);
+}
+
+html[dir='rtl'] .room-view-placeholder__pause {
+  right: auto;
+  left: var(--space-4);
+}
+
+/* ---- Pause Menu ---- */
+
+.pause-menu__title {
+  font-family: var(--font-terminal);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--space-5);
+  text-align: center;
+}
+
+.pause-menu__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (max-width: 599px) {
+  .main-menu {
+    gap: var(--space-5);
+  }
+
+  .main-menu__nav {
+    width: 100%;
+  }
+}

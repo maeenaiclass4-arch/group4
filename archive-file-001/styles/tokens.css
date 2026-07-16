@@ -1,0 +1,89 @@
+/**
+ * tokens.css — Design tokens (GDD §19 color palette, §20 typography).
+ * Every other stylesheet reads from these custom properties; no hex value
+ * or magic number should appear anywhere outside this file.
+ */
+:root {
+  /* ---- color: base neutrals (Physical Layer) ---- */
+  --ink-950: #0b0d10;
+  --ink-900: #12151a;
+  --paper-200: #e8e2d6;
+  --paper-100: #f5f1e8;
+  --stone-600: #4a4e57;
+
+  /* ---- color: Memory Layer accent ---- */
+  --memory-cyan: #4fe3d0;
+  --memory-cyan-dim: #2b7a72;
+
+  /* ---- color: per-chapter emotional accents ---- */
+  --accent-prologue: #d9a55c;
+  --accent-ch2: var(--memory-cyan);
+  --accent-ch3: #8b7fd6;
+  --accent-ch4: #b4543a;
+  --accent-ch5: #f2ebdd;
+
+  /* ---- color: semantic ---- */
+  --success: #6fcf97;
+  --deny: #c97a6a;
+  --hint: #e3c567;
+
+  /* Default UI accent — reused across the Milestone 1 menu shell */
+  --accent: var(--memory-cyan);
+  --accent-dim: var(--memory-cyan-dim);
+
+  /* ---- typography ---- */
+  --font-document: 'Spectral', Georgia, 'Times New Roman', serif;
+  --font-terminal: 'IBM Plex Mono', 'Courier New', monospace;
+  --font-ui: 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-ui-rtl: 'Tajawal', var(--font-ui);
+
+  --fs-body: clamp(0.9rem, 0.82rem + 0.35vw, 1.05rem);
+  --fs-small: clamp(0.75rem, 0.7rem + 0.2vw, 0.85rem);
+  --fs-heading: clamp(1.4rem, 1.1rem + 1.2vw, 2.2rem);
+  --fs-display: clamp(2rem, 1.5rem + 2.2vw, 3.6rem);
+
+  /* ---- spacing scale ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* ---- radius / elevation ---- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+  /* ---- motion ---- */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 600ms;
+  --ease-standard: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* ---- z-index scale ---- */
+  --z-stage: 1;
+  --z-vfx: 5;
+  --z-ui: 10;
+  --z-overlay: 20;
+  --z-modal: 30;
+  --z-toast: 40;
+
+  /* ---- stage geometry (GDD §22 responsive stage model) ---- */
+  --stage-aspect: 16 / 9;
+  --hit-target-min: 44px;
+  --hit-target-primary: 56px;
+
+  /* User-controlled multiplier, set live by the Settings text-size slider */
+  --user-text-scale: 1;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* The Archive's world is intentionally dark regardless of OS theme —
+       this is a deliberate art-direction choice (GDD §18), not an oversight. */
+  }
+}

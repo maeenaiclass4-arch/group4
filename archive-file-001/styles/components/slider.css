@@ -1,0 +1,46 @@
+/**
+ * slider.css — range input used for the four audio-mix sliders.
+ */
+
+.slider {
+  width: min(180px, 45vw);
+  height: var(--hit-target-min);
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(232, 226, 214, 0.15);
+  border-radius: 999px;
+}
+
+.slider::-moz-range-track {
+  height: 4px;
+  background: rgba(232, 226, 214, 0.15);
+  border-radius: 999px;
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--ink-950);
+}
+
+.slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--ink-950);
+}
+
+.slider:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

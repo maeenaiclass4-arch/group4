@@ -1,0 +1,14 @@
+[
+  {
+    "id": "cin_first_document",
+    "duration": 2600,
+    "desaturate": true,
+    "textKey": "cinematic.firstDocument"
+  },
+  {
+    "id": "cin_slice_end",
+    "duration": 3200,
+    "desaturate": true,
+    "textKey": "cinematic.sliceEnd"
+  }
+]

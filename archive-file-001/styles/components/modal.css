@@ -1,0 +1,47 @@
+/**
+ * modal.css — small confirm dialogs (e.g. "Start a New Archive?", GDD §12).
+ */
+
+.modal {
+  width: min(400px, 100%);
+  background: var(--ink-900);
+  border: 1px solid rgba(79, 227, 208, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  padding: var(--space-5);
+  text-align: left;
+}
+
+html[dir='rtl'] .modal {
+  text-align: right;
+}
+
+.modal__title {
+  font-family: var(--font-terminal);
+  font-size: var(--fs-body);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: var(--space-3);
+}
+
+.modal__body {
+  color: var(--paper-200);
+  margin-bottom: var(--space-5);
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 599px) {
+  .modal__actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal__actions .btn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,38 @@
+/**
+ * toast.css — Commendation (achievement) toast shell (GDD §12.1).
+ * Inert in Milestone 1 (nothing emits ACHIEVEMENT_UNLOCKED yet) but styled
+ * now so Milestone 2 only has to call a render function, not design one.
+ */
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--ink-900);
+  border: 1px solid var(--accent-dim);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-terminal);
+  font-size: var(--fs-small);
+  box-shadow: var(--shadow-elevated);
+  animation: toast-slide-in var(--duration-base) var(--ease-standard) both;
+  max-width: 320px;
+}
+
+.toast__icon {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.toast__title {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.toast__body {
+  color: var(--paper-200);
+}

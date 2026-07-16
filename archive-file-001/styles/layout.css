@@ -1,0 +1,150 @@
+/**
+ * layout.css — the responsive "stage" model (GDD §22).
+ *
+ * One design system, two input adapters: the game always renders inside a
+ * fixed 16:9 stage that scales-to-fit its viewport and letterboxes on
+ * mismatched aspect ratios, rather than stretching or cropping. Every
+ * screen (loading, menu, future room view) mounts *inside* .stage, so
+ * nothing downstream has to think about viewport shape again.
+ */
+
+#app {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, var(--ink-900) 0%, var(--ink-950) 75%);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.stage {
+  position: relative;
+  aspect-ratio: var(--stage-aspect);
+  width: 100%;
+  height: 100%;
+  max-width: calc(100dvh * (16 / 9));
+  max-height: calc(100dvw * (9 / 16));
+  background: var(--ink-950);
+  overflow: hidden;
+  box-shadow: var(--shadow-elevated);
+  border-radius: var(--radius-sm);
+}
+
+/* The single VFX canvas overlay (GDD §15) — inert until Milestone 2+ particle
+   systems render to it, but reserved here so layering never has to change later. */
+.vfx-layer {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-vfx);
+  pointer-events: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* A full-stage screen (Loading, Main Menu, placeholder Room View). Only one
+   is visible at a time; GameStateManager-driven UI toggles [hidden]. */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-ui);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.screen[hidden] {
+  display: none;
+}
+
+/* A vertical flex stack whose children are each independently centered
+   regardless of their own width — the correct container for any screen
+   built from mixed-width blocks (a full-width title next to a
+   narrower nav list, for instance). A plain block wrapper here is a
+   trap: it shrinks to its widest child and then centers *that*, leaving
+   any narrower child off-center within it. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* A dismissible overlay layered above the current screen (Settings, Pause,
+   future Reader/Terminal/Codex). GDD §12: never more than one overlay deep. */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 13, 16, 0.72);
+  backdrop-filter: blur(3px);
+  padding: var(--space-5);
+}
+
+.overlay[hidden] {
+  display: none;
+}
+
+.panel {
+  width: min(560px, 100%);
+  max-height: min(640px, 90%);
+  overflow-y: auto;
+  background: var(--ink-900);
+  border: 1px solid rgba(79, 227, 208, 0.15);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  padding: var(--space-6);
+}
+
+.toast-region {
+  position: absolute;
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+  /* desktop: bottom-corner; mobile override below (GDD §12.1) */
+  right: var(--space-5);
+  bottom: var(--space-5);
+  left: auto;
+  top: auto;
+  align-items: flex-end;
+}
+
+/* ---- breakpoints (GDD §22) ---- */
+@media (max-width: 1023px) {
+  .panel {
+    width: min(480px, 100%);
+    padding: var(--space-5);
+  }
+}
+
+@media (max-width: 599px) {
+  .toast-region {
+    left: var(--space-3);
+    right: var(--space-3);
+    top: var(--space-3);
+    bottom: auto;
+    align-items: stretch;
+  }
+
+  .screen {
+    padding: var(--space-4);
+  }
+}
+
+/* Portrait mobile keeps the 16:9 stage intact and shrinks rather than
+   forcing rotation (GDD §22) — menus stack via flex-direction already set above. */
+@media (orientation: portrait) and (max-width: 599px) {
+  .stage {
+    max-height: calc(100dvw * (9 / 16));
+  }
+}

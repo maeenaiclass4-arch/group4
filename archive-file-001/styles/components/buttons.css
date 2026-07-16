@@ -1,0 +1,84 @@
+/**
+ * buttons.css — shared button primitives used by every menu/overlay.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--hit-target-min);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid transparent;
+  transition: transform var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--ink-950);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 85%, white);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--paper-100);
+  border-color: rgba(232, 226, 214, 0.25);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--stone-600);
+  min-height: auto;
+  padding: var(--space-2) var(--space-3);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  color: var(--paper-100);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-icon {
+  min-width: var(--hit-target-primary);
+  min-height: var(--hit-target-primary);
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(232, 226, 214, 0.08);
+  color: var(--paper-100);
+  font-size: 1.2rem;
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: rgba(79, 227, 208, 0.18);
+  color: var(--accent);
+}

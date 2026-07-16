@@ -1,8 +1,14 @@
 # ARCHIVE : FILE-001
-### Game Design Document — v1.0 (Pre-Production)
+### Game Design Document — v1.1 (Pre-Production)
 **Studio Roles:** Game Direction · Software Architecture · UI/UX · Narrative Design
 **Platform:** Browser (Desktop + Mobile, responsive HTML5)
-**Status:** Design-only. No gameplay code has been written yet.
+**Status:** Design-only through §12.12. Milestone 1 (production foundation) is implemented — see `/archive-file-001/src`. No gameplay, puzzle, or room content has been written yet.
+
+---
+
+### Revision Notes (v1.0 → v1.1)
+
+A critical pass on v1.0 found the design **structurally sound but ceremonially thin**: the two-ending Epilogue was the only moment the game acknowledged the player's specific choices, there was no beat that made a discovery *feel* like a discovery (no cinematic weight), and nothing rewarded a second playthrough beyond a puzzle-difficulty remix. §12.1–§12.12 below close those gaps: an achievement layer, a two-tier collectible system (Whispers + Classified Files), secret rooms, Easter eggs, a chapter-completion ritual, an end-game statistics report, second-playthrough-only content, a hidden third ending, curated cinematic beats, a state-reactive ambient audio system, and a reusable interactive terminal component. All of them are designed as **data-driven extensions of existing systems** (EventBus listeners, JSON content, reusable UI components) — none require new engine paradigms, so they slot into the roadmap without a redesign.
 
 ---
 
@@ -130,19 +136,25 @@ Each room is a **self-contained data unit**, not a hardcoded scene, so content s
 Room {
   id, chapterId, title,
   background: { physicalLayer, memoryLayer },
-  ambientAudio,
+  ambientAudio: { base, tension, discovery, memoryLayer }  // dynamic stems, §12.10
   hotspots: [ { id, shape, coords[desktop/mobile variants], type, state-dependent sprite, action } ],
   items: [ itemId... ]        // items obtainable in this room
   puzzles: [ puzzleId... ]     // puzzle definitions solved in this room
   exitCondition: puzzleId | flag,
   notebookEntries: [ ... ]     // auto-added when triggered
-  whispers: [ optional collectible defs ]
+  whispers: [ optional collectible defs ],       // §12.2
+  classifiedFileId: itemId | null,               // §12.2, gated behind a secondary puzzle step
+  terminals: [ terminalId... ],                  // §12.11, references data/terminals/<id>.json
+  cinematicBeats: [ { triggerEvent, beatId } ],   // §12.9
+  isSecret: false,                                // true for the 2 secret rooms, §12.3
+  discoveredVia: { type, condition } | null,      // required when isSecret: true
+  requiresCompletionFlag: null | "hasCompletedOnce" // gates second-playthrough-only rooms, §12.7
 }
 ```
 
 - **One-screen-per-room** philosophy: no scrolling/panning camera in v1 (keeps mobile parity trivial and touch targets predictable). Very large scenes are split into two connected rooms instead.
 - Rooms declare **layout-independent hotspot coordinates** (percentage-based polygons, not pixels) so the same room data renders correctly at any viewport (see §19 Responsive Strategy).
-- Room count for FILE-001: **1 Prologue + 10 rooms across 5 chapters (2 each) + 1 Epilogue = 12 rooms.**
+- Room count for FILE-001: **1 Prologue + 10 rooms across 5 chapters (2 each) + 1 Epilogue = 12 critical-path rooms**, plus **2 secret rooms** (§12.3, one of which requires `hasCompletedOnce`) that sit outside the critical path entirely.
 
 ---
 
@@ -166,18 +178,34 @@ Room {
 - **Storage:** `localStorage` (primary, v1) with a versioned JSON schema:
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "currentRoomId": "ch2_office",
   "flags": { "ch1_puzzle_lock_solved": true },
   "inventory": ["torn_photo", "brass_key"],
   "notebook": ["code_4471", "sketch_symbol_a"],
   "whispersFound": ["w_ch1_a"],
-  "settings": { "audioVol": 0.8, "subtitles": true, "layerAssist": false },
+  "classifiedFilesFound": ["cf_ch1"],
+  "secretRoomsFound": ["secret_archivist_lounge"],
+  "easterEggsFound": ["egg_nitro_rush"],
+  "achievements": { "unlocked": ["comm_first_whisper"], "progress": { "comm_all_whispers": 3 } },
+  "terminalsUnlockedCommands": { "term_ch1_desk": ["HELP", "LOG"] },
+  "stats": {
+    "playtimeSeconds": 1620,
+    "chapterTimes": { "prologue": 240, "ch1": 890 },
+    "hintsUsed": 1,
+    "completionsLog": []
+  },
+  "hasCompletedOnce": false,
+  "hiddenEndingUnlocked": false,
+  "devCommentaryUnlocked": false,
+  "photoModeUnlocked": false,
   "endingChosen": null,
+  "settings": { "audioVol": 0.8, "subtitles": true, "layerAssist": false },
   "timestamp": 1737000000
 }
 ```
-- **3 manual save slots** ("Archive Checkpoints") in addition to autosave, letting players branch-explore near the two endings without losing the autosave point.
+- **Schema versioning:** `schemaVersion` increments whenever the save shape changes (v1.1 design bumps it to `2` for the fields above); `SaveManager` runs a migration step on load that fills in missing fields with safe defaults rather than invalidating older saves.
+- **3 manual save slots** ("Archive Checkpoints") in addition to autosave, letting players branch-explore near the endings without losing the autosave point.
 - **Corrupted-save resilience:** schema is versioned; a failed parse falls back to "start from last known room" rather than a hard reset, and the raw broken blob is preserved under a `*_backup` key before being overwritten.
 - **Cross-device stretch goal (not v1):** optional account-linked cloud save (see §22 Future Expansion) — architecture keeps `SaveManager` behind an interface so a remote adapter can be swapped in later without touching game logic.
 
@@ -191,18 +219,23 @@ Main Menu
 ├─ Continue                (resumes latest autosave)
 ├─ Checkpoints             (3 manual slots — load/overwrite)
 ├─ Chapter Select          (unlocked after first completion)
-├─ Codex / Archive Index   (documents, audio logs, Whispers, achievements)
+├─ Progress Tracker        (Archive Index ledger — §12.5)
+├─ Codex / Archive Index   (documents, audio logs, Whispers, Classified Files, Commendations)
+├─ Photo Mode              (unlocked post-Ch.1 — §12.12, launched from in-room pause only)
 ├─ Settings
 │   ├─ Audio (Master / Music / SFX / Voice sliders)
 │   ├─ Text & Subtitles (size, subtitle toggle, language)
 │   ├─ Accessibility (Layer-Toggle Assist glow, hint frequency, reduce motion, colorblind-safe puzzle mode)
-│   └─ Controls (rebind hint for desktop, sensitivity N/A — point & click only)
+│   ├─ Controls (rebind hint for desktop, sensitivity N/A — point & click only)
+│   └─ Developer Commentary toggle (unlocked after first completion — §12.12)
 └─ Credits
 
 Pause Menu (in-room, Esc / pause icon)
 ├─ Resume
 ├─ Settings (same panel as above, layered)
 ├─ Hint (opens 3-tier hint drawer for current puzzle)
+├─ Progress Tracker
+├─ Photo Mode (if unlocked)
 ├─ Checkpoints
 └─ Return to Main Menu (confirms unsaved-risk, though autosave makes this low-risk)
 ```
@@ -212,26 +245,117 @@ Pause Menu (in-room, Esc / pause icon)
 ## 12. UI Flow
 
 ```
-[Boot / Loading Screen]
+[Boot / Loading Screen (lore ticker)]
         ↓
-[Main Menu] ──Settings/Credits/Codex──→ (modal overlays, return to Main Menu)
+[Main Menu] ──Settings/Credits/Codex/Progress Tracker──→ (modal overlays, return to Main Menu)
         ↓ New Archive / Continue
-[Room View] ←────────────────────────────┐
-   │  hotspot tap → [Zoom Inspect] ───────┤
-   │  item tap → [Inventory Dock]         │
-   │  document hotspot → [Reader Overlay] │
-   │  tape hotspot → [Audio Log Player]   │
-   │  layer-toggle → [Memory Layer swap]  │
-   │  pause icon → [Pause Menu] ──────────┤
-   │  puzzle solved → [Fragment Reveal] ──┘
+[Room View] ←────────────────────────────────────────┐
+   │  hotspot tap → [Zoom Inspect]  ───────────────────┤
+   │  item tap → [Inventory Dock]                      │
+   │  document hotspot → [Reader Overlay]               │
+   │  tape hotspot → [Audio Log Player]                 │
+   │  terminal hotspot → [Terminal Overlay] ────────────┤
+   │  layer-toggle → [Memory Layer swap]                │
+   │  major discovery → [Cinematic Beat] (brief, skippable) │
+   │  achievement condition met → [Commendation Toast] (non-blocking) │
+   │  pause icon → [Pause Menu] ─────────────────────────┤
+   │  puzzle solved → [Fragment Reveal] ──────────────────┘
    ↓ chapter exit
-[Transition Wipe] → next [Room View] … → [Epilogue Choice] → [Ending Sequence] → [Codex unlock] → [Main Menu]
+[Chapter Completion Screen] → [Transition Wipe] → next [Room View] …
+        … → [Epilogue Choice] → [Ending Sequence / Cinematic] → [End-Game Statistics] → [Codex unlock] → [Main Menu]
 ```
 
 **Flow principles:**
 - Every overlay (Reader, Audio Player, Zoom Inspect, Pause) is dismissible with a consistent single gesture: `Esc` on desktop, a top-corner "×" tap-target on mobile (also swipe-down for bottom-sheet-style overlays).
 - No more than **one overlay deep** at a time — opening a document from within a zoom-inspect closes the zoom first — to avoid modal-stacking confusion on small screens.
 - All destructive actions (New Archive over an existing save, overwrite checkpoint) require a confirm step.
+
+---
+
+## 12.1 Achievement System — "Commendations"
+
+Framed diegetically: the Archive's automated evaluation system logs **Commendations**, not generic trophies — a toast never says "Achievement Unlocked," it says something like *"COMMENDATION LOGGED — The Archive notes your attention to detail."*
+
+- **Four tiers:** *Story* (major beats, always eventually unlocked by any completion), *Discovery* (Whispers, Classified Files, secret rooms), *Mastery* (chapter cleared hint-free, Deep Archive completion, hidden ending), *Curiosity* (Easter eggs).
+- **Fully decoupled:** `AchievementSystem` only ever *listens* — it subscribes to `EventBus` topics (`puzzle:solved`, `whisper:found`, `classifiedFile:found`, `secretRoom:entered`, `easterEgg:triggered`, `chapter:completed`, `hint:used`, `ending:reached`) and cross-references `data/achievements.json` condition rules. No other system needs to know achievements exist — a hard requirement given how much content will be added post-launch (§24).
+- **Presentation:** a queued, non-blocking toast (bottom-corner desktop / top-banner mobile) styled as a terminal print (typed-out, monospace), auto-dismissing after 4s or tap-to-dismiss; queued if several fire within the same beat so they never overlap.
+- **Secret Commendations** (tied to Easter eggs and the hidden ending) show only a redacted title (`█████████`) in the Codex until unlocked, protecting the surprise.
+- **Never punitive:** no "no hints used" achievement gates a real ending — hint usage is tracked for the End-Game Statistics (§12.6) flavor text only, never withheld as a shame mechanic (reaffirms §7's existing stance).
+
+## 12.2 Collectibles: Whispers & Classified Files
+
+v1.0 had a single collectible tier (Whispers). Splitting collectibles into two tiers gives low-effort *and* high-effort curiosity its own payoff, and gives the hidden ending (§12.8) a concrete, fair unlock trail.
+
+| | **Whispers** | **Classified Files** *(new)* |
+|---|---|---|
+| Count | 2 per chapter (12 total) | 1 per chapter (6 total) |
+| Discovery | A hidden hotspot or document, low friction | Gated behind a genuine secondary puzzle step — solving the room's puzzle a harder/alternate way, or a combination not required for critical path |
+| Content | A short lore snippet (1–2 sentences) | A full multi-page in-world document, meaningfully recontextualizing the chapter |
+| Presentation | Listed plainly in the Codex once found | Codex shows a **redacted cover** (black-bar thumbnail) even before discovery, which visibly "declassifies" — bars animate away — on unlock |
+| Role | Texture and atmosphere | Backbone of the hidden-ending trail and second-playthrough content (§12.7/§12.8) |
+
+Both roll up into the Progress Tracker (§12.5) and the completion percentage without ever gating the critical path — matching Pillar 3 (No dead ends).
+
+## 12.3 Secret Rooms
+
+Two secret rooms exist outside the 12-room critical path, reached through world-logic discovery rather than a marked door — e.g., using the Memory Layer toggle in a spot with no marked hotspot, or applying an item combination that isn't required anywhere on the main path. They contain **no critical-path puzzles** (they can never block completion), only atmosphere, a Classified File, and/or a unique Commendation.
+
+Room schema gains `isSecret: true` and `discoveredVia: { type, condition }` (see updated §8 schema). Secret rooms are excluded from the Chapter Completion Screen's "required" tally but counted toward the Progress Tracker's separate "true completion" percentage, so hunting them stays optional but visibly rewarding.
+
+## 12.4 Easter Eggs
+
+Small, zero-lore-weight discoveries that exist purely for delight — a joke intake form, a dev-team in-joke terminal command, or a wink at the studio's other in-repo prototype (an Archive intake form for a "vehicle file," classification: *JOYRIDE*, surfaced only via a hidden terminal `SEARCH` command). They carry no narrative weight and are never required for any ending or completion metric — purely a "reward curiosity" touch that premium indie titles use to earn word-of-mouth. Tracked via `easterEgg:triggered` and feed the *Curiosity* Commendation tier only.
+
+## 12.5 Progress Tracker & Chapter Completion Screen
+
+- **Progress Tracker** — reachable from the Pause Menu and Main Menu, presented as a diegetic "Archive Index" ledger: per-chapter room completion, Whispers found (X/2), Classified File found (Y/N), secret room found (Y/N). Undiscovered entries show only a redacted silhouette and a count, never a title — the tracker motivates without spoiling.
+- **Chapter Completion Screen** *(missing entirely from v1.0 — a genuine gap for the genre)* — a full-screen diegetic interstitial after a chapter's final puzzle, before the transition to the next chapter: chapter title card, a short "restored memory" thumbnail collage, and that chapter's stats (time spent, Whispers found, hints used), ending on a "Continue" prompt. This is the *Hades*/*Inside*/*Firewatch*-style chapter-card beat that gives the player a moment to breathe and feel progress — a load-bearing premium-feel moment v1.0 skipped.
+
+## 12.6 End-Game Statistics
+
+On reaching any ending, a diegetic **"Session Report"** (framed as the Archive's own printout) shows: total playtime, per-chapter time breakdown, Whispers found (X/12), Classified Files declassified (X/6), secret rooms found (X/2), Easter eggs found (X/N), total hints used, which ending was reached, and a **personalized flavor line** that reacts to play style (e.g., *"You solved every lock without a single hint. The Archive is impressed, and slightly unsettled."*). Completions are logged historically (`stats.completionsLog[]`) so a second playthrough's report can compare against the first (*"Last time: 74 minutes. This time: 51."*) — a direct, low-cost hook into replay value.
+
+## 12.7 Replay Value & Second-Playthrough-Only Secrets
+
+Deep Archive mode (v1.0, §7) gets a diegetic companion: once `hasCompletedOnce` is true, the Archive "trusts" a returning Archivist with material it withheld the first time. This unlocks, on a fresh playthrough:
+- An alternate opening narration line acknowledging the return.
+- A subtly recolored Main Menu accent (rewards recognize-it players without spelling it out).
+- The **second** secret room (the first remains discoverable on any playthrough).
+- **2 additional Classified Files** that recontextualize Chapter 3–4 events, discoverable only post-first-completion.
+
+This is a diegetic justification for NG+-gated content rather than an arbitrary flag, and it directly satisfies "secrets only discoverable on a second playthrough" without requiring a second story branch — budget-conscious for an indie-scope title.
+
+## 12.8 Hidden Ending — "Archive Zero"
+
+A third ending, unlocked only by finding **all 6 Classified Files + both secret rooms**, then using a specific item combination (surfaced only through the Classified Files trail) at the final choice instead of Reintegrate or Reseal. It reveals the Archive has sealed Archivists in a recurring loop, and lets the player choose to break it. Rewarded with its own Commendation, a unique End-Game Statistics flavor line, and a distinct Codex "Ending Archive" entry. It's a reward for attentiveness and curiosity — not grinding — keeping it consistent with Pillar 1.
+
+## 12.9 Cinematic Moments (Discovery Beats)
+
+For a curated ~6–8 major discoveries only (over-use kills impact) — first Whisper, first Classified File, the Ch.3 photograph reveal, the Ch.5 identity revelation, each ending's final beat — control briefly cedes for 2–4 seconds: the scene desaturates except the discovered object, ambient audio swells/ducks, and a held frame plays before returning control. Lightweight by construction: CSS/canvas-driven only, no video assets, so it stays inside the performance budget (§23).
+
+Implemented as a reusable `CinematicSystem.playBeat(beatId)`, data-driven via `data/cinematics.json` (`{ id, duration, desaturate, audioCue, holdFrame }`) and triggered by specific `EventBus` events — adding a new beat later is a data change, not an engine change. Always skippable (tap/click/Esc) and respects `prefers-reduced-motion` / the manual Settings toggle, falling back to a simple audio sting + fade with no visual hold.
+
+## 12.10 Dynamic Ambient Audio System
+
+Extends v1.0's "one ambient bed per chapter" (§17) into a **state-reactive layered mix**: each room's bed is 3–4 stems — base drone, tension layer, discovery layer, and the existing Memory-Layer stem — cross-faded by room state rather than played flat. The tension layer fades in subtly if the player is idle beyond a threshold with no puzzle progress; the discovery layer swells briefly after a solve; the Memory-Layer stem is the toggle-tied layer already specified in §17.
+
+Managed through `AudioManager.setRoomState(roomId, stateFlags)`, called by `RoomSystem`/`PuzzleEngine` on relevant events — the audio system stays purely reactive and never gameplay-aware. This turns ambient sound into another environmental-storytelling channel at a modest asset cost (a handful of extra stems per chapter, not per room).
+
+## 12.11 Interactive Archive Terminals
+
+A recurring diegetic terminal object (1–2 per chapter) with a realistic retro-CRT interface: blinking cursor, typed-out (not instant) responses, and a small fixed command set (`HELP`, `LOG`, `STATUS`, `SEARCH <term>`, plus room-specific commands unlocked as puzzle rewards). It serves three roles at once: **narrative delivery** (the Archive's dry narrator voice lives here rather than as floating text), **puzzle interface** (some cipher/code puzzles are entered through the terminal instead of a physical dial, unifying two puzzle archetypes under one polished component), and **Easter-egg surface** (hidden `SEARCH` commands surface Easter eggs and secret-room hints without cluttering the visual scene).
+
+Built as one reusable `TerminalSystem`/`TerminalOverlay` component (Plex Mono, reusing the scanline/grain VFX from §21), data-driven per instance (`data/terminals/<id>.json`: command list, responses, unlock states) — one component serving every terminal in the game, matching the "reusable puzzle-type" philosophy of §6.
+
+## 12.12 Additional Studio Ideas
+
+Five low-cost, high-impact additions proposed for immersion and replay value, each reusing an existing component rather than introducing new engineering surface:
+
+- **Photo Mode** — unlocked after Chapter 1: a non-interactive capture tool (hide UI, adjust vignette/filter, export PNG) built entirely on the existing VFX `<canvas>` layer. Near-zero engineering cost, high word-of-mouth/screenshot-marketing value for a premium indie title.
+- **"The Archive Remembers You"** — small meta touches keyed off save history: the Main Menu narration line changes based on `hasCompletedOnce`/hidden-ending state, and save-slot metadata is referenced diegetically ("Last session: 51 minutes. The Archive noted your patience.") instead of a generic timestamp.
+- **Developer Commentary Mode** — unlocked after first completion: optional small "director's note" hotspots per room (text or audio), reusing the existing Document Reader / Audio Log Player components. A genre-standard premium touch (Valve/Portal-style) at near-zero new engineering cost.
+- **Loading Screen Lore Ticker** — loading screens rotate short in-world fragments ("Intake Form #0231 — REDACTED") instead of a static bar, turning dead time into atmosphere. Feeds directly into Milestone 1's Loading Screen deliverable.
+- **Idle Observation Audio Cue** — if the player is idle past a threshold with no progress, a subtle one-shot ambient cue plays (never a jump scare), reusing the Dynamic Ambient Audio System's tension layer (§12.10) at no additional asset cost — reinforces "the Archive is aware of you" without breaking the no-jump-scare pillar.
 
 ---
 
@@ -249,28 +373,44 @@ archive-file-001/
 │  │  ├─ EventBus.js
 │  │  ├─ SaveManager.js
 │  │  ├─ InputManager.js      ← unifies mouse/touch/keyboard
-│  │  └─ AudioManager.js
+│  │  ├─ AudioManager.js
+│  │  └─ Config.js            ← constants, event names, storage keys
 │  ├─ systems/
 │  │  ├─ RoomSystem.js
 │  │  ├─ HotspotSystem.js
 │  │  ├─ InventorySystem.js
 │  │  ├─ PuzzleEngine.js
 │  │  ├─ NotebookSystem.js
-│  │  └─ LayerToggleSystem.js
+│  │  ├─ LayerToggleSystem.js
+│  │  ├─ AchievementSystem.js   ← §12.1, listens only, never called into
+│  │  ├─ StatsSystem.js         ← §12.6, aggregates playtime/hints/collectibles
+│  │  ├─ TerminalSystem.js      ← §12.11, data-driven terminal instances
+│  │  └─ CinematicSystem.js     ← §12.9, playBeat(beatId)
 │  ├─ ui/
+│  │  ├─ LoadingScreen.js
 │  │  ├─ MainMenu.js
 │  │  ├─ PauseMenu.js
 │  │  ├─ SettingsPanel.js
 │  │  ├─ InventoryDock.js
 │  │  ├─ ReaderOverlay.js
 │  │  ├─ AudioLogPlayer.js
+│  │  ├─ TerminalOverlay.js
 │  │  ├─ Codex.js
-│  │  └─ HintDrawer.js
+│  │  ├─ HintDrawer.js
+│  │  ├─ ProgressTracker.js     ← §12.5
+│  │  ├─ ChapterCompleteScreen.js ← §12.5
+│  │  ├─ EndGameStats.js        ← §12.6
+│  │  ├─ AchievementToast.js    ← §12.1
+│  │  └─ PhotoMode.js           ← §12.12
 │  ├─ data/                   ← pure content, no logic
-│  │  ├─ rooms/               ← one JSON per room
+│  │  ├─ rooms/               ← one JSON per room (incl. secret rooms)
 │  │  ├─ puzzles/             ← one JSON per puzzle definition
+│  │  ├─ terminals/           ← one JSON per terminal instance, §12.11
 │  │  ├─ items.json
 │  │  ├─ notebook-entries.json
+│  │  ├─ achievements.json    ← §12.1
+│  │  ├─ classified-files.json ← §12.2
+│  │  ├─ cinematics.json      ← §12.9
 │  │  └─ strings/             ← localization tables (en.json, ar.json, ...)
 │  └─ main.js                 ← composition root / bootstrap
 ├─ assets/
@@ -314,7 +454,7 @@ archive-file-001/
 - **Vanilla ES2022 modules** — no framework dependency. A narrative point-and-click game doesn't need React/Vue's reactivity overhead; DOM updates are infrequent and scene-driven. Keeps the bundle premium-lean (see §20 Performance).
 - **Pattern: lightweight ECS-adjacent + central EventBus**, not a monolithic god-object:
   - **`GameStateManager`** — finite-state machine (`BOOT → MENU → PLAYING → PAUSED → CUTSCENE_REVEAL → ENDING`), the only thing allowed to change top-level state.
-  - **`EventBus`** — pub/sub; systems never call each other directly (e.g., `PuzzleEngine` emits `puzzle:solved`, `RoomSystem` and `NotebookSystem` both listen — decoupled, testable).
+  - **`EventBus`** — pub/sub; systems never call each other directly (e.g., `PuzzleEngine` emits `puzzle:solved`, and `RoomSystem`, `NotebookSystem`, `AchievementSystem`, and `StatsSystem` all listen independently — decoupled, testable, and safely extensible: `AchievementSystem`, `StatsSystem`, `TerminalSystem`, and `CinematicSystem` (§12.1–§12.11) are pure listeners bolted on without touching puzzle/room logic).
   - **`SaveManager`** — subscribes to all mutation events, debounced serialize-to-localStorage; exposes `load()/save()/exportSlot()` behind an interface so storage backend is swappable.
   - **`RoomSystem`** — loads a room's JSON + image pair, renders hotspots, owns the Physical/Memory layer cross-fade.
   - **`InputManager`** — normalizes `pointerdown/up/move` (covers both mouse and touch via the Pointer Events API) so gameplay code never branches on device type.
@@ -471,19 +611,19 @@ Three-role type system, self-hosted subsets (no runtime CDN dependency, better p
 
 | Milestone | Scope | Exit Criteria |
 |---|---|---|
-| **M0 — Pre-Production** *(this document)* | Vision, story, systems, architecture, visual identity all defined. | GDD approved. |
-| **M1 — Core Engine Skeleton** | `GameStateManager`, `EventBus`, `InputManager`, `RoomSystem`, `SaveManager` scaffolded; stage/letterbox responsive shell built with placeholder art; one dummy room renders and transitions correctly on desktop + mobile. | A blank room loads, resizes correctly at all 4 test viewports, and autosaves a dummy flag. |
-| **M2 — Puzzle & Inventory Systems** | `PuzzleEngine` with all 8 puzzle-type classes (placeholder art), `InventorySystem` + dock/sheet UI, `NotebookSystem`, Document Reader, Audio Log Player. | One fully playable placeholder room demonstrating pickup → combine → solve → unlock, on both input modes. |
-| **M3 — Menu & UX Shell** | Main Menu, Pause Menu, Settings (incl. Accessibility), Codex shell, Hint Drawer, save-slot UI. | Full UI flow (§12) navigable end-to-end with no dead ends, keyboard- and touch-operable. |
-| **M4 — Vertical Slice (Prologue + Chapter 1)** | Final art, audio, and narrative content for 3 rooms; layer-toggle mechanic fully realized; transitions polished. | Prologue–Ch.1 playable start-to-finish at final visual/audio bar — this slice sets the quality benchmark for all remaining content. |
-| **M5 — Content Production Ch.2–3** | 4 rooms, 2 chapters worth of puzzles/art/audio/narrative. | Ch.2–3 integrated, playtested internally. |
-| **M6 — Content Production Ch.4–5 + Epilogue** | Remaining 5 rooms, both endings implemented, Deep Archive remix variants stubbed. | Full critical path completable, both endings reachable and saved distinctly. |
-| **M7 — Responsive & Accessibility Pass** | Full audit across the 4-device test matrix; colorblind mode, reduced motion, subtitle/text-size, RTL (Arabic) pass. | No cropped/stretched layout at any tested viewport; accessibility settings verified functional. |
-| **M8 — Performance & Polish** | Asset compression pass, Lighthouse budget compliance, animation timing pass, audio mix pass, VFX pooling. | Meets §23 performance budgets; Lighthouse ≥ 90. |
-| **M9 — QA / Bug Bash** | Full linear playthrough ×3 (fresh state, mid-save resume, Deep Archive), soft-lock audit, save-corruption resilience test. | Zero known soft-locks; save/load verified across all 12 rooms. |
+| **M0 — Pre-Production** *(this document)* | Vision, story, systems, architecture, visual identity, and the v1.1 refinement pass (§12.1–§12.12) all defined. | GDD v1.1 approved. |
+| **M1 — Core Engine & Production Foundation** *(current)* | `GameStateManager`, `EventBus`, `InputManager`, `SaveManager` (v2 schema), `AudioManager`, `Config` implemented; responsive stage/letterbox shell; Loading Screen (with lore ticker), Main Menu, Settings Menu fully functional; scaffolding stubs created for `RoomSystem`, `PuzzleEngine`, `InventorySystem`, `NotebookSystem`, `AchievementSystem`, `StatsSystem`, `TerminalSystem`, `CinematicSystem` so later milestones extend rather than restructure. | Menu → Settings → Save/Load flow works end-to-end on desktop + mobile with no gameplay content; Lighthouse baseline passes. |
+| **M2 — Puzzle & Inventory Systems** | `PuzzleEngine` with all 8 puzzle-type classes (placeholder art), `InventorySystem` + dock/sheet UI, `NotebookSystem`, Document Reader, Audio Log Player, `TerminalOverlay` (functional, placeholder content), `AchievementSystem` + toast wired to real events, `StatsSystem` tracking begins. | One fully playable placeholder room demonstrating pickup → combine → solve → unlock → Commendation toast, on both input modes. |
+| **M3 — Menu & UX Shell Completion** | Pause Menu, Codex (incl. redacted Classified File covers), Hint Drawer, Progress Tracker, Chapter Completion Screen, End-Game Statistics screen, save-slot UI. | Full UI flow (§12) navigable end-to-end with no dead ends, keyboard- and touch-operable. |
+| **M4 — Vertical Slice (Prologue + Chapter 1)** | Final art, audio, and narrative content for 3 rooms; layer-toggle mechanic, one Terminal, one Cinematic Beat, one Classified File, and dynamic ambient audio stems fully realized. | Prologue–Ch.1 playable start-to-finish at final visual/audio bar — this slice sets the quality benchmark for all remaining content. |
+| **M5 — Content Production Ch.2–3** | 4 rooms, secret room #1, remaining Cinematic Beats for these chapters, puzzles/art/audio/narrative. | Ch.2–3 integrated, playtested internally; secret room #1 discoverable. |
+| **M6 — Content Production Ch.4–5 + Epilogue** | Remaining 5 rooms, both primary endings, hidden ending trail (§12.8), Deep Archive remix variants, second-playthrough-only content (§12.7) stubbed behind `hasCompletedOnce`. | Full critical path completable; all three endings reachable and saved distinctly. |
+| **M7 — Responsive & Accessibility Pass** | Full audit across the 4-device test matrix; colorblind mode, reduced motion (incl. Cinematic Beat fallback), subtitle/text-size, RTL (Arabic) pass. | No cropped/stretched layout at any tested viewport; accessibility settings verified functional. |
+| **M8 — Performance & Polish** | Asset compression pass, Lighthouse budget compliance, animation timing pass, audio mix pass, VFX pooling, Photo Mode, Developer Commentary Mode. | Meets §23 performance budgets; Lighthouse ≥ 90. |
+| **M9 — QA / Bug Bash** | Full linear playthrough ×4 (fresh state, mid-save resume, Deep Archive, hidden-ending trail), soft-lock audit, save-corruption/migration resilience test. | Zero known soft-locks; save/load verified across all 12 critical-path rooms + 2 secret rooms. |
 | **M10 — Launch** | Deploy to web (itch.io-style hosting), analytics/error logging wired, marketing/store page assets. | Public release of ARCHIVE : FILE-001. |
 | **Post-Launch** | Monitor telemetry/error reports, hotfix window, begin FILE-002 pre-production using this same engine. | Stable live build; FILE-002 GDD kicked off. |
 
 ---
 
-*End of Game Design Document — v1.0. No gameplay code has been implemented as part of this document; this is the design and architecture foundation for all subsequent production milestones.*
+*End of Game Design Document — v1.1. Design and architecture foundation for all production milestones. Milestone 1 (core engine + production foundation) has been implemented in `/archive-file-001/src`; no gameplay, puzzle, or room content exists yet.*
