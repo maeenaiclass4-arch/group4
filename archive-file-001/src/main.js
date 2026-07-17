@@ -13,6 +13,7 @@ import { UIController } from './ui/UIController.js';
 import { SPAWN_POSE, NORTH_WALL_Z } from './world/LevelLayout.js';
 import { updateFlicker } from './world/Flicker.js';
 import { IntroPan } from './world/IntroPan.js';
+import { TouchControls } from './ui/TouchControls.js';
 
 async function boot() {
   const ui = new UIController();
@@ -96,13 +97,14 @@ async function boot() {
     });
   }
 
-  input.onInteract(() => {
+  function handleInteract() {
     if (ui.isCasebookOpen) return;
     const acted = interaction.interact();
     if (!acted) return;
     ui.pulseReticle('ok');
     save();
-  });
+  }
+  input.onInteract(handleInteract);
 
   document.addEventListener('keydown', (e) => {
     if (e.code === 'Tab') {
@@ -112,21 +114,49 @@ async function boot() {
   });
 
   const introPan = new IntroPan();
-  let introEligible = isFreshSession; // only the Rotunda is spacious enough for the establishing offset
+  const introEligible = isFreshSession; // only the Rotunda is spacious enough for the establishing offset
   let introPlayed = false;
+
+  function enterGame() {
+    ui.hideStartPrompt();
+    audio.unlock();
+    if (input.isTouch) touchControls.show();
+    if (introEligible && !introPlayed) {
+      introPlayed = true;
+      introPan.start(camera, player.position);
+    }
+  }
 
   document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement === canvas) {
-      ui.hideStartPrompt();
-      audio.unlock();
-      if (introEligible && !introPlayed) {
-        introPlayed = true;
-        introPan.start(camera, player.position);
-      }
+      enterGame();
     } else {
       ui.showStartPrompt();
     }
   });
+
+  let touchControls = null;
+  if (input.isTouch) {
+    touchControls = new TouchControls({
+      input,
+      onInteract: handleInteract,
+      onCasebookToggle: () => ui.toggleCasebook(),
+    });
+    const hint = document.getElementById('start-prompt__hint');
+    if (hint) hint.textContent = 'Move — left stick   ·   Look — drag   ·   Interact — button   ·   Casebook — book icon';
+
+    // No real pointer lock on touch — tapping the start card is the entire
+    // "begin" gesture, same job canvas's click-to-lock does on desktop.
+    canvas.addEventListener(
+      'touchstart',
+      () => {
+        if (input.isLocked) return;
+        input.isLocked = true;
+        enterGame();
+      },
+      { passive: true },
+    );
+  }
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;

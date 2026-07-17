@@ -1,12 +1,17 @@
 /**
  * Pointer-lock mouse-look + WASD keyboard state, plus a single "interact"
- * click channel. Desktop-first (GDD §15); touch input is a later pass.
+ * click channel — and the equivalent for touch. `keys` and `lookDelta*`
+ * are the shared surface both schemes write into, so PlayerController and
+ * InteractionSystem never need to know which one is active; TouchControls
+ * (mobile) feeds this exact same state instead of going through a parallel
+ * code path.
  */
 export class InputManager {
   keys = new Set();
   lookDeltaX = 0;
   lookDeltaY = 0;
   isLocked = false;
+  isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 
   #canvas;
   #onInteract = null;
@@ -30,6 +35,10 @@ export class InputManager {
     });
 
     this.#canvas.addEventListener('click', () => {
+      // Touch fires a synthesized click too, but pointer lock isn't a real
+      // concept on touch devices — TouchControls/main.js's touch start flow
+      // owns engagement there instead, so this click is a no-op for touch.
+      if (this.isTouch) return;
       if (!this.isLocked) {
         this.#canvas.requestPointerLock();
         return;
@@ -44,6 +53,11 @@ export class InputManager {
 
   onInteract(handler) {
     this.#onInteract = handler;
+  }
+
+  /** Lets touch's dedicated interact button reuse the exact same handler as a real click. */
+  triggerInteract() {
+    this.#onInteract?.();
   }
 
   consumeLookDelta() {

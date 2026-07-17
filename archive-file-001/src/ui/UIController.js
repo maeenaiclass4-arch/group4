@@ -18,6 +18,13 @@ export class UIController {
     this.captionEl = document.getElementById('caption');
     this.casebookEl = document.getElementById('casebook');
     this.casebookContents = document.getElementById('casebook__contents');
+
+    // Tapping the backdrop (outside the page itself) closes it — the only
+    // way to close the Casebook on touch, since the on-screen Casebook
+    // button sits behind this overlay's z-index while it's open.
+    this.casebookEl.addEventListener('click', (e) => {
+      if (e.target === this.casebookEl) this.toggleCasebook();
+    });
   }
 
   setLoadingProgress(ratio) {

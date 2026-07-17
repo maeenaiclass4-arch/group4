@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>ARCHIVE : FILE-001</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23151008'/%3E%3Cpath d='M16 5 L27 24 H5 Z' fill='none' stroke='%23c2903f' stroke-width='2'/%3E%3Ccircle cx='16' cy='18' r='2' fill='%23c2903f'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/styles/ui.css" />
@@ -18,8 +18,8 @@
     <div id="start-prompt" class="start-prompt" hidden>
       <div class="start-prompt__card">
         <div class="start-prompt__title">ARCHIVE</div>
-        <div class="start-prompt__body">Click to step inside.</div>
-        <div class="start-prompt__hint">Move — W A S D &nbsp;·&nbsp; Look — Mouse &nbsp;·&nbsp; Interact — Click<br />Casebook — Tab</div>
+        <div class="start-prompt__body">Tap to step inside.</div>
+        <div id="start-prompt__hint" class="start-prompt__hint">Move — W A S D &nbsp;·&nbsp; Look — Mouse &nbsp;·&nbsp; Interact — Click<br />Casebook — Tab</div>
       </div>
     </div>
 
@@ -28,6 +28,17 @@
 
     <div id="caption" class="caption" hidden></div>
 
+    <div id="touch-controls" class="touch-controls" hidden>
+      <div id="touch-look-layer" class="touch-look-layer"></div>
+      <div id="touch-joystick" class="touch-joystick" aria-hidden="true">
+        <div id="touch-joystick-knob" class="touch-joystick__knob"></div>
+      </div>
+      <button id="touch-interact-btn" class="touch-btn touch-btn--interact" aria-label="Interact"></button>
+      <button id="touch-casebook-btn" class="touch-btn touch-btn--casebook" aria-label="Casebook">
+        <span class="touch-btn__book"></span>
+      </button>
+    </div>
+
     <div id="casebook" class="casebook" hidden>
       <div class="casebook__page">
         <div class="casebook__header">
@@ -35,7 +46,7 @@
           <span class="casebook__case-name">The Clerk's Desk</span>
         </div>
         <div id="casebook__contents" class="casebook__contents"></div>
-        <div class="casebook__footer">Tab to close</div>
+        <div class="casebook__footer">Tab, or tap outside, to close</div>
       </div>
     </div>
 
