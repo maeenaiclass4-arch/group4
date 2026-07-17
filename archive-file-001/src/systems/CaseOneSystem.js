@@ -1,7 +1,7 @@
 import { CHAIR_SLOTS, CHAIR_SOLUTION_SLOT } from '../world/LevelLayout.js';
 
 const HATCH_OPEN_ANGLE = -1.3;
-const LAMP_TARGET_INTENSITY = 1.6;
+const LAMP_TARGET_INTENSITY = 14;
 
 /**
  * Case 001 — Observation (GDD §8). The entire "puzzle" is: does the chair's

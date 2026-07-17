@@ -19,7 +19,7 @@ export const ROOM_HALF_WIDTH = 3.5;
 export const ROOM_DEPTH = 7;
 export const ROOM_HEIGHT = 3.6;
 
-function octagonVertices(r) {
+export function octagonVertices(r) {
   const verts = [];
   for (let k = 0; k < 8; k++) {
     const angle = Math.PI / 8 + k * (Math.PI / 4);
@@ -55,7 +55,11 @@ export const CORRIDOR_END_Z = CORRIDOR_START_Z - CORRIDOR_LENGTH;
 export const ROOM_NEAR_Z = CORRIDOR_END_Z;
 export const ROOM_FAR_Z = ROOM_NEAR_Z - ROOM_DEPTH;
 
-export const SPAWN_POSE = { x: 0, y: 1.68, z: 8.6, yaw: Math.PI, pitch: 0 };
+// yaw 0 already faces -Z (three.js camera default) — the Rotunda's north
+// gate, per LevelLayout's orientation convention (see file header). The
+// south wall's apothem sits at z ≈ 8.315 (NORTH_WALL_Z mirrored), so the
+// spawn point must stay well inside that, clear of the intake desk.
+export const SPAWN_POSE = { x: 0, y: 1.68, z: 7.5, yaw: 0, pitch: 0 };
 
 export const DESK_POSITION = { x: 0.9, z: ROOM_FAR_Z + 1.1 };
 export const CHAIR_HOME = { x: 0.9, z: ROOM_FAR_Z + 2.05, ry: 0 };

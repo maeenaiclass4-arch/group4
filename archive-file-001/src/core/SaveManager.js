@@ -1,7 +1,7 @@
 const SAVE_KEY = 'archive_file001_save_v1';
 
 const DEFAULT_STATE = {
-  player: { x: 0, y: 1.68, z: 8.6, yaw: Math.PI, pitch: 0 },
+  player: { x: 0, y: 1.68, z: 7.5, yaw: 0, pitch: 0 },
   case001: { chairSlot: 0, solved: false },
 };
 

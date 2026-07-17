@@ -51,7 +51,7 @@ function buildDesk(materials) {
   lampShade.position.set(-0.62, 1.06, -0.2);
   lampShade.rotation.x = Math.PI;
   group.add(lampShade);
-  const lampLight = new THREE.PointLight(0xffcf94, 2.4, 5.5, 2);
+  const lampLight = new THREE.PointLight(0xffcf94, 32, 6.5, 1.8);
   lampLight.position.set(-0.62, 1.0, -0.2);
   lampLight.castShadow = true;
   group.add(lampLight);
@@ -176,7 +176,7 @@ export function buildRegistryWing({ materials, collisionWorld }) {
   const bulbFixture = new THREE.Mesh(new THREE.SphereGeometry(0.06, 10, 8), materials.brassDull);
   bulbFixture.position.set(0, CORRIDOR_HEIGHT - 0.3, (CORRIDOR_START_Z + CORRIDOR_END_Z) / 2);
   group.add(bulbFixture);
-  const bulbLight = new THREE.PointLight(0xffcf94, 1.3, 6, 2);
+  const bulbLight = new THREE.PointLight(0xffcf94, 24, 7, 1.8);
   bulbLight.position.copy(bulbFixture.position);
   group.add(bulbLight);
 

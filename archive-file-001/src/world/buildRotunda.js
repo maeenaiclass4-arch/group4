@@ -8,15 +8,22 @@ import {
   GATE_WIDTH,
   GATE_HEIGHT,
 } from './LevelLayout.js';
+import { makeOctagonFloor, makeOctagonAnnulus } from './OctagonGeometry.js';
 
 function edgeGeometry(a, b) {
   const dx = b.x - a.x;
   const dz = b.z - a.z;
   const length = Math.hypot(dx, dz);
-  const angle = Math.atan2(dx, dz); // rotation about Y so the wall's local X runs along the edge
+  const ux = dx / length;
+  const uz = dz / length;
+  // A box's local +X axis, rotated by rotation.y=angle, lands at world
+  // (cos(angle), -sin(angle)) — so to align it with the unit tangent
+  // (ux, uz), angle = atan2(-uz, ux). (Verified against every edge by hand;
+  // the previous atan2(dx, dz) formula rendered every wall panel edge-on.)
+  const angle = Math.atan2(-uz, ux);
   const midX = (a.x + b.x) / 2;
   const midZ = (a.z + b.z) / 2;
-  return { length, angle, midX, midZ, dx: dx / length, dz: dz / length };
+  return { length, angle, midX, midZ, dx: ux, dz: uz };
 }
 
 function makeWallPanel(length, height, material) {
@@ -37,7 +44,7 @@ function buildLockedGate(materials, width, height) {
   recess.position.set(0, height / 2, -0.28);
   group.add(recess);
 
-  const glow = new THREE.PointLight(0xffb066, 1.1, 3.2, 2);
+  const glow = new THREE.PointLight(0xffb066, 9, 3.6, 1.8);
   glow.position.set(0, 0.4, -0.5);
   group.add(glow);
 
@@ -103,7 +110,7 @@ function buildIntakeDesk(materials) {
   const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.14, 16, 1, true), materials.darkGreen);
   lampShade.position.set(0.7, 1.32, 0);
   group.add(lampShade);
-  const lampLight = new THREE.PointLight(0xffd9a0, 1.6, 5, 2);
+  const lampLight = new THREE.PointLight(0xffd9a0, 26, 6, 1.8);
   lampLight.position.set(0.7, 1.28, 0);
   lampLight.castShadow = true;
   group.add(lampLight);
@@ -115,17 +122,15 @@ export function buildRotunda({ materials, collisionWorld }) {
   const group = new THREE.Group();
   let statusLamp = null;
 
-  // Floor
-  const floor = new THREE.Mesh(new THREE.CircleGeometry(ROTUNDA_RADIUS, 8), materials.floor);
-  floor.rotation.x = -Math.PI / 2;
-  floor.rotation.y = Math.PI / 8;
+  // Floor — built directly from the octagon vertices (see OctagonGeometry.js)
+  // rather than a rotated CircleGeometry, so it lines up exactly with the
+  // wall segments below and never drifts out of the horizontal plane.
+  const floor = new THREE.Mesh(makeOctagonFloor(ROTUNDA_RADIUS, 3), materials.floor);
   floor.receiveShadow = true;
   group.add(floor);
 
   // Ceiling with a raised lantern opening at the centre (GDD §4 skylight anchor)
-  const ceiling = new THREE.Mesh(new THREE.RingGeometry(2.6, ROTUNDA_RADIUS + 1, 8), materials.ceiling);
-  ceiling.rotation.x = Math.PI / 2;
-  ceiling.rotation.y = Math.PI / 8;
+  const ceiling = new THREE.Mesh(makeOctagonAnnulus(2.6, ROTUNDA_RADIUS + 1), materials.ceiling);
   ceiling.position.y = ROTUNDA_HEIGHT;
   group.add(ceiling);
 
@@ -139,12 +144,12 @@ export function buildRotunda({ materials, collisionWorld }) {
   skylightGlass.position.y = ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT;
   group.add(skylightGlass);
 
-  const skyLight = new THREE.PointLight(0xfff1d6, 2.6, 22, 1.6);
+  const skyLight = new THREE.PointLight(0xfff1d6, 60, 24, 1.5);
   skyLight.position.set(0, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT - 0.4, 0);
   skyLight.castShadow = true;
   group.add(skyLight);
 
-  const sun = new THREE.DirectionalLight(0xffe6bf, 1.1);
+  const sun = new THREE.DirectionalLight(0xffe6bf, 1.8);
   sun.position.set(4, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT + 6, 3);
   sun.target.position.set(0, 0, 0);
   sun.castShadow = true;
@@ -219,8 +224,13 @@ export function buildRotunda({ materials, collisionWorld }) {
       gate.rotation.y = angle;
       group.add(gate);
     } else if (edge.role === 'solid-intake') {
+      // (dx,dz) runs *along* the wall; the inward normal for a regular
+      // polygon centred on the origin is just the normalized midpoint.
+      const midLen = Math.hypot(midX, midZ) || 1;
+      const inwardX = -midX / midLen;
+      const inwardZ = -midZ / midLen;
       const desk = buildIntakeDesk(materials);
-      desk.position.set(midX - dx * 1.4, 0, midZ - dz * 1.4);
+      desk.position.set(midX + inwardX * 1.4, 0, midZ + inwardZ * 1.4);
       desk.rotation.y = angle + Math.PI;
       group.add(desk);
     } else if (edge.role === 'solid-memorial') {
@@ -235,7 +245,7 @@ export function buildRotunda({ materials, collisionWorld }) {
       const shade = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), materials.glassFrosted);
       shade.position.set(midX, 1.75, midZ);
       group.add(shade);
-      const bulb = new THREE.PointLight(0xffcf99, 1.2, 5, 2);
+      const bulb = new THREE.PointLight(0xffcf99, 16, 6, 1.8);
       bulb.position.set(midX, 1.75, midZ);
       group.add(bulb);
     }

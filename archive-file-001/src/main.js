@@ -23,16 +23,16 @@ async function boot() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.05;
+  renderer.toneMappingExposure = 1.35;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c0a08);
-  scene.fog = new THREE.FogExp2(0x0c0a08, 0.028);
+  scene.fog = new THREE.FogExp2(0x0c0a08, 0.013);
 
   const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.05, 80);
 
-  scene.add(new THREE.HemisphereLight(0x6b6252, 0x14100b, 0.42));
+  scene.add(new THREE.HemisphereLight(0x8a7f68, 0x241c14, 0.9));
 
   ui.setLoadingProgress(0.3);
   const materials = buildMaterialLibrary();
@@ -78,6 +78,7 @@ async function boot() {
   const saveManager = new SaveManager();
   const savedState = saveManager.load();
   player.setPose(savedState.player);
+  player.update(0, { processInput: false }); // sync the camera before the first paint
   caseOne.hydrate(savedState.case001);
   ui.hydrateCasebook(savedState.casebook ?? []);
   if (savedState.case001?.solved && registry.hatch) {
@@ -131,10 +132,8 @@ async function boot() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.08);
 
-    if (input.isLocked) {
-      player.update(dt);
-      interaction.update();
-    }
+    player.update(dt, { processInput: input.isLocked });
+    if (input.isLocked) interaction.update();
     caseOne.update(dt);
 
     saveClock += dt;
