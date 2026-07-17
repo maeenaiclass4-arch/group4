@@ -37,12 +37,13 @@ function countryColor(c){ return COUNTRY_COLORS[c] || ['#1c8a4c', '#ffd23f']; }
 const WORLD_CUPS = [
 {
   year:1930, host:'الأوروغواي', hostCity:'مونتيفيديو', winner:'الأوروغواي', runnerUp:'الأرجنتين', score:'4–2',
+  themeColors:['#6CACE4','#ffffff'],
   attendance:'~590,000', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لم تُعتمد تميمة رسمية بعد — أول نسخة في التاريخ.'},
-  finalStars:{ a:{name:'هيكتور كاستро', country:'الأوروغواي'}, b:{name:'غييرمو ستابيلي', country:'الأرجنتين'} },
+  finalStars:{ a:{name:'هيكتور كاسترو', country:'الأوروغواي'}, b:{name:'غييرمو ستابيلي', country:'الأرجنتين'} },
   topScorers:[{name:'غييرمو ستابيلي', country:'الأرجنتين', goals:8}],
   otherScorers:[
     {name:'بيدرو سيا', country:'الأوروغواي', goals:5},
-    {name:'هيكتور كاستро', country:'الأوروغواي', goals:4},
+    {name:'هيكتور كاسترو', country:'الأوروغواي', goals:4},
     {name:'باتريسيو غويثاثوندي', country:'الأرجنتين', goals:2},
   ],
   hostReport:{
@@ -54,6 +55,7 @@ const WORLD_CUPS = [
 },
 {
   year:1934, host:'إيطاليا', hostCity:'روما', winner:'إيطاليا', runnerUp:'تشيكوسلوفاكيا', score:'2–1 (ب.إ)',
+  themeColors:['#0055A4','#ffffff'],
   attendance:'~360,000', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'جوزيبي مياتزا', country:'إيطاليا'}, b:{name:'أولدريتش نيدلي', country:'تشيكوسلوفاكيا'} },
   topScorers:[{name:'أولدريتش نيدلي', country:'تشيكوسلوفاكيا', goals:5}],
@@ -71,6 +73,7 @@ const WORLD_CUPS = [
 },
 {
   year:1938, host:'فرنسا', hostCity:'باريس', winner:'إيطاليا', runnerUp:'المجر', score:'4–2',
+  themeColors:['#0055A4','#EF4135'],
   attendance:'~375,700', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'سيلفيو بيولا', country:'إيطاليا'}, b:{name:'جيولا زنغيلير', country:'المجر'} },
   topScorers:[{name:'ليونيداس', country:'البرازيل', goals:7}],
@@ -88,6 +91,7 @@ const WORLD_CUPS = [
 },
 {
   year:1950, host:'البرازيل', hostCity:'ريو دي جانيرو', winner:'الأوروغواي', runnerUp:'البرازيل', score:'2–1',
+  themeColors:['#FFCC29','#009739'],
   attendance:'~1,045,246', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'ألسيدس غيغيا', country:'الأوروغواي'}, b:{name:'زيزينيو', country:'البرازيل'} },
   topScorers:[{name:'أديمير', country:'البرازيل', goals:9}],
@@ -105,6 +109,7 @@ const WORLD_CUPS = [
 },
 {
   year:1954, host:'سويسرا', hostCity:'برن', winner:'ألمانيا الغربية', runnerUp:'المجر', score:'3–2',
+  themeColors:['#D52B1E','#ffffff'],
   attendance:'~768,607', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'هيلموت رآن', country:'ألمانيا الغربية'}, b:{name:'فيرينتس بوشكاش', country:'المجر'} },
   topScorers:[{name:'ساندور كوچيش', country:'المجر', goals:11}],
@@ -122,6 +127,7 @@ const WORLD_CUPS = [
 },
 {
   year:1958, host:'السويد', hostCity:'ستوكهولم', winner:'البرازيل', runnerUp:'السويد', score:'5–2',
+  themeColors:['#006AA7','#FFCD00'],
   attendance:'~868,000', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'بيليه', country:'البرازيل'}, b:{name:'نيلز ليدهولم', country:'السويد'} },
   topScorers:[{name:'جوست فونتين', country:'فرنسا', goals:13}],
@@ -139,6 +145,7 @@ const WORLD_CUPS = [
 },
 {
   year:1962, host:'تشيلي', hostCity:'سانتياغو', winner:'البرازيل', runnerUp:'تشيكوسلوفاكيا', score:'3–1',
+  themeColors:['#D52B1E','#003893'],
   attendance:'~893,172', mascot:{name:'لا يوجد', emoji:'⚽', desc:'لا توجد تميمة رسمية.'},
   finalStars:{ a:{name:'غارينشا', country:'البرازيل'}, b:{name:'جوزيف ماسوبوست', country:'تشيكوسلوفاكيا'} },
   topScorers:[
@@ -159,6 +166,7 @@ const WORLD_CUPS = [
 },
 {
   year:1966, host:'إنجلترا', hostCity:'لندن', winner:'إنجلترا', runnerUp:'ألمانيا الغربية', score:'4–2 (ب.إ)',
+  themeColors:['#CE1124','#00247D'],
   attendance:'~1,563,135', mascot:{name:'وورلد كب ويلي', emoji:'🦁', desc:'أسد يرتدي قميصًا بعلم بريطانيا — أول تميمة رسمية في تاريخ كأس العالم.', colors:['#CE1124','#00247D']},
   finalStars:{ a:{name:'بوبي تشارلتون', country:'إنجلترا'}, b:{name:'فرانتس بيكنباور', country:'ألمانيا الغربية'} },
   topScorers:[{name:'يوسيبيو', country:'البرتغال', goals:9}],
@@ -177,6 +185,7 @@ const WORLD_CUPS = [
 },
 {
   year:1970, host:'المكسيك', hostCity:'مكسيكو سيتي', winner:'البرازيل', runnerUp:'إيطاليا', score:'4–1',
+  themeColors:['#E4007C','#FF7F00'],
   attendance:'~1,673,975', mascot:{name:'خوانيتو', emoji:'🤠', desc:'طفل مكسيكي يرتدي زي المنتخب وقبعة سومبريرو.', colors:['#006847','#CE1126']},
   finalStars:{ a:{name:'بيليه', country:'البرازيل'}, b:{name:'لويجي ريفا', country:'إيطاليا'} },
   topScorers:[{name:'غيرد مولر', country:'ألمانيا الغربية', goals:10}],
@@ -195,6 +204,7 @@ const WORLD_CUPS = [
 },
 {
   year:1974, host:'ألمانيا الغربية', hostCity:'ميونخ', winner:'ألمانيا الغربية', runnerUp:'هولندا', score:'2–1',
+  themeColors:['#000000','#FFCC00'],
   attendance:'~1,865,753', mascot:{name:'تيب وتاب', emoji:'👬', desc:'طفلان يرتديان زي منتخب ألمانيا الغربية، أحدهما يحمل الكرة.', colors:['#000000','#DD0000']},
   finalStars:{ a:{name:'غيرد مولر', country:'ألمانيا الغربية'}, b:{name:'يوهان كرويف', country:'هولندا'} },
   topScorers:[{name:'غريغوري لاتو', country:'بولندا', goals:7}],
@@ -212,6 +222,7 @@ const WORLD_CUPS = [
 },
 {
   year:1978, host:'الأرجنتين', hostCity:'بوينس آيرس', winner:'الأرجنتين', runnerUp:'هولندا', score:'3–1 (ب.إ)',
+  themeColors:['#75AADB','#FFD500'],
   attendance:'~1,545,791', mascot:{name:'غاوتشيتو', emoji:'🤠', desc:'طفل يرتدي زي الغاوتشو الأرجنتيني التقليدي وقبعة.', colors:['#75AADB','#ffffff']},
   finalStars:{ a:{name:'ماريو كيمبيس', country:'الأرجنتين'}, b:{name:'روب رينسنبرينك', country:'هولندا'} },
   topScorers:[{name:'ماريو كيمبيس', country:'الأرجنتين', goals:6}],
@@ -229,6 +240,7 @@ const WORLD_CUPS = [
 },
 {
   year:1982, host:'إسبانيا', hostCity:'مدريد', winner:'إيطاليا', runnerUp:'ألمانيا الغربية', score:'3–1',
+  themeColors:['#AA151B','#F1BF00'],
   attendance:'~2,109,723', mascot:{name:'نارانخيتو', emoji:'🍊', desc:'برتقالة مبتسمة ترتدي قميص المنتخب الإسباني — رمز الفاكهة الإسبانية الشهيرة.', colors:['#C60B1E','#FFC400']},
   finalStars:{ a:{name:'باولو روسي', country:'إيطاليا'}, b:{name:'كارل هاينز رومينيغه', country:'ألمانيا الغربية'} },
   topScorers:[{name:'باولو روسي', country:'إيطاليا', goals:6}],
@@ -246,6 +258,7 @@ const WORLD_CUPS = [
 },
 {
   year:1986, host:'المكسيك', hostCity:'مكسيكو سيتي', winner:'الأرجنتين', runnerUp:'ألمانيا الغربية', score:'3–2',
+  themeColors:['#006847','#CE1126'],
   attendance:'~2,394,031', mascot:{name:'بيكيه', emoji:'🌶️', desc:'حبة فلفل هالابينو مكسيكية ترتدي شارب وقبعة سومبريرو.', colors:['#006847','#CE1126']},
   finalStars:{ a:{name:'دييغو مارادونا', country:'الأرجنتين'}, b:{name:'لوتار ماتيوس', country:'ألمانيا الغربية'} },
   topScorers:[{name:'غاري لينيكر', country:'إنجلترا', goals:6}],
@@ -263,6 +276,7 @@ const WORLD_CUPS = [
 },
 {
   year:1990, host:'إيطاليا', hostCity:'روما', winner:'ألمانيا الغربية', runnerUp:'الأرجنتين', score:'1–0',
+  themeColors:['#009246','#CE2B37'],
   attendance:'~2,516,215', mascot:{name:'تشاو', emoji:'⚡', desc:'شخصية تجريدية على شكل كرة قدم برأس ملون بألوان العلم الإيطالي وجسد من خطوط متقاطعة.', colors:['#009246','#CE2B37']},
   finalStars:{ a:{name:'لوتار ماتيوس', country:'ألمانيا الغربية'}, b:{name:'دييغو مارادونا', country:'الأرجنتين'} },
   topScorers:[{name:'سلفاتوري سكيلاتشي', country:'إيطاليا', goals:6}],
@@ -280,6 +294,7 @@ const WORLD_CUPS = [
 },
 {
   year:1994, host:'الولايات المتحدة', hostCity:'لوس أنجلوس', winner:'البرازيل', runnerUp:'إيطاليا', score:'0–0 (ركلات ترجيح 3–2)',
+  themeColors:['#B22234','#3C3B6E'],
   attendance:'~3,587,538', mascot:{name:'سترايكر', emoji:'🐕', desc:'كلب يرتدي زيًا بألوان علم الولايات المتحدة الأمريكية.', colors:['#B22234','#3C3B6E']},
   finalStars:{ a:{name:'روماريو', country:'البرازيل'}, b:{name:'روبرتو باجيو', country:'إيطاليا'} },
   topScorers:[
@@ -300,6 +315,7 @@ const WORLD_CUPS = [
 },
 {
   year:1998, host:'فرنسا', hostCity:'باريس', winner:'فرنسا', runnerUp:'البرازيل', score:'3–0',
+  themeColors:['#F7B500','#0055A4'],
   attendance:'~2,785,100', mascot:{name:'فوتيكس', emoji:'🐓', desc:'ديك (رمز فرنسا الوطني) بجسد أزرق يشبه قميص المنتخب الفرنسي.', colors:['#0055A4','#EF4135']},
   finalStars:{ a:{name:'زين الدين زيدان', country:'فرنسا'}, b:{name:'رونالدو', country:'البرازيل'} },
   topScorers:[{name:'دافور شوكر', country:'كرواتيا', goals:6}],
@@ -317,6 +333,7 @@ const WORLD_CUPS = [
 },
 {
   year:2002, host:'كوريا الجنوبية واليابان', hostCity:'يوكوهاما', winner:'البرازيل', runnerUp:'ألمانيا', score:'2–0',
+  themeColors:['#E4572E','#F2A104'],
   attendance:'~2,705,197', mascot:{name:'الكرات الفضائية (آتو، كاز، نيك)', emoji:'👽', desc:'ثلاثة كائنات فضائية ملونة بلا جنس محدد، ترمز لكرة القدم كلغة عالمية.', colors:['#CD2E3A','#BC002D']},
   finalStars:{ a:{name:'رونالدو', country:'البرازيل'}, b:{name:'أوليفر كان', country:'ألمانيا'} },
   topScorers:[{name:'رونالدو', country:'البرازيل', goals:8}],
@@ -334,6 +351,7 @@ const WORLD_CUPS = [
 },
 {
   year:2006, host:'ألمانيا', hostCity:'برلين', winner:'إيطاليا', runnerUp:'فرنسا', score:'1–1 (ركلات ترجيح 5–3)',
+  themeColors:['#000000','#DD0000'],
   attendance:'~3,359,439', mascot:{name:'غوليو الملك السادس', emoji:'🦁', desc:'أسد يرتدي قميص المنتخب الألماني، برفقة كرة متحدثة تُدعى بيتزي.', colors:['#000000','#DD0000']},
   finalStars:{ a:{name:'فابيو كانافارو', country:'إيطاليا'}, b:{name:'زين الدين زيدان', country:'فرنسا'} },
   topScorers:[{name:'ميروسلاف كلوزه', country:'ألمانيا', goals:5}],
@@ -351,6 +369,7 @@ const WORLD_CUPS = [
 },
 {
   year:2010, host:'جنوب أفريقيا', hostCity:'جوهانسبرغ', winner:'إسبانيا', runnerUp:'هولندا', score:'1–0 (ب.إ)',
+  themeColors:['#DE7A22','#007A4D'],
   attendance:'~3,178,856', mascot:{name:'زاكومي', emoji:'🐆', desc:'فهد أفريقي بشعر أخضر يرمز لحيوية جنوب أفريقيا وشبابها.', colors:['#007749','#FFB81C']},
   finalStars:{ a:{name:'أندريس إنييستا', country:'إسبانيا'}, b:{name:'ويسلي سنايدر', country:'هولندا'} },
   topScorers:[{name:'توماس مولر', country:'ألمانيا', goals:5}],
@@ -368,6 +387,7 @@ const WORLD_CUPS = [
 },
 {
   year:2014, host:'البرازيل', hostCity:'ريو دي جانيرو', winner:'ألمانيا', runnerUp:'الأرجنتين', score:'1–0 (ب.إ)',
+  themeColors:['#FEDE00','#009C3B'],
   attendance:'~3,429,873', mascot:{name:'فوليكو', emoji:'🦔', desc:'حيوان أرماديلو برازيلي ثلاثي الأحزمة (يشبه في الرسم الفعلي كرة تتقلص دفاعيًا)، اختير للتوعية بحماية الأنواع المهددة بالانقراض.', colors:['#FFCC29','#009739']},
   finalStars:{ a:{name:'ماريو غوتزه', country:'ألمانيا'}, b:{name:'ليونيل ميسي', country:'الأرجنتين'} },
   topScorers:[{name:'خاميس رودريغيز', country:'كولومبيا', goals:6}],
@@ -385,6 +405,7 @@ const WORLD_CUPS = [
 },
 {
   year:2018, host:'روسيا', hostCity:'موسكو', winner:'فرنسا', runnerUp:'كرواتيا', score:'4–2',
+  themeColors:['#0039A6','#D52B1E'],
   attendance:'~3,031,768', mascot:{name:'زابيفاكا', emoji:'🐺', desc:'ذئب رياضي يرتدي نظارات ووشاحًا بألوان العلم الروسي، واسمه يعني "من يسجل الأهداف".', colors:['#0039A6','#D52B1E']},
   finalStars:{ a:{name:'كيليان مبابي', country:'فرنسا'}, b:{name:'لوكا مودريتش', country:'كرواتيا'} },
   topScorers:[{name:'هاري كين', country:'إنجلترا', goals:6}],
@@ -403,6 +424,7 @@ const WORLD_CUPS = [
 },
 {
   year:2022, host:'قطر', hostCity:'الدوحة', winner:'الأرجنتين', runnerUp:'فرنسا', score:'3–3 (ركلات ترجيح 4–2)',
+  themeColors:['#8D1B3D','#B08D57'],
   attendance:'~3,404,252', mascot:{name:'لعيب', emoji:'👻', desc:'شخصية مستوحاة من الغترة/الكوفية الخليجية التقليدية، بتصميم بسيط أشبه بطيف مبتسم يحمل روح الاحتفال.', colors:['#8D1B3D','#ffffff']},
   finalStars:{ a:{name:'ليونيل ميسي', country:'الأرجنتين'}, b:{name:'كيليان مبابي', country:'فرنسا'} },
   topScorers:[{name:'كيليان مبابي', country:'فرنسا', goals:8}],

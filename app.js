@@ -41,8 +41,10 @@ function svgDataUri(svg){
 }
 function setMascotBg(wc){
   const root = document.documentElement;
-  const colors = wc.mascot.colors || countryColor(wc.winner);
-  const [c1,c2] = colors;
+  // Site-wide re-theme uses the tournament's own visual-identity colors
+  // (themeColors) rather than the mascot's colors, since the mascot artwork
+  // itself is what carries trademark risk, not the edition's color palette.
+  const [c1,c2] = wc.themeColors || countryColor(wc.winner);
   root.style.setProperty('--mascot-c1', c1);
   root.style.setProperty('--mascot-c2', c2);
   root.style.setProperty('--green', lighten(c1,0.06));
