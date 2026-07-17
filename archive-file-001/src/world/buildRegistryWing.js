@@ -54,9 +54,11 @@ function buildDesk(materials) {
   lampShade.position.set(-0.62, 1.06, -0.2);
   lampShade.rotation.x = Math.PI;
   group.add(lampShade);
+  // Not a shadow caster — see the matching comment in buildRotunda.js: a
+  // real-time cube-map shadow per accent light is expensive on mobile GPUs
+  // for a visual difference this light is too small/dim to show.
   const lampLight = new THREE.PointLight(0xffcf94, 32, 6.5, 1.8);
   lampLight.position.set(-0.62, 1.0, -0.2);
-  lampLight.castShadow = true;
   tagFlicker(lampLight, { amount: 0.09, speed: 0.55 });
   group.add(lampLight);
 

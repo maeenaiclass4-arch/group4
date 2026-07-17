@@ -46,6 +46,10 @@ function buildLockedGate(materials, width, height) {
   recess.position.set(0, height / 2, -0.28);
   group.add(recess);
 
+  // Not a shadow caster — with the directional sun already grounding the
+  // room, a real-time cube-map shadow from every accent point light is pure
+  // GPU cost (6 extra render passes each) for a difference that isn't
+  // visible on a light this small and this dim.
   const glow = new THREE.PointLight(0xffb066, 9, 3.6, 1.8);
   glow.position.set(0, 0.4, -0.5);
   tagFlicker(glow, { amount: 0.14, speed: 0.6 });
@@ -115,7 +119,6 @@ function buildIntakeDesk(materials) {
   group.add(lampShade);
   const lampLight = new THREE.PointLight(0xffd9a0, 26, 6, 1.8);
   lampLight.position.set(0.7, 1.28, 0);
-  lampLight.castShadow = true;
   tagFlicker(lampLight, { amount: 0.08, speed: 0.5 });
   group.add(lampLight);
 
@@ -150,7 +153,6 @@ export function buildRotunda({ materials, collisionWorld }) {
 
   const skyLight = new THREE.PointLight(0xfff1d6, 60, 24, 1.5);
   skyLight.position.set(0, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT - 0.4, 0);
-  skyLight.castShadow = true;
   group.add(skyLight);
 
   // A soft, additive-blended light shaft standing in for a real volumetric

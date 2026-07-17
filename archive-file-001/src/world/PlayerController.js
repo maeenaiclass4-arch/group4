@@ -23,7 +23,13 @@ export class PlayerController {
   #stepClock;
 
   setPose({ x, y, z, yaw, pitch }) {
-    this.position.set(x, y ?? EYE_HEIGHT, z);
+    // A restored position (an old save, or any future spawn point) is only
+    // ever checked against *today's* collision geometry here — if a level
+    // change (e.g. a desk gaining a collision box) makes a previously-valid
+    // spot solid, this pushes the player back out to the nearest clear
+    // point instead of leaving the camera embedded inside the mesh.
+    const resolved = this.collisionWorld.resolve(x, z, RADIUS);
+    this.position.set(resolved.x, y ?? EYE_HEIGHT, resolved.z);
     this.yaw = yaw ?? this.yaw;
     this.pitch = pitch ?? this.pitch;
   }

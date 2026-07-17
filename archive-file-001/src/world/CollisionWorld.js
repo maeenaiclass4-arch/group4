@@ -7,6 +7,7 @@
  */
 export class CollisionWorld {
   segments = [];
+  boxes = [];
 
   addSegment(ax, az, bx, bz) {
     this.segments.push({ ax, az, bx, bz });
@@ -17,6 +18,7 @@ export class CollisionWorld {
     this.addSegment(maxX, minZ, maxX, maxZ);
     this.addSegment(maxX, maxZ, minX, maxZ);
     this.addSegment(minX, maxZ, minX, minZ);
+    this.boxes.push({ minX, maxX, minZ, maxZ });
   }
 
   resolve(x, z, radius) {
@@ -40,6 +42,26 @@ export class CollisionWorld {
         pz += ddz * push;
       }
     }
+
+    // The segment loop above only pushes a point that's already *near* a
+    // wall/box edge — a point placed well inside a box's footprint (e.g. a
+    // save recorded before that box existed) is too far from every edge to
+    // trigger it, and would stay embedded in the mesh forever. This second
+    // pass catches that case: any point still inside a box's true bounds
+    // gets ejected straight out through the nearest face.
+    for (const b of this.boxes) {
+      if (px <= b.minX || px >= b.maxX || pz <= b.minZ || pz >= b.maxZ) continue;
+      const distLeft = px - b.minX;
+      const distRight = b.maxX - px;
+      const distNear = pz - b.minZ;
+      const distFar = b.maxZ - pz;
+      const min = Math.min(distLeft, distRight, distNear, distFar);
+      if (min === distLeft) px = b.minX - radius;
+      else if (min === distRight) px = b.maxX + radius;
+      else if (min === distNear) pz = b.minZ - radius;
+      else pz = b.maxZ + radius;
+    }
+
     return { x: px, z: pz };
   }
 }
