@@ -74,6 +74,11 @@ html, body {
   background: rgba(6, 5, 10, 0.55);
   z-index: 40;
   cursor: pointer;
+  /* The click that requests pointer lock is bound to #scene-canvas, not
+     this overlay (see InputManager) — without this, the visible card sits
+     on top and swallows the click, so "Click to step inside" would not
+     actually do anything. */
+  pointer-events: none;
 }
 .start-prompt__card {
   text-align: center;

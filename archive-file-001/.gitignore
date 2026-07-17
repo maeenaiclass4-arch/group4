@@ -1,6 +1,8 @@
 node_modules/
 dist/
 dist-artifact/
+dist-standalone/
+dist-standalone-raw/
 .DS_Store
 *.log
 .vite/
