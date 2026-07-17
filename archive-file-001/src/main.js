@@ -23,14 +23,37 @@ async function boot() {
   ui.setLoadingProgress(0.1);
 
   const canvas = document.getElementById('scene-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  // Same detection InputManager uses, inlined here because antialias is a
+  // context-creation flag — it has to be decided before the renderer (and
+  // therefore before InputManager) exists. MSAA and a full-DPR canvas are
+  // real per-fragment cost on a phone GPU; the corridor sightline (several
+  // rooms' worth of lit surfaces stacked in one frustum) is exactly where
+  // that cost peaked hard enough to report as frame drops.
+  const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: !isTouch });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isTouch ? 1.5 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.35;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  // A GPU that stalls for too long (exactly the kind of overload the
+  // corridor view produces) can make the browser kill the WebGL context
+  // outright — the canvas then goes blank/frozen and nothing we do to
+  // scene contents matters until the context comes back. Without these two
+  // listeners, three.js is never told to allow that recovery, so the loss
+  // is permanent until the page is reloaded — this is what "objects
+  // disappeared and stayed gone" actually was.
+  let contextLost = false;
+  canvas.addEventListener('webglcontextlost', (e) => {
+    e.preventDefault(); // tells the browser a restoration attempt is wanted
+    contextLost = true;
+  }, false);
+  canvas.addEventListener('webglcontextrestored', () => {
+    contextLost = false;
+  }, false);
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0c0a08);
@@ -238,7 +261,7 @@ async function boot() {
       save();
     }
 
-    renderer.render(scene, camera);
+    if (!contextLost) renderer.render(scene, camera);
   }
   animate();
 
