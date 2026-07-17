@@ -84,6 +84,26 @@ const keyState = {};
 window.addEventListener('keydown', e=>{ keyState[e.code]=true; });
 window.addEventListener('keyup', e=>{ keyState[e.code]=false; });
 
+/* ---------------- Touch controls (mobile) ---------------- */
+function bindHbTouch(id, code){
+  const el = $(id);
+  if(!el) return;
+  const press = e=>{ e.preventDefault(); keyState[code]=true; el.classList.add('pressed'); };
+  const release = e=>{ e.preventDefault(); keyState[code]=false; el.classList.remove('pressed'); };
+  el.addEventListener('touchstart', press, {passive:false});
+  el.addEventListener('touchend', release, {passive:false});
+  el.addEventListener('touchcancel', release, {passive:false});
+  el.addEventListener('mousedown', press);
+  window.addEventListener('mouseup', release);
+}
+bindHbTouch('hb-t-left', 'KeyA');
+bindHbTouch('hb-t-right', 'KeyD');
+bindHbTouch('hb-t-jump', 'KeyW');
+if('ontouchstart' in window || navigator.maxTouchPoints > 0){
+  const tc = $('hb-touch-controls');
+  if(tc) tc.classList.add('active');
+}
+
 function stopGame(){
   if(raf) cancelAnimationFrame(raf);
   raf = null;
