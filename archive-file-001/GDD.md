@@ -1,8 +1,14 @@
 # ARCHIVE : FILE-001
-### Game Design Document — v2.2 — **LOCKED: Creative Foundation of the Project**
+### Game Design Document — v2.3 — **LOCKED: Creative Foundation of the Project**
 **Studio Roles:** Game Direction · World Design · Environmental Art Direction · Systems/Technical Architecture
 **Platform:** Browser (WebGL, Desktop-first, Mobile as a stretch target — see §14)
-**Status:** This document is now the **locked creative bible** for ARCHIVE : FILE-001. Every future design or implementation decision is evaluated against it, and specifically against §1.1's tiebreaker philosophy. It remains **design-only** — no gameplay code exists yet, and none is written until this document is explicitly approved and a Case 001 vertical slice is separately greenlit (§17).
+**Status:** This document is now the **locked creative bible** for ARCHIVE : FILE-001. Every future design or implementation decision is evaluated against it, and specifically against §1.1's tiebreaker philosophy and §19's production discipline. It remains **design-only** — no gameplay code exists yet, and none is written until this document is explicitly approved and a Case 001 vertical slice is separately greenlit (§17).
+
+---
+
+### Revision Notes (v2.2 → v2.3 — Quality Over Quantity as a Production Rule)
+
+A closing production rule, added as §19: this is not a restatement of §1.1's "quality over quantity" tiebreaker as a design preference — it is now a binding rule for scope itself. Any feature, mechanic, room, or piece of content is subject to a standing test (does it improve immersion? does it make the Archive more believable?), and failing that test is grounds for cutting it, not polishing it. The document now explicitly authorizes building a **smaller** game than originally scoped if that is what quality requires, and directs the Roadmap (§17) to treat wing/case count as adjustable downward, never as a fixed target to fill with content for its own sake.
 
 ---
 
@@ -379,9 +385,9 @@ These are implementation-adjacent decisions appropriate to make once this design
 ## 17. Roadmap
 
 1. **This document — approval gate.** No code is written until this design is approved.
-2. **Case 001 vertical slice** (Registry Wing, Prologue, Rotunda hub shell, Casebook UI, save/load, mobile performance validation) — the full pipeline proven end-to-end on the simplest case.
-3. **Remaining wings (002–005), Sub-Vault finale, Epilogue** — built and greenlit only after step 2 validates the pipeline and the look.
-4. **Full polish pass** (audio, lighting final pass, accessibility options, localization) — after content lock.
+2. **Case 001 vertical slice** (Registry Wing, Prologue, Rotunda hub shell, Casebook UI, save/load, mobile performance validation) — the full pipeline proven end-to-end on the simplest case, held to §19's craft bar before anything else is greenlit.
+3. **Remaining wings (002–005), Sub-Vault finale, Epilogue** — built and greenlit only after step 2 validates the pipeline and the look. Per §19, this list is a target, not a commitment: any wing that cannot be built to the vertical slice's quality bar within reasonable effort is simplified, merged, or cut rather than shipped under-crafted.
+4. **Full polish pass** (audio, lighting final pass, accessibility options, localization) — after content lock, and itself subject to §19: polish time is protected first, additional content second.
 
 ---
 
@@ -430,4 +436,23 @@ The intended parting feeling, on either ending, is not frustration but scale: th
 
 ---
 
-*End of v2.2 — LOCKED as the creative foundation of the project. Supersedes all prior gameplay, mechanics, and visual-identity content in v1.x (§§0–25 of GDD v1.2) and extends v2.0/v2.1's structural pivot with the principles in this revision. No gameplay code exists yet. v1.x's codebase remains on disk under `/archive-file-001/src` for historical reference only. Next step: approval of this document, followed by a separately greenlit Case 001 vertical slice (§17).*
+## 19. Production Discipline — Quality Over Quantity (Locked Rule)
+
+This is a binding rule on production, not a mood statement. It governs every future decision about what gets built, in what order, and what gets cut.
+
+**Never sacrifice atmosphere for features.** A feature's existence is never its own justification. Anything added to the game — a mechanic, an interaction, a system, a room — must pass a standing test before it is kept:
+- **If a feature does not improve immersion, remove it.** This applies retroactively as well as prospectively — anything already built that is later found not to serve immersion is cut, not grandfathered in because it exists.
+- **If a mechanic does not make the Archive feel more believable, redesign it.** A mechanic that is fun in the abstract but reads as "a game system" rather than "a real object behaving the way it should" has failed §1.1's standing test and must be reworked until the object-first read wins, or dropped.
+- **If adding more content reduces the quality of the experience, build less.** Wing count, case count, and room count in §7's Chapter Structure are **targets, not commitments**. If production reveals that five fully realized cases are stronger than five uneven ones, or that a wing needs to be cut, merged, or simplified to protect the handcrafted standard below, that is a correct outcome under this document, not a failure to hit scope.
+
+**The goal is a memorable game, not a bigger one.** Concretely, this means:
+- **Every room feels handcrafted.** No procedurally repeated or copy-pasted room fills the runtime; §10.1's quiet spaces and §4's non-linear cores are each individually authored, even the ones with no puzzle in them.
+- **Every puzzle feels intentional.** This is §8's existing "that's why this object was here" rule, restated here as a production gate: a case that cannot clear that bar does not ship in its current form.
+- **Every sound has a purpose.** No ambient layer, sting, or mechanism sound is added because a room "feels empty" without one — per §13, silence is already a deliberate tool, and a sound is added only when something specific needs to be heard, never as generic filler.
+- **Every object looks like it belongs in the Archive.** Set dressing is held to §11's material and era language exactly as strictly as puzzle-critical objects are — nothing generic-looking is allowed to fill a shelf just to fill it.
+
+**Where this overrides other sections:** §17's Roadmap and §14's Technical Architecture are both subordinate to this rule. If the Case 001 vertical slice shows that the planned wing/case count cannot be built to this bar within reasonable production effort, the correct response is to reduce scope (fewer wings, simpler mechanisms, a shorter Archive), never to lower the craft bar to preserve a number planned before any of it was built.
+
+---
+
+*End of v2.3 — LOCKED as the creative foundation of the project. Supersedes all prior gameplay, mechanics, and visual-identity content in v1.x (§§0–25 of GDD v1.2) and extends v2.0/v2.1/v2.2's structural pivot with the principles in this revision. No gameplay code exists yet. v1.x's codebase remains on disk under `/archive-file-001/src` for historical reference only. Next step: approval of this document, followed by a separately greenlit Case 001 vertical slice (§17), itself subject to §19's quality gate.*
