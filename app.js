@@ -23,6 +23,16 @@ function darken(hex, amt){
   b = Math.max(0, Math.round(b*(1-amt)));
   return `rgb(${r},${g},${b})`;
 }
+function darkenAlpha(hex, amt, alpha){
+  const c = (hex||'#1c8a4c').replace('#','');
+  if(c.length!==6) return hex;
+  const n = parseInt(c,16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r = Math.max(0, Math.round(r*(1-amt)));
+  g = Math.max(0, Math.round(g*(1-amt)));
+  b = Math.max(0, Math.round(b*(1-amt)));
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 /* ---------------- Tabs ---------------- */
 document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -112,6 +122,12 @@ function setMascotBg(wc){
   root.style.setProperty('--green-light', lighten(c1,0.34));
   const goldBase = (c2==='#ffffff' || c2==='#000000') ? c1 : c2;
   root.style.setProperty('--gold', lighten(goldBase, c2==='#ffffff'?0.4:0.22));
+  // The card/panel surfaces (not just buttons and headings) also pick up a
+  // tint of the tournament color, otherwise every screen still reads as the
+  // app's default green no matter which edition is open.
+  root.style.setProperty('--bg', darken(c1,0.94));
+  root.style.setProperty('--panel', darkenAlpha(c1,0.62,0.72));
+  root.style.setProperty('--panel-solid', darken(c1,0.82));
 
   const family = PATTERN_FAMILY_BY_YEAR[wc.year] || 'diamond';
   $('mb-pattern').style.backgroundImage = svgDataUri(patternTileSvg(family, c2));
@@ -128,6 +144,9 @@ function resetMascotBg(){
   root.style.setProperty('--green', '#1c8a4c');
   root.style.setProperty('--green-light', '#2fbf6e');
   root.style.setProperty('--gold', '#ffd23f');
+  root.style.setProperty('--bg', '#07130d');
+  root.style.setProperty('--panel', 'rgba(15,30,22,0.72)');
+  root.style.setProperty('--panel-solid', '#0e1f16');
   $('mb-pattern').style.backgroundImage = svgDataUri(patternTileSvg('diamond', '#2fbf6e'));
   $('mb-a').style.backgroundImage = '';
   $('mb-b').style.backgroundImage = '';
