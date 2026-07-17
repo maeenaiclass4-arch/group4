@@ -2,6 +2,19 @@ import { CHAIR_SLOTS, CHAIR_SOLUTION_SLOT } from '../world/LevelLayout.js';
 
 const HATCH_OPEN_ANGLE = -1.3;
 const LAMP_TARGET_INTENSITY = 14;
+const CHAIR_TWEEN_DURATION = 0.32;
+
+function easeOutCubic(t) {
+  return 1 - (1 - t) ** 3;
+}
+
+function shortestAngleDelta(from, to) {
+  const twoPi = Math.PI * 2;
+  let delta = (to - from) % twoPi;
+  if (delta > Math.PI) delta -= twoPi;
+  if (delta < -Math.PI) delta += twoPi;
+  return delta;
+}
 
 /**
  * Case 001 — Observation (GDD §8). The entire "puzzle" is: does the chair's
@@ -29,6 +42,10 @@ export class CaseOneSystem {
     this.hatchTarget = 0;
     this.lampIntensity = 0;
 
+    this.chairTweenT = 1;
+    this.chairFrom = { x: 0, z: 0, ry: 0 };
+    this.chairTo = { x: 0, z: 0, ry: 0 };
+
     this.chair.userData.onInteract = () => this.advanceChair();
     this.chair.userData.interactable.hint = 'A chair, out of place.';
 
@@ -45,6 +62,7 @@ export class CaseOneSystem {
     this.solved = !!state?.solved;
     this.keyCollected = !!state?.keyCollected;
     this.#applyChairTransform();
+    this.chairTweenT = 1; // hydration is instant, never tweened
     if (this.solved) {
       this.hatchProgress = 1;
       this.hatchTarget = 1;
@@ -67,7 +85,10 @@ export class CaseOneSystem {
 
   advanceChair() {
     this.chairSlot = (this.chairSlot + 1) % CHAIR_SLOTS.length;
-    this.#applyChairTransform();
+    const target = CHAIR_SLOTS[this.chairSlot];
+    this.chairFrom = { x: this.chair.position.x, z: this.chair.position.z, ry: this.chair.rotation.y };
+    this.chairTo = { x: target.x, z: target.z, ry: this.chair.rotation.y + shortestAngleDelta(this.chair.rotation.y, target.ry) };
+    this.chairTweenT = 0;
     this.audio.interact();
 
     if (!this.solved && this.chairSlot === CHAIR_SOLUTION_SLOT) {
@@ -99,6 +120,7 @@ export class CaseOneSystem {
   touchCompartment() {
     if (!this.solved) {
       this.audio.denied();
+      this.ui.pulseReticle('denied');
       this.ui.showCaption('Sealed. Nothing here moves yet.');
       return;
     }
@@ -116,6 +138,13 @@ export class CaseOneSystem {
   }
 
   update(dt) {
+    if (this.chairTweenT < 1) {
+      this.chairTweenT = Math.min(1, this.chairTweenT + dt / CHAIR_TWEEN_DURATION);
+      const e = easeOutCubic(this.chairTweenT);
+      this.chair.position.x = this.chairFrom.x + (this.chairTo.x - this.chairFrom.x) * e;
+      this.chair.position.z = this.chairFrom.z + (this.chairTo.z - this.chairFrom.z) * e;
+      this.chair.rotation.y = this.chairFrom.ry + (this.chairTo.ry - this.chairFrom.ry) * e;
+    }
     if (this.hatchProgress < this.hatchTarget) {
       this.hatchProgress = Math.min(this.hatchTarget, this.hatchProgress + dt * 1.8);
       this.hatch.rotation.x = HATCH_OPEN_ANGLE * this.hatchProgress;

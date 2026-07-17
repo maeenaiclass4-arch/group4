@@ -6,6 +6,10 @@ const DEFAULT_STATE = {
 };
 
 export class SaveManager {
+  hasSave() {
+    return !!localStorage.getItem(SAVE_KEY);
+  }
+
   load() {
     try {
       const raw = localStorage.getItem(SAVE_KEY);

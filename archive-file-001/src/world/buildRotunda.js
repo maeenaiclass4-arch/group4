@@ -9,6 +9,8 @@ import {
   GATE_HEIGHT,
 } from './LevelLayout.js';
 import { makeOctagonFloor, makeOctagonAnnulus } from './OctagonGeometry.js';
+import { createDustMotes } from './DustMotes.js';
+import { tagFlicker } from './Flicker.js';
 
 function edgeGeometry(a, b) {
   const dx = b.x - a.x;
@@ -46,6 +48,7 @@ function buildLockedGate(materials, width, height) {
 
   const glow = new THREE.PointLight(0xffb066, 9, 3.6, 1.8);
   glow.position.set(0, 0.4, -0.5);
+  tagFlicker(glow, { amount: 0.14, speed: 0.6 });
   group.add(glow);
 
   const barCount = 5;
@@ -113,6 +116,7 @@ function buildIntakeDesk(materials) {
   const lampLight = new THREE.PointLight(0xffd9a0, 26, 6, 1.8);
   lampLight.position.set(0.7, 1.28, 0);
   lampLight.castShadow = true;
+  tagFlicker(lampLight, { amount: 0.08, speed: 0.5 });
   group.add(lampLight);
 
   return group;
@@ -148,6 +152,37 @@ export function buildRotunda({ materials, collisionWorld }) {
   skyLight.position.set(0, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT - 0.4, 0);
   skyLight.castShadow = true;
   group.add(skyLight);
+
+  // A soft, additive-blended light shaft standing in for a real volumetric
+  // god-ray under the skylight — cheap, uses only the existing pipeline,
+  // and is the single biggest atmosphere win available without new assets.
+  const shaftGeo = new THREE.CylinderGeometry(0.35, 2.4, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT, 20, 1, true);
+  const shaftMat = new THREE.MeshBasicMaterial({
+    color: 0xfff2d2,
+    transparent: true,
+    opacity: 0.05,
+    side: THREE.DoubleSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    fog: false,
+  });
+  const lightShaft = new THREE.Mesh(shaftGeo, shaftMat);
+  lightShaft.position.y = (ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT) / 2;
+  lightShaft.renderOrder = 1;
+  group.add(lightShaft);
+
+  // Dust motes drifting inside the shaft — the only place in the Rotunda
+  // they'd actually be visible, exactly as real dust only catches the eye
+  // where it crosses a real beam of light.
+  const rotundaDust = createDustMotes({
+    count: 90,
+    bounds: { minX: -2, maxX: 2, minY: 0.6, maxY: ROTUNDA_HEIGHT - 0.4, minZ: -2, maxZ: 2 },
+    size: 0.045,
+    speed: 0.05,
+  });
+  group.add(rotundaDust);
+  group.userData.dustMotes = group.userData.dustMotes ?? [];
+  group.userData.dustMotes.push(rotundaDust);
 
   const sun = new THREE.DirectionalLight(0xffe6bf, 1.8);
   sun.position.set(4, ROTUNDA_HEIGHT + ROTUNDA_LANTERN_HEIGHT + 6, 3);
@@ -247,6 +282,7 @@ export function buildRotunda({ materials, collisionWorld }) {
       group.add(shade);
       const bulb = new THREE.PointLight(0xffcf99, 16, 6, 1.8);
       bulb.position.set(midX, 1.75, midZ);
+      tagFlicker(bulb, { amount: 0.1, speed: 0.55 });
       group.add(bulb);
     }
   }

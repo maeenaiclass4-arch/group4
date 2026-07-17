@@ -10,7 +10,9 @@ import { buildRegistryWing } from './world/buildRegistryWing.js';
 import { InteractionSystem } from './systems/InteractionSystem.js';
 import { CaseOneSystem } from './systems/CaseOneSystem.js';
 import { UIController } from './ui/UIController.js';
-import { SPAWN_POSE } from './world/LevelLayout.js';
+import { SPAWN_POSE, NORTH_WALL_Z } from './world/LevelLayout.js';
+import { updateFlicker } from './world/Flicker.js';
+import { IntroPan } from './world/IntroPan.js';
 
 async function boot() {
   const ui = new UIController();
@@ -76,6 +78,7 @@ async function boot() {
   });
 
   const saveManager = new SaveManager();
+  const isFreshSession = !saveManager.hasSave();
   const savedState = saveManager.load();
   player.setPose(savedState.player);
   player.update(0, { processInput: false }); // sync the camera before the first paint
@@ -97,6 +100,7 @@ async function boot() {
     if (ui.isCasebookOpen) return;
     const acted = interaction.interact();
     if (!acted) return;
+    ui.pulseReticle('ok');
     save();
   });
 
@@ -107,10 +111,18 @@ async function boot() {
     }
   });
 
+  const introPan = new IntroPan();
+  let introEligible = isFreshSession; // only the Rotunda is spacious enough for the establishing offset
+  let introPlayed = false;
+
   document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement === canvas) {
       ui.hideStartPrompt();
       audio.unlock();
+      if (introEligible && !introPlayed) {
+        introPlayed = true;
+        introPan.start(camera, player.position);
+      }
     } else {
       ui.showStartPrompt();
     }
@@ -127,14 +139,27 @@ async function boot() {
 
   const clock = new THREE.Clock();
   let saveClock = 0;
+  let elapsed = 0;
+  const dustMotes = [...(rotundaGroup.userData.dustMotes ?? []), ...(registry.dustMotes ?? [])];
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.08);
+    elapsed += dt;
 
-    player.update(dt, { processInput: input.isLocked });
-    if (input.isLocked) interaction.update();
+    if (introPan.active) {
+      input.consumeLookDelta(); // discard mouse movement gathered during the pan
+      introPan.update(camera, dt);
+    } else {
+      player.update(dt, { processInput: input.isLocked });
+      if (input.isLocked) interaction.update();
+    }
     caseOne.update(dt);
+    audio.setZone(player.position.z > NORTH_WALL_Z ? 'hall' : 'room');
+
+    updateFlicker(rotundaGroup, elapsed);
+    updateFlicker(registry.group, elapsed);
+    for (const dust of dustMotes) dust.userData.update(elapsed);
 
     saveClock += dt;
     if (saveClock > 4) {
@@ -147,7 +172,7 @@ async function boot() {
   animate();
 
   if (import.meta.env.DEV) {
-    window.__ARCHIVE__ = { scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, SPAWN_POSE };
+    window.__ARCHIVE__ = { scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, introPan, SPAWN_POSE };
   }
 }
 

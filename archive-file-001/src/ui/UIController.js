@@ -43,6 +43,14 @@ export class UIController {
     this.glint.hidden = !isHovering;
   }
 
+  pulseReticle(kind = 'ok') {
+    const cls = kind === 'denied' ? 'is-denied' : 'is-pulse';
+    this.reticle.classList.remove('is-pulse', 'is-denied');
+    // eslint-disable-next-line no-void
+    void this.reticle.offsetWidth; // restart the CSS animation
+    this.reticle.classList.add(cls);
+  }
+
   showCaption(text) {
     clearTimeout(this.#captionTimer);
     this.captionEl.textContent = text;

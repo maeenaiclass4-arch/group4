@@ -1,15 +1,27 @@
 /**
  * Synthesized, asset-free audio (GDD §13): a low ambient building tone that
  * never resolves into music, footstep ticks paced by the player controller,
- * and short mechanism sounds for puzzle payoffs. No positional audio nodes
- * are needed yet at this scale (single small wing) — added when Case 002's
- * sound-based puzzle requires it.
+ * short mechanism sounds for puzzle payoffs, sparse random creaks for a
+ * lived-in feel, and a zone-aware ambient tone (the Rotunda reads bigger
+ * and more open than the Registry Wing's tighter corridor/room). No
+ * positional audio nodes are needed yet at this scale — added when Case
+ * 002's sound-based puzzle requires it.
  */
+
+const ZONE_PRESETS = {
+  hall: { filterFreq: 190, humFreq: 54, filterQ: 0.6 },
+  room: { filterFreq: 420, humFreq: 74, filterQ: 1.1 },
+};
+
 export class AudioManager {
   #ctx = null;
   #master = null;
   #ambientGain = null;
+  #ambientFilter = null;
+  #hum = null;
   #unlocked = false;
+  #zone = 'hall';
+  #creakTimer = null;
 
   unlock() {
     if (this.#unlocked) return;
@@ -19,6 +31,7 @@ export class AudioManager {
     this.#master.gain.value = 0.55;
     this.#master.connect(this.#ctx.destination);
     this.#startAmbient();
+    this.#scheduleCreak();
   }
 
   #startAmbient() {
@@ -32,25 +45,38 @@ export class AudioManager {
     noise.buffer = buffer;
     noise.loop = true;
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 180;
-    filter.Q.value = 0.7;
+    const preset = ZONE_PRESETS[this.#zone];
+    this.#ambientFilter = ctx.createBiquadFilter();
+    this.#ambientFilter.type = 'lowpass';
+    this.#ambientFilter.frequency.value = preset.filterFreq;
+    this.#ambientFilter.Q.value = preset.filterQ;
 
     this.#ambientGain = ctx.createGain();
     this.#ambientGain.gain.value = 0.05;
 
-    const hum = ctx.createOscillator();
-    hum.type = 'sine';
-    hum.frequency.value = 55;
+    this.#hum = ctx.createOscillator();
+    this.#hum.type = 'sine';
+    this.#hum.frequency.value = preset.humFreq;
     const humGain = ctx.createGain();
     humGain.gain.value = 0.02;
 
-    noise.connect(filter).connect(this.#ambientGain).connect(this.#master);
-    hum.connect(humGain).connect(this.#master);
+    noise.connect(this.#ambientFilter).connect(this.#ambientGain).connect(this.#master);
+    this.#hum.connect(humGain).connect(this.#master);
 
     noise.start();
-    hum.start();
+    this.#hum.start();
+  }
+
+  /** Called as the player crosses from the Rotunda into the Registry Wing and back. */
+  setZone(zone) {
+    if (zone === this.#zone || !ZONE_PRESETS[zone]) return;
+    this.#zone = zone;
+    if (!this.#ctx || !this.#ambientFilter || !this.#hum) return;
+    const preset = ZONE_PRESETS[zone];
+    const t = this.#ctx.currentTime;
+    this.#ambientFilter.frequency.setTargetAtTime(preset.filterFreq, t, 1.4);
+    this.#ambientFilter.Q.setTargetAtTime(preset.filterQ, t, 1.4);
+    this.#hum.frequency.setTargetAtTime(preset.humFreq, t, 1.4);
   }
 
   #blip({ freq = 440, duration = 0.08, type = 'sine', gain = 0.15, sweep = null }) {
@@ -82,9 +108,12 @@ export class AudioManager {
     src.buffer = buffer;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = 900;
+    // Marble Rotunda reads brighter/harder underfoot than the Registry
+    // Wing's tighter, more muffled floor — the same zone split as the
+    // ambient tone, so a footstep alone hints which room the player is in.
+    filter.frequency.value = this.#zone === 'hall' ? 1300 : 750;
     const g = ctx.createGain();
-    g.gain.value = 0.12;
+    g.gain.value = this.#zone === 'hall' ? 0.13 : 0.1;
     src.connect(filter).connect(g).connect(this.#master);
     src.start();
   }
@@ -105,5 +134,43 @@ export class AudioManager {
 
   pickup() {
     this.#blip({ freq: 660, duration: 0.12, type: 'sine', gain: 0.08, sweep: 900 });
+  }
+
+  /** A single, quiet settling-creak — an old building, never a jump scare (GDD §10). */
+  #playCreak() {
+    if (!this.#ctx) return;
+    const ctx = this.#ctx;
+    const duration = 0.7 + Math.random() * 0.5;
+    const bufferSize = Math.floor(duration * ctx.sampleRate);
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const env = Math.sin((Math.PI * i) / bufferSize); // slow swell and fade, not a percussive hit
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    const startFreq = 120 + Math.random() * 180;
+    filter.frequency.setValueAtTime(startFreq, ctx.currentTime);
+    filter.frequency.linearRampToValueAtTime(startFreq * (0.55 + Math.random() * 0.3), ctx.currentTime + duration);
+    filter.Q.value = 3.5;
+
+    const g = ctx.createGain();
+    g.gain.value = 0.045 + Math.random() * 0.02;
+
+    src.connect(filter).connect(g).connect(this.#master);
+    src.start();
+  }
+
+  #scheduleCreak() {
+    clearTimeout(this.#creakTimer);
+    const delay = 16000 + Math.random() * 22000;
+    this.#creakTimer = setTimeout(() => {
+      this.#playCreak();
+      this.#scheduleCreak();
+    }, delay);
   }
 }

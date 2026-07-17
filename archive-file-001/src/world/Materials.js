@@ -150,6 +150,13 @@ export function buildMaterialLibrary() {
   const woodPanelTex = woodTexture();
   woodPanelTex.repeat.set(2, 1.4);
 
+  // The Registry Wing is a distinct, later era (GDD §2) — a worn plank
+  // floor instead of the Rotunda's marble keeps it from reading as the
+  // same room re-skinned, which is the single most obvious "placeholder"
+  // tell a reused floor material would leave behind.
+  const floorPlankTex = woodTexture({ base: [96, 78, 54], stripe: [64, 50, 32], planks: 11 });
+  floorPlankTex.repeat.set(1.6, 5);
+
   const plasterTex = plasterTexture();
   plasterTex.repeat.set(3, 2);
 
@@ -158,6 +165,7 @@ export function buildMaterialLibrary() {
 
   return {
     floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.45, metalness: 0.05 }),
+    floorPlank: new THREE.MeshStandardMaterial({ map: floorPlankTex, roughness: 0.75, metalness: 0.01 }),
     woodPanel: new THREE.MeshStandardMaterial({ map: woodPanelTex, roughness: 0.7, metalness: 0.02 }),
     plaster: new THREE.MeshStandardMaterial({ map: plasterTex, roughness: 0.95, metalness: 0 }),
     steel: new THREE.MeshStandardMaterial({ map: steelTex, roughness: 0.55, metalness: 0.4, color: 0x565f5c }),

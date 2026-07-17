@@ -111,6 +111,18 @@ html, body {
   pointer-events: none;
   transition: transform 0.15s ease, background 0.15s ease;
 }
+.reticle.is-pulse { animation: reticle-pulse 0.32s ease-out; }
+.reticle.is-denied { animation: reticle-denied 0.36s ease-out; }
+@keyframes reticle-pulse {
+  0% { transform: scale(1); background: rgba(236, 224, 196, 0.55); }
+  35% { transform: scale(2.4); background: rgba(217, 171, 99, 0.9); }
+  100% { transform: scale(1); background: rgba(236, 224, 196, 0.55); }
+}
+@keyframes reticle-denied {
+  0% { transform: scale(1); background: rgba(236, 224, 196, 0.55); }
+  30% { transform: scale(1.8); background: rgba(163, 64, 43, 0.85); }
+  100% { transform: scale(1); background: rgba(236, 224, 196, 0.55); }
+}
 
 .interact-glint {
   position: fixed;

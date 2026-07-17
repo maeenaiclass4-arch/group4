@@ -14,6 +14,8 @@ import {
   COMPARTMENT_POSITION,
 } from './LevelLayout.js';
 import { buildReferencePhotoTexture } from './ReferencePhoto.js';
+import { createDustMotes } from './DustMotes.js';
+import { tagFlicker } from './Flicker.js';
 
 function buildDesk(materials) {
   const group = new THREE.Group();
@@ -54,6 +56,7 @@ function buildDesk(materials) {
   const lampLight = new THREE.PointLight(0xffcf94, 32, 6.5, 1.8);
   lampLight.position.set(-0.62, 1.0, -0.2);
   lampLight.castShadow = true;
+  tagFlicker(lampLight, { amount: 0.09, speed: 0.55 });
   group.add(lampLight);
 
   // a paper left mid-form, unfinished
@@ -165,7 +168,7 @@ export function buildRegistryWing({ materials, collisionWorld }) {
 
   // corridor
   const corridorLen = CORRIDOR_START_Z - CORRIDOR_END_Z;
-  const corridorFloor = new THREE.Mesh(new THREE.PlaneGeometry(CORRIDOR_WIDTH, corridorLen), materials.floor);
+  const corridorFloor = new THREE.Mesh(new THREE.PlaneGeometry(CORRIDOR_WIDTH, corridorLen), materials.floorPlank);
   corridorFloor.rotation.x = -Math.PI / 2;
   corridorFloor.position.set(0, 0, (CORRIDOR_START_Z + CORRIDOR_END_Z) / 2);
   corridorFloor.receiveShadow = true;
@@ -193,10 +196,11 @@ export function buildRegistryWing({ materials, collisionWorld }) {
   group.add(bulbFixture);
   const bulbLight = new THREE.PointLight(0xffcf94, 24, 7, 1.8);
   bulbLight.position.copy(bulbFixture.position);
+  tagFlicker(bulbLight, { amount: 0.11, speed: 0.5 });
   group.add(bulbLight);
 
   // case room
-  const roomFloor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_HALF_WIDTH * 2, ROOM_NEAR_Z - ROOM_FAR_Z), materials.floor);
+  const roomFloor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_HALF_WIDTH * 2, ROOM_NEAR_Z - ROOM_FAR_Z), materials.floorPlank);
   roomFloor.rotation.x = -Math.PI / 2;
   roomFloor.position.set(0, 0, (ROOM_NEAR_Z + ROOM_FAR_Z) / 2);
   roomFloor.receiveShadow = true;
@@ -290,5 +294,32 @@ export function buildRegistryWing({ materials, collisionWorld }) {
   key.userData.interactable = { type: 'key' };
   group.add(key);
 
-  return { group, chair, hatch, key, compartmentGroup, corkboard };
+  // Dust catching the banker's lamp and the corridor bulb — the only two
+  // strong point sources in this wing, so the only two places motes would
+  // actually be visible.
+  const deskDust = createDustMotes({
+    count: 26,
+    bounds: {
+      minX: DESK_POSITION.x - 0.75, maxX: DESK_POSITION.x + 0.15,
+      minY: 0.75, maxY: 1.35,
+      minZ: DESK_POSITION.z - 0.4, maxZ: DESK_POSITION.z + 0.2,
+    },
+    size: 0.03,
+    speed: 0.07,
+  });
+  group.add(deskDust);
+
+  const corridorDust = createDustMotes({
+    count: 20,
+    bounds: {
+      minX: -halfW + 0.2, maxX: halfW - 0.2,
+      minY: CORRIDOR_HEIGHT - 0.9, maxY: CORRIDOR_HEIGHT - 0.35,
+      minZ: (CORRIDOR_START_Z + CORRIDOR_END_Z) / 2 - 1.2, maxZ: (CORRIDOR_START_Z + CORRIDOR_END_Z) / 2 + 1.2,
+    },
+    size: 0.03,
+    speed: 0.06,
+  });
+  group.add(corridorDust);
+
+  return { group, chair, hatch, key, compartmentGroup, corkboard, dustMotes: [deskDust, corridorDust] };
 }
