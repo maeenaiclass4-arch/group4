@@ -1,4 +1,5 @@
 import { CHAIR_SLOTS, CHAIR_SOLUTION_SLOT } from '../world/LevelLayout.js';
+import { createGuideGlow } from '../world/GuideGlow.js';
 
 const HATCH_OPEN_ANGLE = -1.3;
 const LAMP_TARGET_INTENSITY = 14;
@@ -45,6 +46,14 @@ export class CaseOneSystem {
     this.chairTweenT = 1;
     this.chairFrom = { x: 0, z: 0, ry: 0 };
     this.chairTo = { x: 0, z: 0, ry: 0 };
+
+    // Diegetic guidance (no arrows, no UI marker): a soft light quietly
+    // finds whichever object is the next meaningful step — the photo
+    // first, then the chair, then the key once it's revealed.
+    this.elapsed = 0;
+    this.corkboardGlow = createGuideGlow(this.corkboard, { offset: [0.15, 0.1, -0.05] });
+    this.chairGlow = createGuideGlow(this.chair, { offset: [0, 0.55, 0] });
+    this.keyGlow = createGuideGlow(this.key, { offset: [0, 0.06, 0], peak: 1.4, distance: 0.9 });
 
     this.chair.userData.onInteract = () => this.advanceChair();
 
@@ -137,6 +146,14 @@ export class CaseOneSystem {
   }
 
   update(dt) {
+    this.elapsed += dt;
+    this.corkboardGlow.setActive(!this.photoSeen);
+    this.chairGlow.setActive(!this.solved);
+    this.keyGlow.setActive(this.solved && !this.keyCollected);
+    this.corkboardGlow.update(dt, this.elapsed);
+    this.chairGlow.update(dt, this.elapsed);
+    this.keyGlow.update(dt, this.elapsed);
+
     if (this.chairTweenT < 1) {
       this.chairTweenT = Math.min(1, this.chairTweenT + dt / CHAIR_TWEEN_DURATION);
       const e = easeOutCubic(this.chairTweenT);
