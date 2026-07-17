@@ -1,188 +1,109 @@
-import { EVENTS } from './Config.js';
-
 /**
- * AudioManager.js
- * Owns the Web Audio graph: one master gain feeding destination, with
- * music/sfx/voice sub-buses feeding master. Settings sliders control the
- * sub-bus gains directly, so mixing math never has to live in UI code.
- *
- * No audio assets exist yet (production hasn't started — GDD §16/§17), so
- * playback methods are intentionally stubs that log rather than throw:
- * this lets M2+ systems (RoomSystem, TerminalSystem, CinematicSystem) call
- * `audioManager.playAmbient(...)` today and get real playback the moment
- * asset paths are wired in, with no call-site changes.
- *
- * The dynamic, state-reactive ambient mix described in GDD §12.10
- * (base/tension/discovery/memory-layer stems per room) is exposed here as
- * `setRoomState()` so RoomSystem/PuzzleEngine can call it as soon as they
- * exist, without AudioManager's public surface changing later.
+ * Synthesized, asset-free audio (GDD §13): a low ambient building tone that
+ * never resolves into music, footstep ticks paced by the player controller,
+ * and short mechanism sounds for puzzle payoffs. No positional audio nodes
+ * are needed yet at this scale (single small wing) — added when Case 002's
+ * sound-based puzzle requires it.
  */
 export class AudioManager {
-  #eventBus;
-  #context = null;
-  #masterGain = null;
-  #buses = {}; // channel -> GainNode
-  #volumes = { audioMaster: 0.8, audioMusic: 0.8, audioSfx: 0.9, audioVoice: 1.0 };
+  #ctx = null;
+  #master = null;
+  #ambientGain = null;
   #unlocked = false;
 
-  // Instance-field arrow functions: auto-bound to `this`, and — unlike a
-  // private *method* — assignable, so they can be added/removed as the
-  // same reference via addEventListener/removeEventListener.
-  #onVisibilityChange = () => {
-    if (!this.#context) return;
-    if (document.hidden) {
-      this.#context.suspend();
-    } else {
-      this.#context.resume();
-    }
-  };
-
-  /** @param {import('./EventBus.js').EventBus} eventBus */
-  constructor(eventBus) {
-    this.#eventBus = eventBus;
-  }
-
-  /**
-   * Browsers block audio until a user gesture. Call this from the first
-   * pointerdown/keydown the app receives (main.js wires it to InputManager).
-   */
   unlock() {
     if (this.#unlocked) return;
-    const AudioContextCtor = window.AudioContext ?? window.webkitAudioContext;
-    if (!AudioContextCtor) {
-      console.warn('[AudioManager] Web Audio API unavailable in this browser.');
-      return;
-    }
-    this.#context = new AudioContextCtor();
-    this.#masterGain = this.#context.createGain();
-    this.#masterGain.connect(this.#context.destination);
-
-    for (const channel of ['audioMusic', 'audioSfx', 'audioVoice']) {
-      const bus = this.#context.createGain();
-      bus.connect(this.#masterGain);
-      this.#buses[channel] = bus;
-    }
-
-    this.applyVolumes(this.#volumes);
-    document.addEventListener('visibilitychange', this.#onVisibilityChange);
     this.#unlocked = true;
+    this.#ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.#master = this.#ctx.createGain();
+    this.#master.gain.value = 0.55;
+    this.#master.connect(this.#ctx.destination);
+    this.#startAmbient();
   }
 
-  /**
-   * Applies a full settings volume snapshot ({ audioMaster, audioMusic, audioSfx, audioVoice }).
-   * Called on boot with saved settings and whenever a slider moves.
-   */
-  applyVolumes(volumes) {
-    this.#volumes = { ...this.#volumes, ...volumes };
-    if (!this.#context) return; // not unlocked yet; values are retained for when it is
+  #startAmbient() {
+    const ctx = this.#ctx;
+    const bufferSize = 2 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
 
-    this.#masterGain.gain.setValueAtTime(this.#volumes.audioMaster, this.#context.currentTime);
-    this.#buses.audioMusic?.gain.setValueAtTime(this.#volumes.audioMusic, this.#context.currentTime);
-    this.#buses.audioSfx?.gain.setValueAtTime(this.#volumes.audioSfx, this.#context.currentTime);
-    this.#buses.audioVoice?.gain.setValueAtTime(this.#volumes.audioVoice, this.#context.currentTime);
+    const noise = ctx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
 
-    this.#eventBus.emit(EVENTS.AUDIO_VOLUME_CHANGED, { ...this.#volumes });
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 180;
+    filter.Q.value = 0.7;
+
+    this.#ambientGain = ctx.createGain();
+    this.#ambientGain.gain.value = 0.05;
+
+    const hum = ctx.createOscillator();
+    hum.type = 'sine';
+    hum.frequency.value = 55;
+    const humGain = ctx.createGain();
+    humGain.gain.value = 0.02;
+
+    noise.connect(filter).connect(this.#ambientGain).connect(this.#master);
+    hum.connect(humGain).connect(this.#master);
+
+    noise.start();
+    hum.start();
   }
 
-  setChannelVolume(channel, value) {
-    this.applyVolumes({ [channel]: value });
-  }
-
-  // ---- playback surface ----
-
-  /**
-   * Ambient beds and voice logs need real recorded audio, which doesn't
-   * exist yet (production hasn't started — GDD §16/§17); those stay
-   * stubs. UI sfx is different: a handful of short synthesized tones (no
-   * asset files) is enough to make the interface feel responsive, so
-   * playSfx() below is real. Swapping these for recorded one-shots later
-   * is a body-swap inside #playCue(), not a call-site change.
-   */
-
-  /** @param {string} roomId @param {{base?:string, tension?:string, discovery?:string, memoryLayer?:string}} stems */
-  playAmbient(roomId, stems) {
-    console.info(`[AudioManager] playAmbient("${roomId}") — no audio assets loaded yet.`, stems);
-  }
-
-  /** GDD §12.10 — reacts to idle/solve/layer-toggle state; wired by RoomSystem/PuzzleEngine in M2+. */
-  setRoomState(roomId, stateFlags) {
-    this.#eventBus.emit(EVENTS.AUDIO_ROOM_STATE_CHANGED, { roomId, stateFlags });
-  }
-
-  /**
-   * Short synthesized UI feedback tones — no asset files required.
-   * @param {'click'|'deny'|'success'|'achievement'|'pickup'|'door'|'layer'} sfxId
-   */
-  playSfx(sfxId) {
-    if (!this.#context) return; // not unlocked yet (no user gesture received)
-    const now = this.#context.currentTime;
-    switch (sfxId) {
-      case 'click':
-        this.#tone({ freq: 640, start: now, duration: 0.05, type: 'triangle', peak: 0.18 });
-        break;
-      case 'deny':
-        this.#tone({ freq: 150, start: now, duration: 0.16, type: 'square', peak: 0.14 });
-        this.#tone({ freq: 110, start: now + 0.06, duration: 0.16, type: 'square', peak: 0.1 });
-        break;
-      case 'success':
-        this.#tone({ freq: 523, start: now, duration: 0.13, type: 'sine', peak: 0.2 });
-        this.#tone({ freq: 784, start: now + 0.1, duration: 0.18, type: 'sine', peak: 0.2 });
-        break;
-      case 'achievement':
-        this.#tone({ freq: 523, start: now, duration: 0.12, type: 'triangle', peak: 0.16 });
-        this.#tone({ freq: 659, start: now + 0.09, duration: 0.12, type: 'triangle', peak: 0.16 });
-        this.#tone({ freq: 880, start: now + 0.18, duration: 0.22, type: 'triangle', peak: 0.18 });
-        break;
-      case 'pickup':
-        this.#sweep({ from: 420, to: 720, start: now, duration: 0.14, type: 'sine', peak: 0.16 });
-        break;
-      case 'door':
-        this.#tone({ freq: 90, start: now, duration: 0.28, type: 'triangle', peak: 0.22 });
-        break;
-      case 'layer':
-        this.#sweep({ from: 300, to: 500, start: now, duration: 0.22, type: 'sine', peak: 0.12 });
-        break;
-      default:
-        console.warn(`[AudioManager] unknown sfx id "${sfxId}"`);
-    }
-  }
-
-  /** A single tone with a short attack/decay envelope, routed through the sfx bus. */
-  #tone({ freq, start, duration, type = 'sine', peak = 0.2 }) {
-    const osc = this.#context.createOscillator();
-    const gain = this.#context.createGain();
+  #blip({ freq = 440, duration = 0.08, type = 'sine', gain = 0.15, sweep = null }) {
+    if (!this.#ctx) return;
+    const ctx = this.#ctx;
+    const osc = ctx.createOscillator();
     osc.type = type;
-    osc.frequency.setValueAtTime(freq, start);
-    gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(peak, start + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-    osc.connect(gain);
-    gain.connect(this.#buses.audioSfx ?? this.#masterGain);
-    osc.start(start);
-    osc.stop(start + duration + 0.02);
+    osc.frequency.setValueAtTime(freq, ctx.currentTime);
+    if (sweep) osc.frequency.exponentialRampToValueAtTime(sweep, ctx.currentTime + duration);
+
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(gain, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+
+    osc.connect(g).connect(this.#master);
+    osc.start();
+    osc.stop(ctx.currentTime + duration + 0.02);
   }
 
-  /** A pitch-swept tone (rising/falling), used for pickups and the layer toggle. */
-  #sweep({ from, to, start, duration, type = 'sine', peak = 0.2 }) {
-    const osc = this.#context.createOscillator();
-    const gain = this.#context.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(from, start);
-    osc.frequency.linearRampToValueAtTime(to, start + duration);
-    gain.gain.setValueAtTime(0, start);
-    gain.gain.linearRampToValueAtTime(peak, start + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
-    osc.connect(gain);
-    gain.connect(this.#buses.audioSfx ?? this.#masterGain);
-    osc.start(start);
-    osc.stop(start + duration + 0.02);
+  footstep() {
+    if (!this.#ctx) return;
+    const ctx = this.#ctx;
+    const bufferSize = 0.05 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 900;
+    const g = ctx.createGain();
+    g.gain.value = 0.12;
+    src.connect(filter).connect(g).connect(this.#master);
+    src.start();
   }
 
-  playVoice(logId) {
-    console.info(`[AudioManager] playVoice("${logId}") — no audio assets loaded yet.`);
+  interact() {
+    this.#blip({ freq: 320, duration: 0.05, type: 'triangle', gain: 0.08 });
   }
 
-  stopAll() {
-    // No-op until real ambient/voice sources exist to stop.
+  denied() {
+    this.#blip({ freq: 140, duration: 0.14, type: 'sawtooth', gain: 0.06, sweep: 90 });
+  }
+
+  mechanismOpen() {
+    if (!this.#ctx) return;
+    this.#blip({ freq: 90, duration: 0.35, type: 'square', gain: 0.1, sweep: 40 });
+    setTimeout(() => this.#blip({ freq: 720, duration: 0.4, type: 'sine', gain: 0.06, sweep: 1200 }), 220);
+  }
+
+  pickup() {
+    this.#blip({ freq: 660, duration: 0.12, type: 'sine', gain: 0.08, sweep: 900 });
   }
 }
