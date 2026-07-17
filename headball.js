@@ -123,14 +123,18 @@ const FIELD_W = 900, FIELD_H = 420, GROUND_Y = 380;
 const GOAL_TOP = 230, GOAL_H = 150, GOAL_W = 16;
 const GRAVITY = 1500, PLAYER_SPEED = 300, JUMP_V = 620, BALL_R = 14, HEAD_R = 32;
 
+const PUNCH_RANGE = 58, SHOOT_RANGE = 62, PUNCHES_TO_STUN = 5, STUN_DURATION = 5;
+
 function newPlayerState(side){
   const isLeft = side==='left';
   return {
+    // Both players can now roam the full pitch (previously fenced to their
+    // own half, which is what stopped you from ever crossing over).
     x: isLeft ? 200 : 700, y:0, vy:0, vx:0, grounded:true,
-    minX: isLeft?60:430, maxX: isLeft?470:840,
+    minX: 34, maxX: FIELD_W-34, homeSide: isLeft?1:-1,
     facing: isLeft?1:-1, kickCooldown:0,
     animPhase:0, kickTimer:0, celebrateTimer:0, squash:1, stretch:1,
-    aiGuardX: isLeft?200:700,
+    shootCooldown:0, hitsTaken:0, stunTimer:0, punchFlash:0, dizzyPhase:0,
   };
 }
 
@@ -147,7 +151,7 @@ function resetGameState(){
 }
 
 const keyState = {};
-window.addEventListener('keydown', e=>{ keyState[e.code]=true; });
+window.addEventListener('keydown', e=>{ keyState[e.code]=true; if(e.code==='Space') e.preventDefault(); });
 window.addEventListener('keyup', e=>{ keyState[e.code]=false; });
 
 /* ---------------- Touch controls (mobile) ---------------- */
@@ -165,6 +169,7 @@ function bindHbTouch(id, code){
 bindHbTouch('hb-t-left', 'KeyA');
 bindHbTouch('hb-t-right', 'KeyD');
 bindHbTouch('hb-t-jump', 'KeyW');
+bindHbTouch('hb-t-shoot', 'Space');
 if('ontouchstart' in window || navigator.maxTouchPoints > 0){
   const tc = $('hb-touch-controls');
   if(tc) tc.classList.add('active');
@@ -223,6 +228,7 @@ function formatTime(t){
 function updatePhysics(dt){
   const gs = gameState;
   handlePlayerInput(gs.p1, {left:'KeyA', right:'KeyD', jump:'KeyW'}, dt);
+  if(keyState['Space']) attemptAction(gs.p1, gs.p2, gs.ball);
   aiControl(gs.p2, gs.ball, dt);
 
   [gs.p1, gs.p2].forEach(p=>{
@@ -241,6 +247,9 @@ function updatePhysics(dt){
     if(p.kickCooldown>0) p.kickCooldown -= dt;
     if(p.kickTimer>0) p.kickTimer -= dt;
     if(p.celebrateTimer>0) p.celebrateTimer -= dt;
+    if(p.shootCooldown>0) p.shootCooldown -= dt;
+    if(p.punchFlash>0) p.punchFlash -= dt;
+    if(p.stunTimer>0){ p.stunTimer = Math.max(0, p.stunTimer-dt); p.dizzyPhase += dt*6; }
     if(p.grounded && Math.abs(p.vx) > 15) p.animPhase += dt * (7 + Math.abs(p.vx)*0.01);
   });
 
@@ -351,20 +360,25 @@ function handlePlayerInput(p, keys, dt){
 }
 
 /* A proper opponent: predicts where the ball is heading, chases it
-   aggressively when it's on its side, jumps to meet incoming balls, and
-   falls back to guarding its goal line when the ball is far away. */
+   aggressively across the whole pitch (players are no longer fenced to
+   their own half), jumps to meet incoming balls, and doesn't fully commit
+   when the ball is deep in the attacking third. Freezes completely while
+   dazed from a punch combo. */
 function aiControl(p, ball, dt){
+  if(p.stunTimer > 0){ p.vx = 0; return; }
+
   const lookaheadT = 0.18;
   const predictedX = ball.x + ball.vx*lookaheadT;
-  const ballOnMySide = ball.x > (p.minX+p.maxX)/2 - 260;
-  const guardX = (p.minX+p.maxX)/2 + (p.facing===1 ? -40 : 40);
-  const targetX = ballOnMySide
-    ? Math.max(p.minX, Math.min(p.maxX, predictedX))
-    : Math.max(p.minX, Math.min(p.maxX, guardX + (ball.x-FIELD_W/2)*0.08));
+  const deepInOpponentSide = p.homeSide===1 ? ball.x > FIELD_W*0.72 : ball.x < FIELD_W*0.28;
+  const ownGoalX = p.homeSide===1 ? 60 : FIELD_W-60;
+  const guardX = ownGoalX + p.homeSide*170;
+  const targetX = deepInOpponentSide
+    ? Math.max(p.minX, Math.min(p.maxX, guardX))
+    : Math.max(p.minX, Math.min(p.maxX, predictedX));
 
   const diff = targetX - p.x;
   const dir = Math.abs(diff) < 6 ? 0 : Math.sign(diff);
-  const speedMul = ballOnMySide ? 1 : 0.6;
+  const speedMul = deepInOpponentSide ? 0.65 : 1;
   p.vx = dir*PLAYER_SPEED*speedMul;
   p.x += p.vx*dt;
   if(Math.abs(ball.x - p.x) < 40) p.facing = ball.x > p.x ? 1 : -1;
@@ -375,6 +389,33 @@ function aiControl(p, ball, dt){
   const ballComingDown = ball.vy > -40;
   if(p.grounded && ballClose && ballAbove && ballComingDown && Math.random() < 0.28){
     p.vy = -JUMP_V; p.grounded=false; p.squash=0.82; p.stretch=1.22;
+  }
+}
+
+/* The shoot button: powers the ball toward goal if it's in range, otherwise
+   throws a punch if the opponent is close enough - land 5 to daze them for
+   a few seconds (frozen, via the stunTimer check in aiControl above). */
+function attemptAction(p, opponent, ball){
+  if(p.shootCooldown > 0) return;
+  const headY = GROUND_Y - 72 + p.y;
+  const distToBall = Math.hypot(ball.x-p.x, ball.y-headY);
+  if(distToBall < SHOOT_RANGE){
+    ball.vx = p.facing*640 + p.vx*0.3;
+    ball.vy = -280;
+    p.kickTimer = 0.22;
+    p.shootCooldown = 0.35;
+    return;
+  }
+  if(opponent.stunTimer <= 0 && Math.abs(opponent.x - p.x) < PUNCH_RANGE){
+    opponent.hitsTaken = (opponent.hitsTaken||0) + 1;
+    opponent.punchFlash = 0.18;
+    const dir = Math.sign(opponent.x - p.x) || opponent.homeSide;
+    opponent.x = Math.max(opponent.minX, Math.min(opponent.maxX, opponent.x + dir*16));
+    p.shootCooldown = 0.4;
+    if(opponent.hitsTaken >= PUNCHES_TO_STUN){
+      opponent.hitsTaken = 0;
+      opponent.stunTimer = STUN_DURATION;
+    }
   }
 }
 
@@ -567,15 +608,32 @@ function drawPlayer(ctx, p, color, color2, skin, hair, name, photo){
     });
 
     // face
-    ctx.fillStyle = '#20140c';
-    ctx.beginPath(); ctx.arc(p.facing*9, headCY+2, 2.6, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(p.facing*9-p.facing*11, headCY+2, 2.1, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.6; ctx.lineCap='round';
-    if(celebrating){
-      ctx.beginPath(); ctx.arc(p.facing*2, headCY+10, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+    const stunned = p.stunTimer > 0;
+    ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.8; ctx.lineCap='round';
+    if(stunned){
+      // dazed X_X eyes
+      [-1,1].forEach(side=>{
+        const ex = 9*side;
+        ctx.beginPath(); ctx.moveTo(ex-2.6, headCY-0.6); ctx.lineTo(ex+2.6, headCY+2.6); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(ex+2.6, headCY-0.6); ctx.lineTo(ex-2.6, headCY+2.6); ctx.stroke();
+      });
+      ctx.beginPath(); ctx.arc(0, headCY+10, 5, 0, Math.PI); ctx.stroke();
     } else {
-      ctx.beginPath(); ctx.moveTo(p.facing*-3, headCY+11); ctx.lineTo(p.facing*5, headCY+11); ctx.stroke();
+      ctx.fillStyle = '#20140c';
+      ctx.beginPath(); ctx.arc(p.facing*9, headCY+2, 2.6, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.facing*9-p.facing*11, headCY+2, 2.1, 0, Math.PI*2); ctx.fill();
+      if(celebrating){
+        ctx.beginPath(); ctx.arc(p.facing*2, headCY+10, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.moveTo(p.facing*-3, headCY+11); ctx.lineTo(p.facing*5, headCY+11); ctx.stroke();
+      }
     }
+  }
+
+  // punch impact flash
+  if(p.punchFlash > 0){
+    ctx.fillStyle = `rgba(255,255,255,${(p.punchFlash/0.18)*0.55})`;
+    ctx.beginPath(); ctx.arc(0, torsoTop - HEAD_R*0.62, HEAD_R*1.15, 0, Math.PI*2); ctx.fill();
   }
 
   ctx.restore();
@@ -587,6 +645,36 @@ function drawPlayer(ctx, p, color, color2, skin, hair, name, photo){
   ctx.textAlign='center';
   ctx.textBaseline='alphabetic';
   ctx.fillText(name, p.x, headWorldY - HEAD_R - 8);
+
+  if(p.stunTimer > 0){
+    // spinning dizzy stars + countdown
+    for(let i=0;i<3;i++){
+      const a = p.dizzyPhase + i*(Math.PI*2/3);
+      const sx = p.x + Math.cos(a)*(HEAD_R*0.95);
+      const sy = headWorldY - HEAD_R*1.5 + Math.sin(a)*(HEAD_R*0.35);
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(a);
+      ctx.fillStyle = '#ffd23f';
+      ctx.beginPath();
+      polygonPath(ctx, 0, 0, 5, 5, -Math.PI/2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.fillStyle = '#ffd23f';
+    ctx.font = '700 12px Tajawal, Segoe UI, sans-serif';
+    ctx.fillText(`دايخ ${p.stunTimer.toFixed(1)}`, p.x, headWorldY - HEAD_R - 24);
+  } else if(p.hitsTaken > 0){
+    // punch-combo progress dots
+    const dotsY = headWorldY - HEAD_R - 22;
+    const startX = p.x - (PUNCHES_TO_STUN-1)*5;
+    for(let i=0;i<PUNCHES_TO_STUN;i++){
+      ctx.beginPath();
+      ctx.arc(startX + i*10, dotsY, 3, 0, Math.PI*2);
+      ctx.fillStyle = i < p.hitsTaken ? '#ff5a5a' : 'rgba(255,255,255,0.25)';
+      ctx.fill();
+    }
+  }
 }
 
 function polygonPath(ctx,cx,cy,r,sides,rot){

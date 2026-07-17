@@ -197,6 +197,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 #hb-touch-controls{ direction:ltr; display:none; justify-content:space-between; align-items:flex-end; margin-top:12px; padding:0 4px; user-select:none; }
 #hb-touch-controls.active{ display:flex; }
 .hb-touch-move{ display:flex; gap:10px; }
+.hb-touch-actions{ display:flex; align-items:flex-end; gap:10px; }
 .hb-touch-btn{
   width:58px; height:58px; border-radius:50%; border:1px solid rgba(255,255,255,0.25);
   background:rgba(255,255,255,0.1); color:#fff; font-size:24px; touch-action:manipulation;
@@ -204,6 +205,8 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 }
 .hb-touch-btn:active, .hb-touch-btn.pressed{ background:rgba(47,191,110,0.45); border-color:var(--green-light); }
 .hb-touch-btn.jump{ width:72px; height:72px; font-size:26px; background:rgba(0,229,255,0.16); border-color:rgba(0,229,255,0.4); }
+.hb-touch-btn.shoot{ background:rgba(255,90,90,0.16); border-color:rgba(255,90,90,0.4); }
+.hb-touch-btn.shoot:active, .hb-touch-btn.shoot.pressed{ background:rgba(255,90,90,0.5); border-color:#ff5a5a; }
 
 /* Reports */
 .reports-list{ display:flex; flex-direction:column; gap:16px; }
