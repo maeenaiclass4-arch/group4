@@ -186,22 +186,6 @@ async function boot() {
     );
   }
 
-  // ---- Forced landscape (touch only) — a blocking rotate prompt, the same
-  // convention mobile FPS games use, since there's no reliable cross-browser
-  // way to force actual OS-level orientation lock outside a fullscreen/PWA
-  // context. ----
-  const rotatePrompt = document.getElementById('rotate-prompt');
-  let orientationBlocked = false;
-  function updateOrientationGate() {
-    orientationBlocked = input.isTouch && window.matchMedia('(orientation: portrait)').matches;
-    rotatePrompt.hidden = !orientationBlocked;
-  }
-  if (input.isTouch) {
-    window.addEventListener('resize', updateOrientationGate);
-    window.addEventListener('orientationchange', updateOrientationGate);
-    updateOrientationGate();
-  }
-
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -234,8 +218,8 @@ async function boot() {
     } else {
       // input.isLocked already goes false on desktop the moment settings
       // exits pointer lock; touch has no such signal, hence the explicit
-      // settingsOpen/orientationBlocked checks alongside it.
-      const active = input.isLocked && !settingsOpen && !orientationBlocked;
+      // settingsOpen check alongside it.
+      const active = input.isLocked && !settingsOpen;
       player.update(dt, { processInput: active });
       if (active) {
         scene.updateMatrixWorld();

@@ -30,7 +30,6 @@ const STRINGS = {
     'settings.close': 'Close',
     'settings.language.en': 'English',
     'settings.language.ar': 'Arabic',
-    'rotate.message': 'Rotate your device to continue.',
   },
   ar: {
     'game.title': 'الأرشيف',
@@ -55,7 +54,6 @@ const STRINGS = {
     'settings.close': 'إغلاق',
     'settings.language.en': 'الإنجليزية',
     'settings.language.ar': 'العربية',
-    'rotate.message': 'أدر جهازك للمتابعة.',
   },
 };
 
