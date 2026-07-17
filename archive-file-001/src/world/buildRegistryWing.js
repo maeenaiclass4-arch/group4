@@ -108,6 +108,21 @@ function buildCorkboard(materials) {
   note.position.set(0.03, -0.22, 0.18);
   group.add(note);
 
+  // A small brass reading-light above the board, purely decorative — its
+  // actual illumination comes from the case room's fill light (see
+  // buildRegistryWing) rather than its own point light, since a light
+  // mounted this close to a flat surface blows the surface out to white
+  // long before it reaches the photo a few centimetres below it.
+  const sconceArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.16, 8), materials.brass);
+  sconceArm.position.set(0.09, 0.66, -0.05);
+  sconceArm.rotation.z = Math.PI / 2.2;
+  group.add(sconceArm);
+  const sconceShade = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.1, 14, 1, true), materials.darkGreen);
+  sconceShade.position.set(0.15, 0.6, -0.05);
+  sconceShade.rotation.x = Math.PI;
+  sconceShade.rotation.z = 0.6;
+  group.add(sconceShade);
+
   return group;
 }
 
@@ -237,6 +252,14 @@ export function buildRegistryWing({ materials, collisionWorld }) {
       group.add(folder);
     }
   }
+
+  // Room fill light: a soft, wide-reaching source mounted at ceiling height
+  // in the room's centre, standing in for bounce light off the desk lamp
+  // and corridor bulb. Keeps every corner of the case room legible (GDD
+  // pillar 1) without any single fixture hotspotting a nearby surface.
+  const fillLight = new THREE.PointLight(0xd8c8a8, 16, 9, 1.6);
+  fillLight.position.set(0, ROOM_HEIGHT - 0.3, (ROOM_NEAR_Z + ROOM_FAR_Z) / 2);
+  group.add(fillLight);
 
   // desk + chair + lamp
   const desk = buildDesk(materials);

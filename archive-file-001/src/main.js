@@ -147,7 +147,7 @@ async function boot() {
   animate();
 
   if (import.meta.env.DEV) {
-    window.__ARCHIVE__ = { scene, camera, player, caseOne, saveManager, collisionWorld, SPAWN_POSE };
+    window.__ARCHIVE__ = { scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, SPAWN_POSE };
   }
 }
 

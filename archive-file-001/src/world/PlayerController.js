@@ -81,5 +81,9 @@ export class PlayerController {
     this.camera.position.copy(this.position);
     this.camera.rotation.order = 'YXZ';
     this.camera.rotation.set(this.pitch, this.yaw, 0);
+    // Interaction raycasting reads camera.matrixWorld this same frame,
+    // before the renderer's own render() call would otherwise refresh it —
+    // without this, hover/interact would always lag one frame behind.
+    this.camera.updateMatrixWorld();
   }
 }
