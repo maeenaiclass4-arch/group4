@@ -84,6 +84,16 @@ function lookFor(name, seed){
   return PLAYER_LOOK[name] || DEFAULT_LOOKS[seed % DEFAULT_LOOKS.length];
 }
 
+// Optional real photo per player: drop a file at assets/players/{الاسم}.png
+// (see assets/README.md) and it's used as the head instead of the drawn
+// face. Missing files just fail to load and the drawn face is used.
+function loadPlayerPhoto(name){
+  const img = new Image();
+  img.src = 'assets/players/' + encodeURIComponent(name) + '.png';
+  return img;
+}
+function photoReady(img){ return !!(img && img.complete && img.naturalWidth > 0); }
+
 function setupMatchFromYear(year){
   const wc = WORLD_CUPS.find(w=>w.year===year);
   const [c1a,c1b] = countryColor(wc.finalStars.a.country);
@@ -92,8 +102,8 @@ function setupMatchFromYear(year){
   const lookB = lookFor(wc.finalStars.b.name, 1);
   match = {
     year: wc.year,
-    p1:{ name: wc.finalStars.a.name, country: wc.finalStars.a.country, color:c1a, color2:c1b, skin:lookA.skin, hair:lookA.hair },
-    p2:{ name: wc.finalStars.b.name, country: wc.finalStars.b.country, color:c2a, color2:c2b, skin:lookB.skin, hair:lookB.hair },
+    p1:{ name: wc.finalStars.a.name, country: wc.finalStars.a.country, color:c1a, color2:c1b, skin:lookA.skin, hair:lookA.hair, photo:loadPlayerPhoto(wc.finalStars.a.name) },
+    p2:{ name: wc.finalStars.b.name, country: wc.finalStars.b.country, color:c2a, color2:c2b, skin:lookB.skin, hair:lookB.hair, photo:loadPlayerPhoto(wc.finalStars.b.name) },
   };
 }
 
@@ -471,7 +481,7 @@ function drawLeg(ctx, hipX, hipY, leg, shortsColor, bootColor){
   ctx.fill();
 }
 
-function drawPlayer(ctx, p, color, color2, skin, hair, name){
+function drawPlayer(ctx, p, color, color2, skin, hair, name, photo){
   const feetY = GROUND_Y + p.y;
   const celebrating = p.celebrateTimer > 0;
 
@@ -525,33 +535,47 @@ function drawPlayer(ctx, p, color, color2, skin, hair, name){
 
   // big round head sitting almost directly on the jersey (little to no neck)
   const headCY = torsoTop - HEAD_R*0.62;
-  ctx.fillStyle = skin;
-  ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.fill();
 
-  // hair (short crop)
-  ctx.fillStyle = hair;
-  ctx.beginPath();
-  ctx.arc(0, headCY-3, HEAD_R*1.0, Math.PI*1.04, Math.PI*1.96);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(p.facing*HEAD_R*0.5, headCY-HEAD_R*0.62, HEAD_R*0.46, HEAD_R*0.32, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // ears
-  ctx.fillStyle = skin;
-  [-1,1].forEach(side=>{
-    ctx.beginPath(); ctx.ellipse(side*HEAD_R*0.92, headCY+2, HEAD_R*0.14, HEAD_R*0.2, 0, 0, Math.PI*2); ctx.fill();
-  });
-
-  // face
-  ctx.fillStyle = '#20140c';
-  ctx.beginPath(); ctx.arc(p.facing*9, headCY+2, 2.6, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(p.facing*9-p.facing*11, headCY+2, 2.1, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.6; ctx.lineCap='round';
-  if(celebrating){
-    ctx.beginPath(); ctx.arc(p.facing*2, headCY+10, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+  if(photoReady(photo)){
+    // A real photo: clip it into the head circle instead of drawing a face.
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.clip();
+    const img = photo;
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const sx = (img.naturalWidth-side)/2, sy = (img.naturalHeight-side)/2;
+    ctx.drawImage(img, sx, sy, side, side, -HEAD_R, headCY-HEAD_R, HEAD_R*2, HEAD_R*2);
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(0,0,0,0.25)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.stroke();
   } else {
-    ctx.beginPath(); ctx.moveTo(p.facing*-3, headCY+11); ctx.lineTo(p.facing*5, headCY+11); ctx.stroke();
+    ctx.fillStyle = skin;
+    ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.fill();
+
+    // hair (short crop)
+    ctx.fillStyle = hair;
+    ctx.beginPath();
+    ctx.arc(0, headCY-3, HEAD_R*1.0, Math.PI*1.04, Math.PI*1.96);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(p.facing*HEAD_R*0.5, headCY-HEAD_R*0.62, HEAD_R*0.46, HEAD_R*0.32, 0, 0, Math.PI*2);
+    ctx.fill();
+
+    // ears
+    ctx.fillStyle = skin;
+    [-1,1].forEach(side=>{
+      ctx.beginPath(); ctx.ellipse(side*HEAD_R*0.92, headCY+2, HEAD_R*0.14, HEAD_R*0.2, 0, 0, Math.PI*2); ctx.fill();
+    });
+
+    // face
+    ctx.fillStyle = '#20140c';
+    ctx.beginPath(); ctx.arc(p.facing*9, headCY+2, 2.6, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(p.facing*9-p.facing*11, headCY+2, 2.1, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.6; ctx.lineCap='round';
+    if(celebrating){
+      ctx.beginPath(); ctx.arc(p.facing*2, headCY+10, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
+    } else {
+      ctx.beginPath(); ctx.moveTo(p.facing*-3, headCY+11); ctx.lineTo(p.facing*5, headCY+11); ctx.stroke();
+    }
   }
 
   ctx.restore();
@@ -696,8 +720,8 @@ function render(ctx){
   ctx.strokeRect(FIELD_W-GOAL_W, GOAL_TOP, GOAL_W, GOAL_H);
 
   if(gs){
-    drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.skin, match.p1.hair, match.p1.name);
-    drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.skin, match.p2.hair, match.p2.name);
+    drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.skin, match.p1.hair, match.p1.name, match.p1.photo);
+    drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.skin, match.p2.hair, match.p2.name, match.p2.photo);
     drawBall(ctx, gs.ball);
     drawConfetti(ctx, gs);
   }

@@ -17,6 +17,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline:2px solid var(--green-light); outline-offset:2px;
 }
 
+/* Real-image fallback wrapper: invisible in the box model so the drawn SVG
+   (or the <img> before it) sizes exactly as if it were the only child. */
+.img-fallback{ display:contents; }
+
 #mascot-bg{
   position:fixed; inset:0; z-index:-1; overflow:hidden;
   background:
@@ -80,6 +84,14 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 }
 .player-card h3{ font-family:'Rajdhani',sans-serif; font-size:20px; margin-bottom:4px; }
 .player-card .pc-meta{ color:var(--gold); font-size:13.5px; margin-bottom:10px; }
+.pc-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.pc-avatar{
+  width:46px; height:46px; border-radius:50%; overflow:hidden; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-weight:700; color:#04140b; font-size:18px;
+}
+.pc-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+.pc-avatar .img-fallback{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; }
+.pc-head .pc-meta{ margin-bottom:0; }
 .pc-appearances{ display:flex; flex-wrap:wrap; gap:8px; }
 .pc-chip{
   background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:10px;
@@ -96,7 +108,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 .edition-hit:hover{ border-color:var(--green-light); }
 .edition-hit .eh-row{ display:flex; align-items:center; gap:8px; }
 .eh-icon{ width:24px; height:24px; flex-shrink:0; }
-.eh-icon svg{ width:100%; height:100%; display:block; }
+.eh-icon svg, .eh-icon img{ width:100%; height:100%; display:block; object-fit:contain; }
 
 /* Editions grid */
 .editions-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:16px; margin-top:10px; }
@@ -106,7 +118,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 }
 .edition-card:hover{ transform:translateY(-3px); border-color:var(--green-light); }
 .edition-card .ec-emoji{ width:40px; height:40px; }
-.edition-card .ec-emoji svg{ width:100%; height:100%; display:block; }
+.edition-card .ec-emoji svg, .edition-card .ec-emoji img{ width:100%; height:100%; display:block; object-fit:contain; }
 .edition-card .ec-year{ font-family:'Rajdhani',sans-serif; font-size:26px; font-weight:700; margin-top:6px; }
 .edition-card .ec-host{ color:var(--muted); font-size:13.5px; margin-bottom:10px; }
 .edition-card .ec-winner{ font-size:13.5px; }
@@ -117,7 +129,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 .ed-close{ float:left; background:transparent; border:1px solid rgba(255,255,255,0.2); color:var(--text); border-radius:10px; padding:8px 14px; cursor:pointer; touch-action:manipulation; }
 .ed-header{ display:flex; gap:16px; align-items:center; margin-bottom:14px; flex-wrap:wrap; }
 .ed-header .ed-emoji{ width:clamp(46px,9vw,64px); height:clamp(46px,9vw,64px); flex-shrink:0; }
-.ed-header .ed-emoji svg{ width:100%; height:100%; display:block; }
+.ed-header .ed-emoji svg, .ed-header .ed-emoji img{ width:100%; height:100%; display:block; object-fit:contain; }
 .ed-header h2{ font-family:'Rajdhani',sans-serif; font-size:clamp(20px,5.5vw,30px); }
 .ed-header .ed-sub{ color:var(--muted); font-size:13.5px; }
 .ed-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr)); gap:16px; margin-top:16px; }
@@ -125,7 +137,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 .ed-box h4{ color:var(--gold); font-size:14px; margin-bottom:10px; }
 .ed-box .vs-row{ display:flex; justify-content:space-between; align-items:center; font-size:15px; gap:8px; flex-wrap:wrap; }
 .mascot-box-icon{ width:56px; height:56px; margin:0 auto 8px; }
-.mascot-box-icon svg{ width:100%; height:100%; display:block; }
+.mascot-box-icon svg, .mascot-box-icon img{ width:100%; height:100%; display:block; object-fit:contain; }
 .scorer-line{ display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px dashed rgba(255,255,255,0.08); font-size:14px; gap:8px; flex-wrap:wrap; }
 .scorer-line:last-child{ border-bottom:none; }
 .scorer-line a{ color:var(--green-light); font-size:12.5px; text-decoration:none; }
@@ -134,7 +146,8 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 /* Jerseys */
 .jerseys-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr)); gap:16px; }
 .jersey-card{ background:var(--panel); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:16px; text-align:center; }
-.jersey-svg{ width:100%; height:150px; }
+.jersey-photo-wrap{ display:block; width:100%; }
+.jersey-svg, .jersey-photo-wrap img{ width:100%; height:150px; display:block; object-fit:contain; }
 .jersey-name{ font-weight:700; margin-top:10px; font-size:14.5px; }
 .jersey-meta{ color:var(--muted); font-size:12.5px; margin-top:2px; }
 .jersey-goals{ color:var(--gold); font-size:13px; margin-top:4px; font-weight:700; }
@@ -174,7 +187,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 .hb-result.hidden{ display:none; }
 
 /* Touch controls for Head Ball (shown only on touch devices) */
-#hb-touch-controls{ display:none; justify-content:space-between; align-items:flex-end; margin-top:12px; padding:0 4px; user-select:none; }
+#hb-touch-controls{ direction:ltr; display:none; justify-content:space-between; align-items:flex-end; margin-top:12px; padding:0 4px; user-select:none; }
 #hb-touch-controls.active{ display:flex; }
 .hb-touch-move{ display:flex; gap:10px; }
 .hb-touch-btn{
@@ -192,7 +205,7 @@ h1{ font-family:'Rajdhani',sans-serif; font-size:clamp(22px,5vw,30px); margin-bo
 .report-card summary::-webkit-details-marker{ display:none; }
 .report-card summary .rc-title{ display:flex; align-items:center; gap:8px; }
 .report-card summary .rc-icon{ width:26px; height:26px; flex-shrink:0; }
-.report-card summary .rc-icon svg{ width:100%; height:100%; display:block; }
+.report-card summary .rc-icon svg, .report-card summary .rc-icon img{ width:100%; height:100%; display:block; object-fit:contain; }
 .report-card summary .rc-tag{ font-size:12.5px; color:var(--gold); background:rgba(255,210,63,0.1); padding:4px 10px; border-radius:8px; white-space:nowrap; }
 .report-body{ margin-top:14px; display:grid; grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr)); gap:14px; }
 .report-body .rb-item h5{ color:var(--green-light); font-size:13.5px; margin-bottom:6px; }

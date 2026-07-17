@@ -227,6 +227,23 @@ function mascotIllustration(wc){
   return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${wc.mascot.name}">${body}</svg>`;
 }
 
+/* ---------------- Real-image support (optional, drop files into assets/) ----------------
+   Every spot that shows a mascot, a jersey, or a player uses a real photo the
+   moment one exists at the expected path, and silently falls back to the
+   drawn version if it doesn't. See assets/README.md for the exact paths. */
+function mascotPhotoSrc(wc){ return `assets/mascots/${wc.year}.png`; }
+function jerseyPhotoSrc(wc){ return `assets/jerseys/${wc.year}.png`; }
+function playerPhotoSrc(name){ return `assets/players/${encodeURIComponent(name)}.png`; }
+
+function withPhotoFallback(photoSrc, alt, fallbackHtml){
+  return `<img src="${photoSrc}" alt="${alt}" loading="lazy"
+      onerror="this.style.display='none'; this.nextElementSibling.style.removeProperty('display')">
+    <span class="img-fallback" style="display:none">${fallbackHtml}</span>`;
+}
+function mascotIconHtml(wc){
+  return withPhotoFallback(mascotPhotoSrc(wc), wc.mascot.name, mascotIllustration(wc));
+}
+
 /* ---------------- Search ---------------- */
 function normalize(s){ return (s||'').toString().trim().toLowerCase(); }
 
@@ -264,9 +281,16 @@ function renderPlayerCard(p){
     const url = youtubeSearchUrl(`${p.name} أهداف كأس العالم ${a.year}`);
     return `<span class="pc-chip">🏆 ${a.year} — ${a.goals} هدف <a href="${url}" target="_blank" rel="noopener">شاهد المقاطع ▶</a></span>`;
   }).join('');
+  const [ac1] = countryColor(p.country);
+  const initial = p.name.trim().charAt(0);
   card.innerHTML = `
-    <h3>${p.name}</h3>
-    <div class="pc-meta">${p.country} · إجمالي ${p.totalGoals} هدف في كأس العالم عبر ${p.appearances.length} نسخة</div>
+    <div class="pc-head">
+      <span class="pc-avatar" style="background:${ac1}">${withPhotoFallback(playerPhotoSrc(p.name), p.name, initial)}</span>
+      <div>
+        <h3>${p.name}</h3>
+        <div class="pc-meta">${p.country} · إجمالي ${p.totalGoals} هدف في كأس العالم عبر ${p.appearances.length} نسخة</div>
+      </div>
+    </div>
     <div class="pc-appearances">${apps}</div>
   `;
   return card;
@@ -278,7 +302,7 @@ function renderEditionHit(wc){
   div.setAttribute('role','button');
   div.tabIndex = 0;
   div.innerHTML = `
-    <div class="eh-row"><span class="eh-icon">${mascotIllustration(wc)}</span> <b>كأس العالم ${wc.year}</b> — ${wc.host}</div>
+    <div class="eh-row"><span class="eh-icon">${mascotIconHtml(wc)}</span> <b>كأس العالم ${wc.year}</b> — ${wc.host}</div>
     <div>🏆 ${wc.winner} <small style="color:var(--muted)">(${wc.score} أمام ${wc.runnerUp})</small></div>
   `;
   const go = ()=>{
@@ -303,7 +327,7 @@ function renderEditionsGrid(){
     const card = document.createElement('button');
     card.className='edition-card';
     card.innerHTML = `
-      <div class="ec-emoji">${mascotIllustration(wc)}</div>
+      <div class="ec-emoji">${mascotIconHtml(wc)}</div>
       <div class="ec-year">${wc.year}</div>
       <div class="ec-host">${wc.host}</div>
       <div class="ec-winner">🏆 <b>${wc.winner}</b></div>
@@ -330,7 +354,7 @@ function showEditionDetail(year){
     <button class="ed-close" id="ed-close-btn">✕ إغلاق</button>
     <div style="clear:both"></div>
     <div class="ed-header">
-      <div class="ed-emoji">${mascotIllustration(wc)}</div>
+      <div class="ed-emoji">${mascotIconHtml(wc)}</div>
       <div>
         <h2>كأس العالم ${wc.year} — ${wc.host}</h2>
         <div class="ed-sub">المدينة المضيفة للنهائي: ${wc.hostCity} · الحضور الإجمالي التقريبي: ${wc.attendance}</div>
@@ -343,7 +367,7 @@ function showEditionDetail(year){
       </div>
       <div class="ed-box">
         <h4>تميمة النسخة</h4>
-        <div class="mascot-box-icon">${mascotIllustration(wc)}</div>
+        <div class="mascot-box-icon">${mascotIconHtml(wc)}</div>
         <p style="text-align:center"><b>${wc.mascot.name}</b></p>
         <p>${wc.mascot.desc}</p>
       </div>
@@ -403,7 +427,7 @@ function renderJerseys(){
     const card = document.createElement('div');
     card.className='jersey-card';
     card.innerHTML = `
-      ${jerseySvg(c1,c2, top.goals)}
+      <span class="jersey-photo-wrap">${withPhotoFallback(jerseyPhotoSrc(wc), `قميص ${top.name}`, jerseySvg(c1,c2, top.goals))}</span>
       <div class="jersey-name">${top.name}</div>
       <div class="jersey-meta">${top.country} · كأس العالم ${wc.year}</div>
       <div class="jersey-goals">⚽ ${top.goals} هدف — حامل الحذاء الذهبي</div>
@@ -421,7 +445,7 @@ function renderReports(){
     det.className='report-card';
     det.innerHTML = `
       <summary>
-        <span class="rc-title"><span class="rc-icon">${mascotIllustration(wc)}</span> كأس العالم ${wc.year} — ${wc.host}</span>
+        <span class="rc-title"><span class="rc-icon">${mascotIconHtml(wc)}</span> كأس العالم ${wc.year} — ${wc.host}</span>
         <span class="rc-tag">مضيف</span>
       </summary>
       <div class="report-body">
