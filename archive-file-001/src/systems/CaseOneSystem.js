@@ -47,7 +47,6 @@ export class CaseOneSystem {
     this.chairTo = { x: 0, z: 0, ry: 0 };
 
     this.chair.userData.onInteract = () => this.advanceChair();
-    this.chair.userData.interactable.hint = 'A chair, out of place.';
 
     const compartment = this.hatch.parent;
     compartment.userData.onInteract = () => this.touchCompartment();
@@ -103,16 +102,16 @@ export class CaseOneSystem {
     this.hatchTarget = 1;
     this.key.visible = true;
     this.audio.mechanismOpen();
-    this.ui.showCaption('Something shifts beneath the desk.');
+    this.ui.showCaption('case1.solve.caption');
     this.onStateChanged?.();
   }
 
   viewPhoto() {
     this.audio.interact();
-    this.ui.showCaption('A photograph, pinned above the desk. The chair does not sit like this anymore.');
+    this.ui.showCaption('case1.photo.caption');
     if (!this.photoSeen) {
       this.photoSeen = true;
-      this.ui.addCasebookEntry('A pinned photograph of this desk — the chair pulled aside, turned toward the window. Not where it stands now.');
+      this.ui.addCasebookEntry('case1.photo.entry');
       this.onStateChanged?.();
     }
   }
@@ -121,7 +120,7 @@ export class CaseOneSystem {
     if (!this.solved) {
       this.audio.denied();
       this.ui.pulseReticle('denied');
-      this.ui.showCaption('Sealed. Nothing here moves yet.');
+      this.ui.showCaption('case1.compartment.denied');
       return;
     }
     if (!this.keyCollected) this.collectKey();
@@ -132,8 +131,8 @@ export class CaseOneSystem {
     this.keyCollected = true;
     this.key.visible = false;
     this.audio.pickup();
-    this.ui.showCaption('A brass key. Someone meant to come back for this.');
-    this.ui.addCasebookEntry('A key, found beneath the false floor of a clerk’s desk — left for whoever finally noticed the chair.');
+    this.ui.showCaption('case1.key.caption');
+    this.ui.addCasebookEntry('case1.key.entry');
     this.onStateChanged?.();
   }
 

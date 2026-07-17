@@ -1,11 +1,20 @@
+import { t, applyStaticTranslations, onLanguageChange } from '../core/i18n.js';
+
 /**
  * The entire on-screen interface: a loading screen, a one-time start
  * prompt (pointer-lock requires a user gesture), a reticle/glint pair,
  * a caption line, and the Casebook overlay. Nothing else exists — no
  * HUD, no objective list, no progress bar (GDD §9).
+ *
+ * Captions and Casebook entries are stored/passed around as i18n *keys*,
+ * not resolved text — so a language switch mid-session (or a save/load
+ * round-trip) always re-resolves to the current language automatically,
+ * instead of freezing whatever language was active when the text was
+ * first shown.
  */
 export class UIController {
   #captionTimer = null;
+  #captionKey = null;
   #casebookEntries = [];
   #casebookOpen = false;
 
@@ -24,6 +33,12 @@ export class UIController {
     // button sits behind this overlay's z-index while it's open.
     this.casebookEl.addEventListener('click', (e) => {
       if (e.target === this.casebookEl) this.toggleCasebook();
+    });
+
+    onLanguageChange(() => {
+      applyStaticTranslations();
+      this.#renderCasebook();
+      if (this.#captionKey) this.captionEl.textContent = t(this.#captionKey);
     });
   }
 
@@ -58,25 +73,31 @@ export class UIController {
     this.reticle.classList.add(cls);
   }
 
-  showCaption(text) {
+  /** `key` is an i18n key, e.g. 'case1.solve.caption'. */
+  showCaption(key) {
     clearTimeout(this.#captionTimer);
-    this.captionEl.textContent = text;
+    this.#captionKey = key;
+    this.captionEl.textContent = t(key);
     this.captionEl.hidden = false;
     requestAnimationFrame(() => this.captionEl.classList.add('is-visible'));
     this.#captionTimer = setTimeout(() => {
       this.captionEl.classList.remove('is-visible');
-      setTimeout(() => { this.captionEl.hidden = true; }, 650);
+      setTimeout(() => {
+        this.captionEl.hidden = true;
+        this.#captionKey = null;
+      }, 650);
     }, 3800);
   }
 
-  addCasebookEntry(text) {
-    if (this.#casebookEntries.includes(text)) return;
-    this.#casebookEntries.push(text);
+  /** `key` is an i18n key, e.g. 'case1.key.entry'. */
+  addCasebookEntry(key) {
+    if (this.#casebookEntries.includes(key)) return;
+    this.#casebookEntries.push(key);
     this.#renderCasebook();
   }
 
-  hydrateCasebook(entries) {
-    this.#casebookEntries = [...entries];
+  hydrateCasebook(entryKeys) {
+    this.#casebookEntries = [...entryKeys];
     this.#renderCasebook();
   }
 
@@ -86,11 +107,11 @@ export class UIController {
 
   #renderCasebook() {
     if (this.#casebookEntries.length === 0) {
-      this.casebookContents.innerHTML = '<div class="casebook__empty">Nothing filed yet.</div>';
+      this.casebookContents.innerHTML = `<div class="casebook__empty">${t('casebook.empty')}</div>`;
       return;
     }
     this.casebookContents.innerHTML = this.#casebookEntries
-      .map((entry) => `<div class="casebook__entry">${entry}</div>`)
+      .map((key) => `<div class="casebook__entry">${t(key)}</div>`)
       .join('');
   }
 

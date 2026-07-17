@@ -16,6 +16,7 @@ import {
 import { buildReferencePhotoTexture } from './ReferencePhoto.js';
 import { createDustMotes } from './DustMotes.js';
 import { tagFlicker } from './Flicker.js';
+import { addInteractProxy } from './InteractProxy.js';
 
 function buildDesk(materials) {
   const group = new THREE.Group();
@@ -270,28 +271,40 @@ export function buildRegistryWing({ materials, collisionWorld }) {
   desk.position.set(DESK_POSITION.x, 0, DESK_POSITION.z);
   desk.rotation.y = Math.PI;
   group.add(desk);
+  // Static footprint collision — the desk never moves and never should be
+  // walked through, but it's also never meant to react like a physics body
+  // (no pushback/knockback), so this is exactly the same fixed-segment
+  // technique the walls use, not a rigid body.
+  collisionWorld.addBox(DESK_POSITION.x - 0.75, DESK_POSITION.x + 0.75, DESK_POSITION.z - 0.375, DESK_POSITION.z + 0.375);
 
+  // Every interactable gets a generously oversized invisible hit volume
+  // (InteractProxy.js) as a child — aiming anywhere near the object works,
+  // not just the exact visible pixels of its (often small) mesh.
   const chair = buildChair(materials);
   const slot0 = CHAIR_SLOTS[0];
   chair.position.set(slot0.x, 0, slot0.z);
   chair.rotation.y = slot0.ry;
   chair.userData.interactable = { type: 'chair' };
+  addInteractProxy(chair, { size: [0.8, 1.15, 0.8], offset: [0, 0.5, 0] });
   group.add(chair);
 
   const corkboard = buildCorkboard(materials);
   corkboard.position.set(CORKBOARD_POSITION.x, 1.15, CORKBOARD_POSITION.z);
   corkboard.userData.interactable = { type: 'photo' };
+  addInteractProxy(corkboard, { size: [0.7, 1.1, 1.3], offset: [0.25, 0, 0] });
   group.add(corkboard);
 
   const { group: compartmentGroup, hatch } = buildCompartment(materials);
   compartmentGroup.position.set(COMPARTMENT_POSITION.x, 0.001, COMPARTMENT_POSITION.z);
   compartmentGroup.userData.interactable = { type: 'compartment' };
+  addInteractProxy(compartmentGroup, { size: [0.65, 0.5, 0.55], offset: [0, 0.2, 0] });
   group.add(compartmentGroup);
 
   const key = buildKey(materials);
   key.position.set(COMPARTMENT_POSITION.x, 0.05, COMPARTMENT_POSITION.z);
   key.visible = false;
   key.userData.interactable = { type: 'key' };
+  addInteractProxy(key, { size: [0.32, 0.32, 0.32] });
   group.add(key);
 
   // Dust catching the banker's lamp and the corridor bulb — the only two

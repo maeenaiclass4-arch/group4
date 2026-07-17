@@ -57,9 +57,11 @@ export const ROOM_FAR_Z = ROOM_NEAR_Z - ROOM_DEPTH;
 
 // yaw 0 already faces -Z (three.js camera default) — the Rotunda's north
 // gate, per LevelLayout's orientation convention (see file header). The
-// south wall's apothem sits at z ≈ 8.315 (NORTH_WALL_Z mirrored), so the
-// spawn point must stay well inside that, clear of the intake desk.
-export const SPAWN_POSE = { x: 0, y: 1.68, z: 7.5, yaw: 0, pitch: 0 };
+// south wall's apothem sits at z ≈ 8.315 (NORTH_WALL_Z mirrored); the
+// intake desk (buildRotunda) now has real collision spanning roughly
+// z 6.515-7.315, so the spawn point sits in the gap between the two,
+// clear of both by more than the player's collision radius.
+export const SPAWN_POSE = { x: 0, y: 1.68, z: 7.9, yaw: 0, pitch: 0 };
 
 export const DESK_POSITION = { x: 0.9, z: ROOM_FAR_Z + 1.1 };
 export const CHAIR_HOME = { x: 0.9, z: ROOM_FAR_Z + 2.05, ry: 0 };

@@ -265,9 +265,15 @@ export function buildRotunda({ materials, collisionWorld }) {
       const inwardX = -midX / midLen;
       const inwardZ = -midZ / midLen;
       const desk = buildIntakeDesk(materials);
-      desk.position.set(midX + inwardX * 1.4, 0, midZ + inwardZ * 1.4);
+      const deskX = midX + inwardX * 1.4;
+      const deskZ = midZ + inwardZ * 1.4;
+      desk.position.set(deskX, 0, deskZ);
       desk.rotation.y = angle + Math.PI;
       group.add(desk);
+      // Static footprint collision (axis-aligned — currently only the south
+      // edge uses this role, whose rotation happens to be identity; revisit
+      // if a second 'solid-intake' edge is ever added at a rotated angle).
+      collisionWorld.addBox(deskX - 1.2, deskX + 1.2, deskZ - 0.4, deskZ + 0.4);
     } else if (edge.role === 'solid-memorial') {
       const wall = buildMemorialWall(materials, length, ROTUNDA_HEIGHT);
       wall.position.set(midX, 0, midZ);

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { SaveManager } from './core/SaveManager.js';
 import { AudioManager } from './core/AudioManager.js';
 import { InputManager } from './core/InputManager.js';
+import { SettingsStore } from './core/SettingsStore.js';
+import { applyStaticTranslations } from './core/i18n.js';
 import { buildMaterialLibrary } from './world/Materials.js';
 import { CollisionWorld } from './world/CollisionWorld.js';
 import { PlayerController } from './world/PlayerController.js';
@@ -10,6 +12,7 @@ import { buildRegistryWing } from './world/buildRegistryWing.js';
 import { InteractionSystem } from './systems/InteractionSystem.js';
 import { CaseOneSystem } from './systems/CaseOneSystem.js';
 import { UIController } from './ui/UIController.js';
+import { SettingsPanel } from './ui/SettingsPanel.js';
 import { SPAWN_POSE, NORTH_WALL_Z } from './world/LevelLayout.js';
 import { updateFlicker } from './world/Flicker.js';
 import { IntroPan } from './world/IntroPan.js';
@@ -50,6 +53,29 @@ async function boot() {
 
   const input = new InputManager(canvas);
   input.attach();
+
+  // Language + brightness are loaded (and applied) before the first paint
+  // of any real UI text, and before the start prompt shows its device-
+  // specific control hint.
+  if (input.isTouch) {
+    document.getElementById('start-prompt__hint').dataset.i18nHtml = 'start.hint.touch';
+  }
+  const settingsStore = new SettingsStore();
+  let settingsOpen = false;
+  const settingsPanel = new SettingsPanel({
+    settingsStore,
+    onExposureChange: (value) => { renderer.toneMappingExposure = value; },
+    onOpenChange: (isOpen) => {
+      settingsOpen = isOpen;
+      if (isOpen) {
+        if (document.pointerLockElement === canvas) document.exitPointerLock();
+      } else if (!input.isTouch && !input.isLocked) {
+        ui.showStartPrompt();
+      }
+    },
+  });
+  settingsPanel.applyInitial();
+  applyStaticTranslations();
 
   const audio = new AudioManager();
 
@@ -98,7 +124,7 @@ async function boot() {
   }
 
   function handleInteract() {
-    if (ui.isCasebookOpen) return;
+    if (ui.isCasebookOpen || settingsPanel.isOpen) return;
     const acted = interaction.interact();
     if (!acted) return;
     ui.pulseReticle('ok');
@@ -110,6 +136,10 @@ async function boot() {
     if (e.code === 'Tab') {
       e.preventDefault();
       ui.toggleCasebook();
+    } else if (e.code === 'Escape' && !input.isTouch) {
+      e.preventDefault();
+      if (settingsPanel.isOpen) settingsPanel.close();
+      else settingsPanel.open();
     }
   });
 
@@ -130,7 +160,7 @@ async function boot() {
   document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement === canvas) {
       enterGame();
-    } else {
+    } else if (!settingsPanel.isOpen) {
       ui.showStartPrompt();
     }
   });
@@ -142,8 +172,6 @@ async function boot() {
       onInteract: handleInteract,
       onCasebookToggle: () => ui.toggleCasebook(),
     });
-    const hint = document.getElementById('start-prompt__hint');
-    if (hint) hint.textContent = 'Move — left stick   ·   Look — drag   ·   Interact — button   ·   Casebook — book icon';
 
     // No real pointer lock on touch — tapping the start card is the entire
     // "begin" gesture, same job canvas's click-to-lock does on desktop.
@@ -156,6 +184,22 @@ async function boot() {
       },
       { passive: true },
     );
+  }
+
+  // ---- Forced landscape (touch only) — a blocking rotate prompt, the same
+  // convention mobile FPS games use, since there's no reliable cross-browser
+  // way to force actual OS-level orientation lock outside a fullscreen/PWA
+  // context. ----
+  const rotatePrompt = document.getElementById('rotate-prompt');
+  let orientationBlocked = false;
+  function updateOrientationGate() {
+    orientationBlocked = input.isTouch && window.matchMedia('(orientation: portrait)').matches;
+    rotatePrompt.hidden = !orientationBlocked;
+  }
+  if (input.isTouch) {
+    window.addEventListener('resize', updateOrientationGate);
+    window.addEventListener('orientationchange', updateOrientationGate);
+    updateOrientationGate();
   }
 
   window.addEventListener('resize', () => {
@@ -177,14 +221,27 @@ async function boot() {
     const dt = Math.min(clock.getDelta(), 0.08);
     elapsed += dt;
 
+    // Moves anything animated (the chair tween, the hatch, the key bob)
+    // before the raycast below, and scene.updateMatrixWorld() then
+    // refreshes every object's world transform from those new positions —
+    // without it, interaction.update() would raycast against last frame's
+    // transforms for anything that just moved, one frame behind reality.
+    caseOne.update(dt);
+
     if (introPan.active) {
       input.consumeLookDelta(); // discard mouse movement gathered during the pan
       introPan.update(camera, dt);
     } else {
-      player.update(dt, { processInput: input.isLocked });
-      if (input.isLocked) interaction.update();
+      // input.isLocked already goes false on desktop the moment settings
+      // exits pointer lock; touch has no such signal, hence the explicit
+      // settingsOpen/orientationBlocked checks alongside it.
+      const active = input.isLocked && !settingsOpen && !orientationBlocked;
+      player.update(dt, { processInput: active });
+      if (active) {
+        scene.updateMatrixWorld();
+        interaction.update();
+      }
     }
-    caseOne.update(dt);
     audio.setZone(player.position.z > NORTH_WALL_Z ? 'hall' : 'room');
 
     updateFlicker(rotundaGroup, elapsed);
@@ -202,7 +259,10 @@ async function boot() {
   animate();
 
   if (import.meta.env.DEV) {
-    window.__ARCHIVE__ = { scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, introPan, SPAWN_POSE };
+    window.__ARCHIVE__ = {
+      scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, introPan,
+      settingsPanel, input, SPAWN_POSE,
+    };
   }
 }
 

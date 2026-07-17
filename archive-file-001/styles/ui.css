@@ -25,6 +25,12 @@ html, body {
   color: var(--paper);
 }
 
+/* Georgia/Times have no Arabic glyphs — fall back to widely-available
+   system fonts with solid Arabic coverage, no web-font fetch required. */
+html[lang='ar'] body {
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+
 #scene-canvas {
   position: fixed;
   inset: 0;
@@ -308,4 +314,167 @@ html, body {
   .touch-joystick { width: 84px; height: 84px; }
   .touch-joystick__knob { width: 36px; height: 36px; margin: -18px 0 0 -18px; }
   .touch-btn--interact { width: 56px; height: 56px; }
+}
+
+/* ---- Settings gear (top-left, always available on desktop and touch) ---- */
+.corner-btn {
+  position: fixed;
+  z-index: 26;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 171, 99, 0.45);
+  background: rgba(20, 15, 10, 0.45);
+  color: var(--brass-bright);
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+}
+.corner-btn:hover, .corner-btn:active { background: rgba(217, 171, 99, 0.22); }
+.corner-btn--settings {
+  top: max(18px, env(safe-area-inset-top));
+  left: max(18px, env(safe-area-inset-left));
+  width: 44px;
+  height: 44px;
+}
+.corner-btn__gear {
+  position: absolute;
+  inset: 11px;
+  border: 1px solid var(--brass-bright);
+  border-radius: 50%;
+}
+.corner-btn__gear::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: var(--brass-bright);
+  opacity: 0.55;
+}
+
+/* ---- Settings panel — same "case file" language as the Casebook ----
+   z-index is deliberately above .start-prompt (40): a player can open
+   Settings (to switch language, most likely) before ever starting the
+   game, and it must fully cover the start card rather than fight it for
+   the same screen space. ---- */
+.settings-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(6, 5, 10, 0.72);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.settings-panel.is-open { opacity: 1; pointer-events: auto; }
+.settings-panel[hidden] { display: none; }
+.settings-panel__page {
+  width: min(26rem, 86vw);
+  background: linear-gradient(180deg, var(--paper) 0%, var(--paper-dim) 100%);
+  color: var(--ink);
+  padding: 2rem 2.25rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.settings-panel__header {
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  font-weight: bold;
+  color: var(--green);
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.settings-panel__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.settings-panel__label {
+  font-size: 0.9rem;
+  font-style: italic;
+}
+.settings-panel__lang-toggle {
+  display: flex;
+  gap: 0.4rem;
+}
+.settings-panel__lang-btn {
+  font-family: inherit;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(51, 64, 47, 0.4);
+  color: var(--ink);
+  cursor: pointer;
+}
+.settings-panel__lang-btn.is-active {
+  background: var(--green);
+  color: var(--paper);
+  border-color: var(--green);
+}
+.settings-panel__slider {
+  flex: 1;
+  accent-color: var(--brass);
+}
+.settings-panel__close {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.65rem;
+  background: transparent;
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+.settings-panel__close:active { background: rgba(51, 64, 47, 0.15); }
+
+/* ---- Forced-landscape prompt (touch only) ---- */
+.rotate-prompt {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #06050a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  text-align: center;
+  padding: 2rem;
+}
+.rotate-prompt[hidden] { display: none; }
+.rotate-prompt__icon {
+  width: 56px;
+  height: 40px;
+  border: 2px solid var(--brass-bright);
+  border-radius: 6px;
+  position: relative;
+  animation: rotate-hint 1.8s ease-in-out infinite;
+}
+.rotate-prompt__icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--brass-bright);
+}
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(90deg); }
+}
+.rotate-prompt__text {
+  font-size: 1rem;
+  color: var(--paper-dim);
+  max-width: 20rem;
 }

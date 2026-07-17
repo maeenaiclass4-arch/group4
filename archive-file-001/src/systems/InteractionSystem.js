@@ -28,6 +28,7 @@ export class InteractionSystem {
     this.#raycaster.far = MAX_DISTANCE;
     this.#raycaster.setFromCamera(this.#center, this.camera);
     const hits = this.#raycaster.intersectObjects(this.#objects, true);
+    if (import.meta.env.DEV) this.lastHits = hits;
 
     let target = null;
     for (const hit of hits) {
