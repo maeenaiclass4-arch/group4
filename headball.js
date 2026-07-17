@@ -34,14 +34,66 @@ function initHeadballUI(){
   });
 }
 
+/* Real-ish look-alike palette for well-known finalists, keyed by the exact
+   Arabic name used in data.js finalStars. Falls back to a varied default
+   for names not listed. */
+const PLAYER_LOOK = {
+  'هيكتور كاستро': {skin:'#c98a56', hair:'#1c1410'},
+  'غييرمو ستابيلي': {skin:'#c98a56', hair:'#241a12'},
+  'جوزيبي مياتزا': {skin:'#d9a879', hair:'#1c1410'},
+  'أولدريتش نيدلي': {skin:'#f0c6a0', hair:'#3a2418'},
+  'سيلفيو بيولا': {skin:'#d9a879', hair:'#1c1410'},
+  'جيولا زنغيلير': {skin:'#f0c6a0', hair:'#4a2f1c'},
+  'ألسيدس غيغيا': {skin:'#c98a56', hair:'#1c1410'},
+  'زيزينيو': {skin:'#8d5a34', hair:'#111111'},
+  'هيلموت رآن': {skin:'#f0c6a0', hair:'#3a2418'},
+  'فيرينتس بوشكاش': {skin:'#f0c6a0', hair:'#241a12'},
+  'بيليه': {skin:'#5c3a22', hair:'#111111'},
+  'نيلز ليدهولم': {skin:'#f0c6a0', hair:'#6b4423'},
+  'غارينشا': {skin:'#8d5a34', hair:'#111111'},
+  'جوزيف ماسوبوست': {skin:'#f0c6a0', hair:'#3a2418'},
+  'بوبي تشارلتون': {skin:'#f0c6a0', hair:'#6b4423'},
+  'فرانتس بيكنباور': {skin:'#f0c6a0', hair:'#6b4423'},
+  'لويجي ريفا': {skin:'#d9a879', hair:'#1c1410'},
+  'غيرد مولر': {skin:'#f0c6a0', hair:'#6b4423'},
+  'يوهان كرويف': {skin:'#f0c6a0', hair:'#6b4423'},
+  'ماريو كيمبيس': {skin:'#c98a56', hair:'#1c1410'},
+  'روب رينسنبرينك': {skin:'#f0c6a0', hair:'#6b4423'},
+  'باولو روسي': {skin:'#d9a879', hair:'#1c1410'},
+  'كارل هاينز رومينيغه': {skin:'#f0c6a0', hair:'#6b4423'},
+  'دييغو مارادونا': {skin:'#c98a56', hair:'#161010'},
+  'لوتار ماتيوس': {skin:'#f0c6a0', hair:'#3a2418'},
+  'روماريو': {skin:'#8d5a34', hair:'#111111'},
+  'روبرتو باجيو': {skin:'#d9a879', hair:'#1c1410'},
+  'زين الدين زيدان': {skin:'#d9a879', hair:'#1c1410'},
+  'رونالدو': {skin:'#8d5a34', hair:'#111111'},
+  'أوليفر كان': {skin:'#f0c6a0', hair:'#3a2418'},
+  'فابيو كانافارو': {skin:'#d9a879', hair:'#1c1410'},
+  'أندريس إنييستا': {skin:'#d9a879', hair:'#1c1410'},
+  'ويسلي سنايدر': {skin:'#f0c6a0', hair:'#6b4423'},
+  'ماريو غوتزه': {skin:'#f0c6a0', hair:'#6b4423'},
+  'ليونيل ميسي': {skin:'#c98a56', hair:'#241a12'},
+  'كيليان مبابي': {skin:'#4a2f1e', hair:'#0c0c0c'},
+  'لوكا مودريتش': {skin:'#f0c6a0', hair:'#3a2418'},
+};
+const DEFAULT_LOOKS = [
+  {skin:'#f0c6a0', hair:'#3a2418'}, {skin:'#d9a879', hair:'#1c1410'},
+  {skin:'#c98a56', hair:'#241a12'}, {skin:'#8d5a34', hair:'#111111'},
+];
+function lookFor(name, seed){
+  return PLAYER_LOOK[name] || DEFAULT_LOOKS[seed % DEFAULT_LOOKS.length];
+}
+
 function setupMatchFromYear(year){
   const wc = WORLD_CUPS.find(w=>w.year===year);
   const [c1a,c1b] = countryColor(wc.finalStars.a.country);
   const [c2a,c2b] = countryColor(wc.finalStars.b.country);
+  const lookA = lookFor(wc.finalStars.a.name, 0);
+  const lookB = lookFor(wc.finalStars.b.name, 1);
   match = {
     year: wc.year,
-    p1:{ name: wc.finalStars.a.name, country: wc.finalStars.a.country, color:c1a, color2:c1b },
-    p2:{ name: wc.finalStars.b.name, country: wc.finalStars.b.country, color:c2a, color2:c2b },
+    p1:{ name: wc.finalStars.a.name, country: wc.finalStars.a.country, color:c1a, color2:c1b, skin:lookA.skin, hair:lookA.hair },
+    p2:{ name: wc.finalStars.b.name, country: wc.finalStars.b.country, color:c2a, color2:c2b, skin:lookB.skin, hair:lookB.hair },
   };
 }
 
@@ -59,28 +111,24 @@ function updatePreview(){
 /* ---------------- Game engine ---------------- */
 const FIELD_W = 900, FIELD_H = 420, GROUND_Y = 380;
 const GOAL_TOP = 230, GOAL_H = 150, GOAL_W = 16;
-const GRAVITY = 1500, PLAYER_SPEED = 300, JUMP_V = 620, BALL_R = 13, HEAD_R = 21;
+const GRAVITY = 1500, PLAYER_SPEED = 300, JUMP_V = 620, BALL_R = 14, HEAD_R = 32;
 
-function newPlayerState(side, hairColor, skinTone){
+function newPlayerState(side){
   const isLeft = side==='left';
   return {
     x: isLeft ? 200 : 700, y:0, vy:0, vx:0, grounded:true,
-    minX: isLeft?60:470, maxX: isLeft?430:840,
+    minX: isLeft?60:430, maxX: isLeft?470:840,
     facing: isLeft?1:-1, kickCooldown:0,
     animPhase:0, kickTimer:0, celebrateTimer:0, squash:1, stretch:1,
-    hairColor, skinTone,
+    aiGuardX: isLeft?200:700,
   };
 }
-
-const SKIN_TONES = ['#ffd9b3', '#f0b98a', '#c98a56', '#8d5a34'];
-const HAIR_COLORS = ['#1c1410', '#3a2418', '#5c3a1e', '#111111'];
-function pick(arr, seed){ return arr[seed % arr.length]; }
 
 function resetGameState(){
   gameState = {
     running:true, time:60, lastT:performance.now(),
-    p1: newPlayerState('left', pick(HAIR_COLORS,1), pick(SKIN_TONES,2)),
-    p2: newPlayerState('right', pick(HAIR_COLORS,3), pick(SKIN_TONES,0)),
+    p1: newPlayerState('left'),
+    p2: newPlayerState('right'),
     ball:{x:FIELD_W/2, y:GROUND_Y-60, vx:0, vy:0, spin:0, trail:[]},
     score1:0, score2:0,
     confetti:[], shake:0, flash:0, hitstop:0,
@@ -191,8 +239,8 @@ function updatePhysics(dt){
   b.vy += GRAVITY*dt;
   b.x += b.vx*dt;
   b.y += b.vy*dt;
-  b.vx *= 0.995;
-  b.spin += (b.vx*dt*0.045) * (gs.hitstop>0?1:1);
+  b.vx *= Math.pow(0.92, dt);          // very light air resistance (framerate-independent)
+  b.spin += b.vx*dt*0.045;
 
   // trail
   const speed = Math.hypot(b.vx,b.vy);
@@ -202,15 +250,24 @@ function updatePhysics(dt){
   b.trail.forEach(t=> t.life -= dt*4.5);
   b.trail = b.trail.filter(t=>t.life>0).slice(-10);
 
-  // ground bounce
-  if(b.y > GROUND_Y - BALL_R){
-    b.y = GROUND_Y - BALL_R;
-    b.vy *= -0.55;
-    b.vx *= 0.85;
-    if(Math.abs(b.vy) < 40) b.vy = 0;
-  }
   // ceiling
   if(b.y < BALL_R){ b.y = BALL_R; b.vy *= -0.5; }
+
+  // ground: real bounce only on real impact speed, gentle rolling friction otherwise.
+  // (Bug fix: previously vx was cut by 15% on *every single frame* the ball
+  // rested on the ground, so it stopped after moving barely an inch.)
+  if(b.y > GROUND_Y - BALL_R){
+    b.y = GROUND_Y - BALL_R;
+    if(b.vy > 90){
+      b.vy *= -0.48;
+    } else {
+      b.vy = 0;
+    }
+  }
+  if(b.y >= GROUND_Y - BALL_R - 0.5 && b.vy === 0){
+    b.vx *= Math.pow(0.5, dt); // rolling friction, framerate-independent
+    if(Math.abs(b.vx) < 4) b.vx = 0;
+  }
 
   // side walls / goal detection
   const inGoalHeight = b.y > GOAL_TOP && b.y < GOAL_TOP+GOAL_H;
@@ -231,24 +288,24 @@ function updatePhysics(dt){
 
   // player-ball collisions (head + body approximated as circle)
   [gs.p1, gs.p2].forEach(p=>{
-    const headY = GROUND_Y - 63 + p.y;
+    const headY = GROUND_Y - 72 + p.y;
     const dx = b.x - p.x, dy = b.y - headY;
     const d = Math.hypot(dx,dy);
-    const minD = HEAD_R + BALL_R + 2;
+    const minD = HEAD_R + BALL_R - 4;
     if(d < minD && d>0.01){
       const nx = dx/d, ny = dy/d;
       const overlap = minD - d;
       b.x += nx*overlap; b.y += ny*overlap;
-      const power = 480 + Math.abs(p.vy)*0.3;
+      const power = 500 + Math.abs(p.vy)*0.3;
       b.vx = nx*power + p.vx*0.6;
       b.vy = ny*power - 120;
       p.kickTimer = 0.22;
     }
     // body/leg collision (lower box) - simple push
-    const bodyY = GROUND_Y - 30 + p.y;
+    const bodyY = GROUND_Y - 22 + p.y;
     const dx2 = b.x - p.x, dy2 = b.y - bodyY;
     const d2 = Math.hypot(dx2,dy2);
-    const minD2 = 28 + BALL_R;
+    const minD2 = 24 + BALL_R;
     if(d2 < minD2 && d2>0.01){
       const nx = dx2/d2, ny = dy2/d2;
       const overlap = minD2-d2;
@@ -283,16 +340,30 @@ function handlePlayerInput(p, keys, dt){
   if(keyState[keys.jump] && p.grounded){ p.vy = -JUMP_V; p.grounded=false; p.squash=0.82; p.stretch=1.22; }
 }
 
+/* A proper opponent: predicts where the ball is heading, chases it
+   aggressively when it's on its side, jumps to meet incoming balls, and
+   falls back to guarding its goal line when the ball is far away. */
 function aiControl(p, ball, dt){
-  const targetX = Math.max(p.minX, Math.min(p.maxX, ball.x));
+  const lookaheadT = 0.18;
+  const predictedX = ball.x + ball.vx*lookaheadT;
+  const ballOnMySide = ball.x > (p.minX+p.maxX)/2 - 260;
+  const guardX = (p.minX+p.maxX)/2 + (p.facing===1 ? -40 : 40);
+  const targetX = ballOnMySide
+    ? Math.max(p.minX, Math.min(p.maxX, predictedX))
+    : Math.max(p.minX, Math.min(p.maxX, guardX + (ball.x-FIELD_W/2)*0.08));
+
   const diff = targetX - p.x;
-  const dir = Math.abs(diff)<8 ? 0 : Math.sign(diff);
-  p.vx = dir*PLAYER_SPEED*0.92;
+  const dir = Math.abs(diff) < 6 ? 0 : Math.sign(diff);
+  const speedMul = ballOnMySide ? 1 : 0.6;
+  p.vx = dir*PLAYER_SPEED*speedMul;
   p.x += p.vx*dt;
-  if(dir!==0) p.facing = dir;
-  const ballNear = Math.abs(ball.x - p.x) < 90;
-  const ballAbove = ball.y < GROUND_Y - 40;
-  if(p.grounded && ballNear && ballAbove && Math.random()<0.12){
+  if(Math.abs(ball.x - p.x) < 40) p.facing = ball.x > p.x ? 1 : -1;
+  else if(dir!==0) p.facing = dir;
+
+  const ballClose = Math.abs(ball.x - p.x) < 95;
+  const ballAbove = ball.y < GROUND_Y - 30 && ball.y > 30;
+  const ballComingDown = ball.vy > -40;
+  if(p.grounded && ballClose && ballAbove && ballComingDown && Math.random() < 0.28){
     p.vy = -JUMP_V; p.grounded=false; p.squash=0.82; p.stretch=1.22;
   }
 }
@@ -358,51 +429,57 @@ function roundRectPath(ctx,x,y,w,h,r){
   ctx.closePath();
 }
 
+// Head-Ball-style proportions: a big round head sits almost directly on a
+// small jersey, with short stubby legs and oversized boots.
 function legPose(p){
   const kicking = p.kickTimer > 0;
   if(!p.grounded){
     const k = kicking ? 1 : 0.5;
     return {
-      back: {x:-7*p.facing, y:-6, len:16},
-      front:{x:(9+k*13)*p.facing, y:kicking?-14:-2, len:18},
+      back: {x:-6*p.facing, y:-4, len:10},
+      front:{x:(7+k*11)*p.facing, y:kicking?-10:-1, len:11},
     };
   }
   if(Math.abs(p.vx) > 12){
     const s = Math.sin(p.animPhase);
     return {
-      back: {x:-11*s*p.facing, y:0, len:18},
-      front:{x:11*s*p.facing, y:0, len:18},
+      back: {x:-8*s*p.facing, y:0, len:11},
+      front:{x:8*s*p.facing, y:0, len:11},
     };
   }
-  return { back:{x:-5*p.facing, y:0, len:18}, front:{x:5*p.facing, y:0, len:18} };
+  return { back:{x:-4*p.facing, y:0, len:11}, front:{x:4*p.facing, y:0, len:11} };
 }
 
 function drawLeg(ctx, hipX, hipY, leg, shortsColor, bootColor){
-  const kneeX = hipX + leg.x*0.5, kneeY = hipY + leg.len*0.55;
+  const kneeX = hipX + leg.x*0.5, kneeY = hipY + leg.len*0.5;
   const footX = hipX + leg.x, footY = hipY + leg.len + leg.y;
   ctx.strokeStyle = shortsColor;
-  ctx.lineWidth = 8;
+  ctx.lineWidth = 9;
   ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(hipX, hipY);
   ctx.quadraticCurveTo(kneeX, kneeY, footX, footY);
   ctx.stroke();
-  // boot
+  // big boot (Head Ball style)
   ctx.fillStyle = bootColor;
   ctx.beginPath();
-  ctx.ellipse(footX, footY, 7, 4.5, 0, 0, Math.PI*2);
+  ctx.ellipse(footX, footY, 9, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath();
+  ctx.ellipse(footX, footY-1.5, 3, 1.6, 0, 0, Math.PI*2);
   ctx.fill();
 }
 
-function drawPlayer(ctx, p, color, color2, name){
+function drawPlayer(ctx, p, color, color2, skin, hair, name){
   const feetY = GROUND_Y + p.y;
   const celebrating = p.celebrateTimer > 0;
 
   // shadow (stays on the ground even while jumping)
   ctx.fillStyle='rgba(0,0,0,0.32)';
-  ctx.beginPath(); ctx.ellipse(p.x, GROUND_Y+4, 22, 6, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(p.x, GROUND_Y+4, 24, 6, 0, 0, Math.PI*2); ctx.fill();
 
-  const shortsColor = darken(color,0.35);
+  const shortsColor = darken(color,0.4);
   const bootColor = '#1a1a1a';
   const pose = legPose(p);
 
@@ -411,63 +488,70 @@ function drawPlayer(ctx, p, color, color2, name){
   ctx.scale(p.stretch, p.squash);
 
   // legs (drawn first so torso overlaps the hip)
-  const hipY = -24;
+  const hipY = -12;
   drawLeg(ctx, 0, hipY, pose.back, shortsColor, bootColor);
   drawLeg(ctx, 0, hipY, pose.front, shortsColor, bootColor);
 
-  // torso (jersey)
-  const torsoTop = -50, torsoH = 27, torsoW = 30;
-  roundRectPath(ctx, -torsoW/2, torsoTop, torsoW, torsoH, 9);
+  // torso (small jersey, Head-Ball proportions)
+  const torsoTop = -34, torsoH = 22, torsoW = 34;
+  roundRectPath(ctx, -torsoW/2, torsoTop, torsoW, torsoH, 8);
   ctx.fillStyle = color;
   ctx.fill();
   // jersey side trim
   ctx.fillStyle = color2;
-  ctx.fillRect(-torsoW/2, torsoTop, 4, torsoH);
-  ctx.fillRect(torsoW/2-4, torsoTop, 4, torsoH);
+  ctx.fillRect(-torsoW/2, torsoTop, 5, torsoH);
+  ctx.fillRect(torsoW/2-5, torsoTop, 5, torsoH);
+  ctx.fillRect(-torsoW/2, torsoTop+torsoH-5, torsoW, 5);
   // number
-  ctx.fillStyle = 'rgba(255,255,255,0.92)';
-  ctx.font = '700 13px Tajawal, Segoe UI, sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.font = '800 12px Tajawal, Segoe UI, sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(p.facing===1 ? '10':'7', 0, torsoTop+torsoH/2+1);
 
-  // arms
+  // arms (short, mostly tucked behind the big head like the reference game)
   ctx.strokeStyle = color;
   ctx.lineWidth = 7;
   ctx.lineCap = 'round';
-  const armY = torsoTop+6;
+  const armY = torsoTop+5;
   if(celebrating){
-    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-12, armY-24); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+12, armY-24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-11, armY-22); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+11, armY-22); ctx.stroke();
   } else {
-    const swing = p.grounded && Math.abs(p.vx)>12 ? Math.sin(p.animPhase+Math.PI)*8 : 2;
-    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-9, armY+14+swing); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+9, armY+14-swing); ctx.stroke();
+    const swing = p.grounded && Math.abs(p.vx)>12 ? Math.sin(p.animPhase+Math.PI)*6 : 1;
+    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-8, armY+10+swing); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+8, armY+10-swing); ctx.stroke();
   }
 
-  // neck + head
+  // big round head sitting almost directly on the jersey (little to no neck)
   const headCY = torsoTop - HEAD_R*0.62;
-  ctx.fillStyle = p.skinTone;
+  ctx.fillStyle = skin;
   ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.fill();
 
-  // hair
-  ctx.fillStyle = p.hairColor;
+  // hair (short crop)
+  ctx.fillStyle = hair;
   ctx.beginPath();
-  ctx.arc(0, headCY-2, HEAD_R*0.98, Math.PI*1.02, Math.PI*1.98);
+  ctx.arc(0, headCY-3, HEAD_R*1.0, Math.PI*1.04, Math.PI*1.96);
   ctx.fill();
   ctx.beginPath();
-  ctx.ellipse(p.facing*HEAD_R*0.55, headCY-HEAD_R*0.55, HEAD_R*0.42, HEAD_R*0.3, 0, 0, Math.PI*2);
+  ctx.ellipse(p.facing*HEAD_R*0.5, headCY-HEAD_R*0.62, HEAD_R*0.46, HEAD_R*0.32, 0, 0, Math.PI*2);
   ctx.fill();
+
+  // ears
+  ctx.fillStyle = skin;
+  [-1,1].forEach(side=>{
+    ctx.beginPath(); ctx.ellipse(side*HEAD_R*0.92, headCY+2, HEAD_R*0.14, HEAD_R*0.2, 0, 0, Math.PI*2); ctx.fill();
+  });
 
   // face
   ctx.fillStyle = '#20140c';
-  ctx.beginPath(); ctx.arc(p.facing*6.5, headCY+1, 2.1, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(p.facing*6.5-p.facing*8, headCY+1, 1.7, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.4; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(p.facing*9, headCY+2, 2.6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p.facing*9-p.facing*11, headCY+2, 2.1, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.6; ctx.lineCap='round';
   if(celebrating){
-    ctx.beginPath(); ctx.arc(p.facing*2, headCY+7, 5, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+    ctx.beginPath(); ctx.arc(p.facing*2, headCY+10, 7, 0.1*Math.PI, 0.9*Math.PI); ctx.stroke();
   } else {
-    ctx.beginPath(); ctx.moveTo(p.facing*-2, headCY+8); ctx.lineTo(p.facing*4, headCY+8); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.facing*-3, headCY+11); ctx.lineTo(p.facing*5, headCY+11); ctx.stroke();
   }
 
   ctx.restore();
@@ -612,8 +696,8 @@ function render(ctx){
   ctx.strokeRect(FIELD_W-GOAL_W, GOAL_TOP, GOAL_W, GOAL_H);
 
   if(gs){
-    drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.name);
-    drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.name);
+    drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.skin, match.p1.hair, match.p1.name);
+    drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.skin, match.p2.hair, match.p2.name);
     drawBall(ctx, gs.ball);
     drawConfetti(ctx, gs);
   }
