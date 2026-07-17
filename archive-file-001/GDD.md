@@ -1,8 +1,14 @@
 # ARCHIVE : FILE-001
-### Game Design Document — v2.0 (Full Redesign — First-Person 3D Exploration)
+### Game Design Document — v2.1 — **LOCKED: Creative Foundation of the Project**
 **Studio Roles:** Game Direction · World Design · Environmental Art Direction · Systems/Technical Architecture
 **Platform:** Browser (WebGL, Desktop-first, Mobile as a stretch target — see §14)
-**Status:** Complete redesign superseding v1.x (the 2D point-and-click "Records Room" build). This document is a **design-only deliverable**. No implementation exists yet for this direction. All code from v1.x remains on disk for reference but is not part of this design going forward. Implementation does not begin until this document is approved.
+**Status:** This document is now the **locked creative bible** for ARCHIVE : FILE-001. Every future design or implementation decision is evaluated against it, and specifically against §1.1's tiebreaker philosophy. It remains **design-only** — no gameplay code exists yet, and none is written until this document is explicitly approved and a Case 001 vertical slice is separately greenlit (§17).
+
+---
+
+### Revision Notes (v2.0 → v2.1 — The Archive as Living Character)
+
+v2.0 established the format pivot (first-person 3D exploration) and the five-case structure. This pass deepens the *creative* foundation without changing that structure: the Archive itself is elevated from "setting" to the game's true subject and central mystery (§2.1, §8, §8.1). Six additions were folded in: the building subtly, non-horror-ly alters itself over time and the player should distrust their own memory of it (§2.1); curiosity, not objectives, is named as the primary driver and pillars are reordered around it (§1); every mechanic must be taught by level design alone, with zero tutorial text/prompts (§1.2); solving a case must visibly, physically change the building — new passages, powered elevators, lit-up forgotten areas (§6.1); deliberately puzzle-free "quiet spaces" are mandated as first-class content, not filler (§10.1); an optional, non-mandatory collectible layer (photographs, badges, tapes, letters, blueprints) is added for curious players (§10.2); and — critically — the ending is now designed in full, in prose, as a design document artifact, without being implemented (§18). §1.1 also formalizes a standing tiebreaker philosophy for every future ambiguous decision.
 
 ---
 
@@ -37,9 +43,33 @@ Tone reference: *The Witness* (structure, pacing, trust in the player), *The Van
 
 **Explicitly rejected framings:** puzzle-after-puzzle escape room; tech demo; UI-mediated inventory/crafting game; horror game; open-world checklist game; anything requiring the player to type, enter, or memorize-and-transcribe a code outside the world itself.
 
+### 1.1 Design Philosophy — The Standing Tiebreaker
+
+Every future design decision — art, level layout, systems, writing — that is genuinely ambiguous is resolved by this ordering, without exception:
+
+> **Wonder over spectacle. Atmosphere over action. Discovery over explanation. Immersion over interface. Quality over quantity. Curiosity over objectives.**
+
+If a proposed room, mechanic, or line of text satisfies the "cooler" option on the left of any of these pairs at the cost of the principle on the right, it is rejected. The single sentence that governs all of it: **the Archive should never feel like a puzzle game. It should feel like a place that truly exists.**
+
+### 1.2 Curiosity, Not Objectives
+
+The player's dominant emotional state, moment to moment, should be **"I need to know what this place really is"** — not "what's my next objective." This has concrete design consequences, not just a mood requirement:
+- No objective marker, no quest log, no on-screen prompt of any kind ever tells the player what to do next (this was already true of the Casebook's design in §9; it is now elevated to a pillar in its own right, not just a UI constraint).
+- **Zero tutorialization.** No "Press E to interact," no popup, no highlighted first-use hint, no onboarding overlay. Every mechanic — look, move, interact, open the Casebook — is taught the way *The Witness* teaches its first line puzzle: by placing the player somewhere they can only succeed by discovering the rule themselves, using level geometry and lighting to draw the eye, never text.
+- The player is never rushed. No timers, no music stinger implying urgency, no environmental countdown. Curiosity does not coexist with pressure; the moment the player feels rushed, they stop looking closely, which defeats the entire design.
+
 ---
 
 ## 2. World Identity — The Archive
+
+### 2.1 The Archive Is the Main Character
+
+The building is not a backdrop the cases happen inside — it is the game's protagonist in everything but name, and by the end it should be clear that **the cases were never the real mystery; the Archive itself is** (expanded in §8.1). This is expressed entirely through subtlety, never through horror or magic framing:
+
+- **Not haunted, not magical — simply wrong.** No supernatural VFX, no ghosts, no glowing sigils. The building's aliveness reads only through small, deniable discrepancies.
+- **Micro-changes over time, never mid-glance.** A painting the player passed twice is, on a third pass, hanging at a slightly different position. A chair that was pushed in is now pulled out. A corridor the player is certain ran straight now bends, almost imperceptibly. A room the player remembers as cramped now reads as a few meters larger. None of these ever happen while the player is looking directly at the object — always discovered on return, planting doubt in the player's own memory rather than presenting an effect.
+- **Frequency and restraint.** These changes are rare and deliberately placed — a handful per wing, never a gimmick repeated so often it becomes a spot-the-difference minigame. Their entire power comes from scarcity and plausibility ("maybe I misremembered") rather than obviousness.
+- **No character or document ever explains this.** It is never called out as "the building changes" by any text in the game. The player's growing, unspoken certainty that something is wrong with their own memory of the place *is* the horror-adjacent-but-not-horror tone target from §10.
 
 The Archive presents, from the outside, as an unremarkable mid-sized records building — the kind of place a city would forget it owns. Inside, it is not merely large; it is **architecturally incoherent in a way that only reveals itself gradually**. Corridors run longer than the exterior footprint allows. A stairwell glimpsed from a window on one floor reappears, from the inside, three floors higher than it should be.
 
@@ -122,7 +152,7 @@ The Archive quietly closes cases nobody files a request for. The player is a new
 - Story exists exclusively in: physical documents (letters, memos, case folders — read by walking up to them and looking, not through a menu), photographs, the deliberate or accidental arrangement of furniture and objects, environmental audio (a recording left playing, not a "log" opened from a UI), and light (a room left lit as if someone just stepped out).
 - Each case's documents are self-contained for that case's plot on first pass, but every one of them contains at least one detail (a name, a date, an object) that only becomes meaningful once two or more cases are compared — planting the FILE-001 connection without flagging it.
 
-### 5.3 The FILE-001 Twist (§10 mandate)
+### 5.3 The FILE-001 Twist (setup only — full ending design in §18)
 FILE-001 is not revealed as a case folder at all until the Sub-Vault. Instead, small physical inconsistencies recur across every wing — the same handwriting on a different case's intake form, the same object (a specific pocket watch, a repeated set of initials, a repeated room number) appearing where it shouldn't. None of it is pointed out by any UI or character. When the Sub-Vault finally opens, its contents make clear that all five cases were staged, arranged, or subtly altered by the same person, for the same reason, and that "FILE-001" is the name of the case the Archivist was — unknowingly — hired to close on themself. The intended player reaction is to want to walk back through the building and re-examine what they now know they misread.
 
 ---
@@ -138,6 +168,18 @@ Progression is **soft-gated and non-linear**, never a locked corridor with one d
 5. **No fail-state, no timer, no combat.** Progression can never soft-lock: every physical object required for a solution is always reachable and never consumable in a way that can strand the player (see §8 design rules).
 
 There are no XP, skill trees, or ability upgrades. The only thing that "levels up" is the player's own literacy in the game's visual/audio language — a deliberate choice, since a mechanical progression system would contradict pillar 1 (presence over progression).
+
+### 6.1 The Archive Responds
+
+Every closed case must leave a **visible, physical mark on the building itself**, not just an unlocked gate. This is how "progression" is communicated — never a checklist, always a change the player stumbles into:
+
+- A passage that was solid wall on the way in is, on the way back through the Rotunda, an open doorway with a draft coming through it.
+- A dead elevator the player noticed and dismissed early on is now lit, humming, its indicator needle moving.
+- A wing that was fully sealed becomes partially accessible — one door of several, not the whole wing at once, so later cases can keep revealing more of an already-familiar space.
+- Lights switch on in areas that were dark on every previous pass, redrawing rooms the player thought they had already fully seen.
+- Small architectural shifts (a stairwell gaining a landing it didn't have, a skylight's light now reaching a spot it didn't before) — using the same "subtle wrongness" language as §2.1, so the building's *responsiveness* and its *wrongness* read as the same phenomenon, not two separate systems.
+
+The design intent: the player should never think "I unlocked the next area." They should think **"the building noticed."**
 
 ---
 
@@ -187,6 +229,10 @@ Every case follows the same five-beat shape, without ever surfacing the beats to
 
 This creates genuine **puzzle progression**: the player isn't handed harder versions of the same lock, they accumulate a *vocabulary* of ways to look at a room, and the finale is a literacy test, not a difficulty spike.
 
+### 8.1 The Cases Are Not the Mystery — The Archive Is
+
+Each case is written to feel, on its own, like a complete, self-contained mini-mystery about the people involved in it. That is intentional misdirection, not a flaw: the player is meant to treat the five cases as the game's content and the building as the setting they happen in. Every case's culmination (§7, beat 4) and aftermath (beat 5) should, without ever stating it, add one more piece of evidence that **the real subject of the game is the Archive itself** — its architecture, its history, its reason for existing, its relationship to whoever the player is inside it. By the third case, an attentive player should start to feel the shift for themselves: they are no longer solving cases to close them, they are solving cases because each one is quietly answering a question about the building that no one has asked them yet. This reframing is what §18's ending pays off.
+
 ---
 
 ## 9. The Casebook (Diegetic UI)
@@ -211,6 +257,17 @@ Mystery is the primary emotional register; horror mechanics are explicitly exclu
 - **Silence as pressure** — long stretches with only ambient building sound (settling wood, distant pipes, wind through a vent) rather than a scoring music bed, so the rare musical or vocal moment carries real weight.
 
 No jump scares, no chase sequences, no monsters, no death. The building is never physically threatening. Its danger is entirely epistemic — the player's confidence in what they understand about the space is what erodes.
+
+### 10.1 Quiet Spaces
+
+Not every room contains a puzzle, and not every room should. A meaningful fraction of the Archive's built footprint is **deliberately puzzle-free**, existing solely to build atmosphere and let the player breathe: reading rooms with nothing to solve in them, an observation balcony overlooking the Rotunda skylight, long silent connecting corridors, storage halls stacked with boxes that are set dressing, not clue containers. These spaces are not padding — they are where the "presence over progression" pillar (§1) is proven, and where the player has room to notice a §2.1 micro-change without a puzzle competing for their attention. Every wing (§4) should contain at least one such space that a completionist could, in principle, walk straight through — and a curious player would linger in.
+
+### 10.2 Exploration Rewards — Optional Collectibles
+
+A layer of entirely optional, non-mandatory found objects rewards curiosity without ever gating progression on it: old photographs, employee badges, audio tapes, VHS-style recordings, personal letters, lost notebooks, blueprints. None of these are required to close any case or reach the ending. Their purpose is threefold:
+- They deepen §5's environmental storytelling for players willing to look harder, often containing the clearest hints toward §8.1's building-level mystery and §18's ending.
+- They reward the exact behavior the game wants to encourage (wandering into a §10.1 quiet space, checking a drawer nobody told you to check) rather than behavior aimed at a checklist.
+- They are found, never announced — no collectible counter, no "12/40 photographs" UI, consistent with §9's total ban on progress-tracking interface. If the Casebook records them at all, it does so the same way it records case evidence: physically, as an object placed into it, not a tally.
 
 ---
 
@@ -310,4 +367,38 @@ These are implementation-adjacent decisions appropriate to make once this design
 
 ---
 
-*End of v2.0. Supersedes all gameplay, mechanics, and visual-identity content in v1.x (§§0–25 of GDD v1.2). v1.x's codebase remains on disk under `/archive-file-001/src` for historical reference only.*
+## 18. The Ending (Design — Not Implemented)
+
+Per direct instruction, the ending is designed here in full as a creative-bible artifact. **Nothing in this section is built.** It exists so every case, document, and environmental detail built in production can be authored with the true destination in mind, without the ending itself being scripted before the vertical slice exists.
+
+### 18.1 What the player has believed until now
+
+Across the Prologue and Cases 001–005, the player has operated on a simple, plausible premise: they are a newly assigned Archivist, external to the building, hired to close five unrelated cold cases left behind by unnamed prior staff. The Archive's growing "wrongness" (§2.1) has been noticed but never explained. The recurring motifs planted per §5.3 — a repeated handwriting sample, a repeated set of initials, a repeated object (a specific pocket watch) turning up in every wing — have been visible but easy to read as coincidence, or as evidence that the same *prior Archivist* worked all five cases before quitting or disappearing.
+
+### 18.2 What the Sub-Vault reveals
+
+The Sub-Vault (§2, §4) is the only space in the building that borrows a motif from every other wing (§12), and this is the first moment that stops being a background detail and becomes the point: the room is not modeled *after* the rest of the Archive, the rest of the Archive was built *around it*, expanding outward from this room, wing by wing, each time a new case was "closed." Inside, the case folder is labeled FILE-001 and it is not about a stranger. Its intake form carries the player character's own handwriting — the same handwriting seen on marginalia throughout every prior case, always previously read as belonging to "a prior Archivist." The photographs in the folder are the player character at earlier ages, in rooms the player has already walked through this playthrough, each photo taken from the exact vantage point the player themselves stood at during that case's culmination beat.
+
+The five cases were never other people's cold cases. They were the player's own memories — of five different periods of their life, each surrounding a loss or a decision they could not live with — externalized, filed, and sealed by an earlier version of themselves as an act of self-protection: not erasure, but *archiving*. Every time a case was "closed" and the building responded (§6.1: a new passage, a working elevator, a lit corridor), that was not the Archive rewarding investigation. It was the player's own mind allowing itself to look at one more sealed-off piece of its own past. The Archive's impossible size (§2) is the accumulated architecture of a lifetime of memories, each wing a period, each room a specific memory, each subtle wrongness (§2.1) the natural instability of a place built out of imperfect recollection rather than concrete and steel. **The Archive was never a building the player was sent into. It is the player.**
+
+FILE-001 is the first memory this whole structure was ever built to contain — the origin decision, made once, to stop feeling something directly and instead file it away. Everything else in the building exists because that first act of archiving worked, and was repeated.
+
+### 18.3 The choice
+
+Consistent with v1.2's precedent of non-judged, dual endings (carried forward in spirit, redesigned in substance), the Sub-Vault's culmination offers a single physical choice, made the same way every other puzzle in the game is made — by an object, not a menu:
+
+- **Reintegrate.** The player physically opens FILE-001 the way every other case file was opened throughout the game. The memory is allowed back. The building, over a slow, wordless final sequence, stops being impossibly large — corridors shorten, wings quietly stop being reachable, the Rotunda's skylight brightens toward an ordinary daylight. The Archive was never meant to be lived in forever; it was meant to be walked through once, all the way to the room at the center. The player exits through the same front door they never remember entering, into a small, unremarkable building that no longer contains more than its exterior suggests. Bittersweet, resolved, but with something quietly lost as well as gained.
+- **Reseal.** The player closes FILE-001 without opening it and leaves it exactly where they found it. The Archive remains exactly as vast, exactly as wrong, exactly as alive as it has been the entire game. The ending sequence instead shows the building from outside at dusk — small, ordinary — except for one lit window on a floor the exterior shouldn't have room for, and which the player, on this playthrough, never reached. Unresolved, but not unhappy: the player chooses to keep being the kind of person who can carry it a while longer.
+
+Neither ending is framed as correct. Both endings end on the same final image reframed by the choice: the small building from the outside, seen for the first time the way a stranger walking past it would see it — which is exactly how the Prologue began, closing the loop without a line of dialogue needed to point it out.
+
+### 18.4 Why this drives an immediate replay
+
+The design goal stated for this ending is that the player should *immediately* want to replay — this is engineered structurally, not just tonally:
+- Every case's documents, photographs, and micro-changes (§2.1) were, on a first playthrough, legible only as "this case's" content. On the strength of §18.2's reveal, all of it is retroactively re-readable as autobiography. A replay is not a repeat of the same information — it is the *same rooms carrying a second, now-legible layer of meaning*, which is a stronger replay hook than new content would be, and costs no additional production.
+- The optional collectibles (§10.2) are, on a first playthrough, flavor. Knowing the ending, they become the most direct evidence of who the player character is — a replay-motivated player will actively seek out ones they skipped.
+- A single, deliberately small post-ending detail (a light in a previously unreachable window, §18.3) functions as an explicit, diegetic invitation to look again — never a "New Game+" menu label, staying inside the game's zero-HUD discipline (§9) even at the very last frame.
+
+---
+
+*End of v2.1 — LOCKED as the creative foundation of the project. Supersedes all prior gameplay, mechanics, and visual-identity content in v1.x (§§0–25 of GDD v1.2) and extends v2.0's structural pivot with the principles in this revision. No gameplay code exists yet. v1.x's codebase remains on disk under `/archive-file-001/src` for historical reference only. Next step: approval of this document, followed by a separately greenlit Case 001 vertical slice (§17).*
