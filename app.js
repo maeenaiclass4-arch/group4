@@ -35,6 +35,67 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
   });
 });
 
+/* ---------------- Identity patterns (original artwork, per host region) ----------------
+   A tiled decorative pattern, not a flat color wash, so each edition's
+   section actually feels like it carries that tournament's own textured
+   identity - built from scratch here, not a copy of any federation's
+   official brand-guideline artwork. */
+const PATTERN_FAMILY_BY_YEAR = {
+  1930:'sun', 1950:'sun', 1962:'sun', 1970:'sun', 1978:'sun', 1986:'sun', 2014:'sun',
+  1934:'diamond', 1938:'diamond', 1954:'diamond', 1966:'diamond', 1974:'diamond',
+  1982:'diamond', 1990:'diamond', 1994:'diamond', 1998:'diamond', 2006:'diamond',
+  1958:'folk', 2018:'folk',
+  2002:'wave',
+  2010:'zigzag',
+  2022:'lattice',
+};
+function patternTileSvg(family, c2){
+  const s = `stroke="${c2}"`;
+  const tiles = {
+    lattice: `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" ${s} stroke-width="1.1" opacity="0.6">
+        <path d="M30 2 L58 30 L30 58 L2 30 Z"/>
+        <path d="M30 14 L46 30 L30 46 L14 30 Z"/>
+      </g>
+      <circle cx="30" cy="30" r="2.2" fill="${c2}" opacity="0.5"/>
+      <circle cx="0" cy="0" r="2.2" fill="${c2}" opacity="0.35"/><circle cx="60" cy="0" r="2.2" fill="${c2}" opacity="0.35"/>
+      <circle cx="0" cy="60" r="2.2" fill="${c2}" opacity="0.35"/><circle cx="60" cy="60" r="2.2" fill="${c2}" opacity="0.35"/>
+    </svg>`,
+    sun: `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" ${s} stroke-width="1.1" opacity="0.55">
+        <path d="M30 30 Q42 18 30 6 Q18 18 30 30 Z"/>
+        <path d="M30 30 Q42 42 30 54 Q18 42 30 30 Z"/>
+        <path d="M30 30 Q18 18 6 30 Q18 42 30 30 Z"/>
+        <path d="M30 30 Q42 18 54 30 Q42 42 30 30 Z"/>
+      </g>
+      <circle cx="30" cy="30" r="3" fill="${c2}" opacity="0.5"/>
+    </svg>`,
+    diamond: `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" ${s} stroke-width="1" opacity="0.5">
+        <path d="M30 4 L56 30 L30 56 L4 30 Z"/>
+        <path d="M0 30 L30 0 M30 60 L60 30 M0 30 L30 60 M30 0 L60 30" stroke-width="0.6" opacity="0.55"/>
+      </g>
+    </svg>`,
+    wave: `<svg width="60" height="30" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 15 Q15 0 30 15 T60 15" fill="none" ${s} stroke-width="1.2" opacity="0.55"/>
+      <path d="M0 25 Q15 10 30 25 T60 25" fill="none" ${s} stroke-width="1" opacity="0.4"/>
+    </svg>`,
+    zigzag: `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 10 L10 0 L20 10 L30 0 L40 10 L50 0 L60 10" fill="none" ${s} stroke-width="1.2" opacity="0.5"/>
+      <path d="M0 50 L10 40 L20 50 L30 40 L40 50 L50 40 L60 50" fill="none" ${s} stroke-width="1.2" opacity="0.4"/>
+      <circle cx="30" cy="30" r="8" fill="none" ${s} stroke-width="1" opacity="0.45"/>
+    </svg>`,
+    folk: `<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" ${s} stroke-width="1" opacity="0.55">
+        <circle cx="15" cy="15" r="6"/><circle cx="45" cy="45" r="6"/>
+        <path d="M15 9 L15 21 M9 15 L21 15 M11 11 L19 19 M19 11 L11 19"/>
+        <path d="M45 39 L45 51 M39 45 L51 45 M41 41 L49 49 M49 41 L41 49"/>
+      </g>
+    </svg>`,
+  };
+  return tiles[family] || tiles.diamond;
+}
+
 /* ---------------- Site-wide re-theme + mascot background ---------------- */
 function svgDataUri(svg){
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
@@ -52,6 +113,9 @@ function setMascotBg(wc){
   const goldBase = (c2==='#ffffff' || c2==='#000000') ? c1 : c2;
   root.style.setProperty('--gold', lighten(goldBase, c2==='#ffffff'?0.4:0.22));
 
+  const family = PATTERN_FAMILY_BY_YEAR[wc.year] || 'diamond';
+  $('mb-pattern').style.backgroundImage = svgDataUri(patternTileSvg(family, c2));
+
   const svg = mascotIllustration(wc);
   const uri = svgDataUri(svg);
   $('mb-a').style.backgroundImage = uri;
@@ -64,6 +128,7 @@ function resetMascotBg(){
   root.style.setProperty('--green', '#1c8a4c');
   root.style.setProperty('--green-light', '#2fbf6e');
   root.style.setProperty('--gold', '#ffd23f');
+  $('mb-pattern').style.backgroundImage = svgDataUri(patternTileSvg('diamond', '#2fbf6e'));
   $('mb-a').style.backgroundImage = '';
   $('mb-b').style.backgroundImage = '';
 }
@@ -462,6 +527,7 @@ function renderReports(){
 }
 
 /* ---------------- Init ---------------- */
+resetMascotBg();
 renderEditionsGrid();
 renderJerseys();
 renderReports();
