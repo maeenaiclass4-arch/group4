@@ -59,23 +59,31 @@ function updatePreview(){
 /* ---------------- Game engine ---------------- */
 const FIELD_W = 900, FIELD_H = 420, GROUND_Y = 380;
 const GOAL_TOP = 230, GOAL_H = 150, GOAL_W = 16;
-const GRAVITY = 1500, PLAYER_SPEED = 300, JUMP_V = 620, BALL_R = 14, HEAD_R = 26;
+const GRAVITY = 1500, PLAYER_SPEED = 300, JUMP_V = 620, BALL_R = 13, HEAD_R = 21;
 
-function newPlayerState(side){
+function newPlayerState(side, hairColor, skinTone){
   const isLeft = side==='left';
   return {
     x: isLeft ? 200 : 700, y:0, vy:0, vx:0, grounded:true,
     minX: isLeft?60:470, maxX: isLeft?430:840,
     facing: isLeft?1:-1, kickCooldown:0,
+    animPhase:0, kickTimer:0, celebrateTimer:0, squash:1, stretch:1,
+    hairColor, skinTone,
   };
 }
+
+const SKIN_TONES = ['#ffd9b3', '#f0b98a', '#c98a56', '#8d5a34'];
+const HAIR_COLORS = ['#1c1410', '#3a2418', '#5c3a1e', '#111111'];
+function pick(arr, seed){ return arr[seed % arr.length]; }
 
 function resetGameState(){
   gameState = {
     running:true, time:60, lastT:performance.now(),
-    p1: newPlayerState('left'), p2: newPlayerState('right'),
-    ball:{x:FIELD_W/2, y:GROUND_Y-60, vx:0, vy:0},
+    p1: newPlayerState('left', pick(HAIR_COLORS,1), pick(SKIN_TONES,2)),
+    p2: newPlayerState('right', pick(HAIR_COLORS,3), pick(SKIN_TONES,0)),
+    ball:{x:FIELD_W/2, y:GROUND_Y-60, vx:0, vy:0, spin:0, trail:[]},
     score1:0, score2:0,
+    confetti:[], shake:0, flash:0, hitstop:0,
     keys:{},
   };
 }
@@ -123,10 +131,15 @@ function startGame(){
   gameState.timerAcc = 0;
 
   function tick(now){
-    const dt = Math.min((now - gameState.lastT)/1000, 0.033);
+    let dt = Math.min((now - gameState.lastT)/1000, 0.033);
     gameState.lastT = now;
     if(gameState.running){
+      if(gameState.hitstop > 0){
+        gameState.hitstop -= dt;
+        dt *= 0.08; // brief slow-motion impact frame instead of a hard freeze
+      }
       updatePhysics(dt);
+      updateFx(dt);
       gameState.timerAcc += dt;
       if(gameState.timerAcc >= 1){
         gameState.timerAcc -= 1;
@@ -155,11 +168,22 @@ function updatePhysics(dt){
   aiControl(gs.p2, gs.ball, dt);
 
   [gs.p1, gs.p2].forEach(p=>{
+    const wasGrounded = p.grounded;
     p.y += p.vy*dt;
     p.vy += GRAVITY*dt;
-    if(p.y >= 0){ p.y = 0; p.vy = 0; p.grounded = true; } else { p.grounded=false; }
+    if(p.y >= 0){
+      p.y = 0;
+      if(!wasGrounded){ p.squash = 1.28; p.stretch = 0.78; } // landing squash
+      p.vy = 0; p.grounded = true;
+    } else { p.grounded=false; }
+    // ease squash/stretch back to neutral
+    p.squash += (1-p.squash) * Math.min(1, dt*10);
+    p.stretch += (1-p.stretch) * Math.min(1, dt*10);
     p.x = Math.max(p.minX, Math.min(p.maxX, p.x));
     if(p.kickCooldown>0) p.kickCooldown -= dt;
+    if(p.kickTimer>0) p.kickTimer -= dt;
+    if(p.celebrateTimer>0) p.celebrateTimer -= dt;
+    if(p.grounded && Math.abs(p.vx) > 15) p.animPhase += dt * (7 + Math.abs(p.vx)*0.01);
   });
 
   // ball physics
@@ -168,6 +192,15 @@ function updatePhysics(dt){
   b.x += b.vx*dt;
   b.y += b.vy*dt;
   b.vx *= 0.995;
+  b.spin += (b.vx*dt*0.045) * (gs.hitstop>0?1:1);
+
+  // trail
+  const speed = Math.hypot(b.vx,b.vy);
+  if(speed > 260){
+    b.trail.push({x:b.x,y:b.y,life:1});
+  }
+  b.trail.forEach(t=> t.life -= dt*4.5);
+  b.trail = b.trail.filter(t=>t.life>0).slice(-10);
 
   // ground bounce
   if(b.y > GROUND_Y - BALL_R){
@@ -198,10 +231,10 @@ function updatePhysics(dt){
 
   // player-ball collisions (head + body approximated as circle)
   [gs.p1, gs.p2].forEach(p=>{
-    const headY = GROUND_Y - 70 + p.y;
+    const headY = GROUND_Y - 63 + p.y;
     const dx = b.x - p.x, dy = b.y - headY;
     const d = Math.hypot(dx,dy);
-    const minD = HEAD_R + BALL_R;
+    const minD = HEAD_R + BALL_R + 2;
     if(d < minD && d>0.01){
       const nx = dx/d, ny = dy/d;
       const overlap = minD - d;
@@ -209,19 +242,35 @@ function updatePhysics(dt){
       const power = 480 + Math.abs(p.vy)*0.3;
       b.vx = nx*power + p.vx*0.6;
       b.vy = ny*power - 120;
+      p.kickTimer = 0.22;
     }
-    // body collision (lower box) - simple push
-    const bodyY = GROUND_Y - 20 + p.y;
+    // body/leg collision (lower box) - simple push
+    const bodyY = GROUND_Y - 30 + p.y;
     const dx2 = b.x - p.x, dy2 = b.y - bodyY;
     const d2 = Math.hypot(dx2,dy2);
-    const minD2 = 34 + BALL_R;
+    const minD2 = 28 + BALL_R;
     if(d2 < minD2 && d2>0.01){
       const nx = dx2/d2, ny = dy2/d2;
       const overlap = minD2-d2;
       b.x += nx*overlap; b.y += ny*overlap;
       b.vx += nx*380; b.vy += ny*380 - 200;
+      p.kickTimer = 0.22;
     }
   });
+}
+
+function updateFx(dt){
+  const gs = gameState;
+  gs.shake = Math.max(0, gs.shake - dt*26);
+  gs.flash = Math.max(0, gs.flash - dt*2.2);
+  gs.confetti.forEach(c=>{
+    c.vy += 900*dt;
+    c.x += c.vx*dt;
+    c.y += c.vy*dt;
+    c.rot += c.vrot*dt;
+    c.life -= dt*0.7;
+  });
+  gs.confetti = gs.confetti.filter(c=>c.life>0 && c.y < FIELD_H+20);
 }
 
 function handlePlayerInput(p, keys, dt){
@@ -231,7 +280,7 @@ function handlePlayerInput(p, keys, dt){
   p.vx = dir*PLAYER_SPEED;
   p.x += p.vx*dt;
   if(dir!==0) p.facing = dir;
-  if(keyState[keys.jump] && p.grounded){ p.vy = -JUMP_V; p.grounded=false; }
+  if(keyState[keys.jump] && p.grounded){ p.vy = -JUMP_V; p.grounded=false; p.squash=0.82; p.stretch=1.22; }
 }
 
 function aiControl(p, ball, dt){
@@ -244,15 +293,33 @@ function aiControl(p, ball, dt){
   const ballNear = Math.abs(ball.x - p.x) < 90;
   const ballAbove = ball.y < GROUND_Y - 40;
   if(p.grounded && ballNear && ballAbove && Math.random()<0.12){
-    p.vy = -JUMP_V; p.grounded=false;
+    p.vy = -JUMP_V; p.grounded=false; p.squash=0.82; p.stretch=1.22;
+  }
+}
+
+function spawnConfetti(gs, x, colors){
+  for(let i=0;i<26;i++){
+    const ang = -Math.PI/2 + (Math.random()-0.5)*2.2;
+    const spd = 220 + Math.random()*260;
+    gs.confetti.push({
+      x, y: GROUND_Y-70,
+      vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
+      rot: Math.random()*Math.PI*2, vrot:(Math.random()-0.5)*14,
+      w: 5+Math.random()*4, h:8+Math.random()*5,
+      color: colors[i%colors.length], life:1,
+    });
   }
 }
 
 function scoreGoal(who){
   const gs = gameState;
+  const scorer = who===1 ? gs.p1 : gs.p2;
   if(who===1){ gs.score1++; $('hb-p1-score').textContent = gs.score1; }
   else { gs.score2++; $('hb-p2-score').textContent = gs.score2; }
-  gs.ball.x = FIELD_W/2; gs.ball.y = GROUND_Y-60; gs.ball.vx=0; gs.ball.vy=0;
+  scorer.celebrateTimer = 1.1;
+  gs.shake = 14; gs.flash = 1; gs.hitstop = 0.12;
+  spawnConfetti(gs, scorer.x, [match.p1.color, match.p1.color2, match.p2.color, match.p2.color2, '#ffd23f']);
+  gs.ball.x = FIELD_W/2; gs.ball.y = GROUND_Y-60; gs.ball.vx=0; gs.ball.vy=0; gs.ball.trail=[];
   gs.p1.x = 200; gs.p2.x = 700;
 }
 
@@ -269,65 +336,294 @@ function endGame(){
 }
 
 /* ---------------- Rendering ---------------- */
-function drawPlayer(ctx, p, color, color2, name, flip){
-  const bodyY = GROUND_Y - 20 + p.y;
-  const headY = GROUND_Y - 70 + p.y;
-  ctx.save();
-  // shadow
-  ctx.fillStyle='rgba(0,0,0,0.3)';
-  ctx.beginPath(); ctx.ellipse(p.x, GROUND_Y+6, 30, 8, 0, 0, Math.PI*2); ctx.fill();
-  // body
-  ctx.fillStyle = color;
+function darken(hex, amt){
+  const c = hex.replace('#','');
+  if(c.length!==6) return hex;
+  const n = parseInt(c,16);
+  let r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  r = Math.max(0, Math.round(r*(1-amt)));
+  g = Math.max(0, Math.round(g*(1-amt)));
+  b = Math.max(0, Math.round(b*(1-amt)));
+  return `rgb(${r},${g},${b})`;
+}
+
+function roundRectPath(ctx,x,y,w,h,r){
+  if(ctx.roundRect){ ctx.beginPath(); ctx.roundRect(x,y,w,h,r); return; }
   ctx.beginPath();
-  ctx.roundRect ? ctx.roundRect(p.x-20, bodyY-34, 40, 54, 12) : ctx.rect(p.x-20, bodyY-34, 40, 54);
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
+function legPose(p){
+  const kicking = p.kickTimer > 0;
+  if(!p.grounded){
+    const k = kicking ? 1 : 0.5;
+    return {
+      back: {x:-7*p.facing, y:-6, len:16},
+      front:{x:(9+k*13)*p.facing, y:kicking?-14:-2, len:18},
+    };
+  }
+  if(Math.abs(p.vx) > 12){
+    const s = Math.sin(p.animPhase);
+    return {
+      back: {x:-11*s*p.facing, y:0, len:18},
+      front:{x:11*s*p.facing, y:0, len:18},
+    };
+  }
+  return { back:{x:-5*p.facing, y:0, len:18}, front:{x:5*p.facing, y:0, len:18} };
+}
+
+function drawLeg(ctx, hipX, hipY, leg, shortsColor, bootColor){
+  const kneeX = hipX + leg.x*0.5, kneeY = hipY + leg.len*0.55;
+  const footX = hipX + leg.x, footY = hipY + leg.len + leg.y;
+  ctx.strokeStyle = shortsColor;
+  ctx.lineWidth = 8;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(hipX, hipY);
+  ctx.quadraticCurveTo(kneeX, kneeY, footX, footY);
+  ctx.stroke();
+  // boot
+  ctx.fillStyle = bootColor;
+  ctx.beginPath();
+  ctx.ellipse(footX, footY, 7, 4.5, 0, 0, Math.PI*2);
   ctx.fill();
-  // head
-  ctx.fillStyle = '#ffd9b3';
-  ctx.beginPath(); ctx.arc(p.x, headY, HEAD_R, 0, Math.PI*2); ctx.fill();
+}
+
+function drawPlayer(ctx, p, color, color2, name){
+  const feetY = GROUND_Y + p.y;
+  const celebrating = p.celebrateTimer > 0;
+
+  // shadow (stays on the ground even while jumping)
+  ctx.fillStyle='rgba(0,0,0,0.32)';
+  ctx.beginPath(); ctx.ellipse(p.x, GROUND_Y+4, 22, 6, 0, 0, Math.PI*2); ctx.fill();
+
+  const shortsColor = darken(color,0.35);
+  const bootColor = '#1a1a1a';
+  const pose = legPose(p);
+
+  ctx.save();
+  ctx.translate(p.x, feetY);
+  ctx.scale(p.stretch, p.squash);
+
+  // legs (drawn first so torso overlaps the hip)
+  const hipY = -24;
+  drawLeg(ctx, 0, hipY, pose.back, shortsColor, bootColor);
+  drawLeg(ctx, 0, hipY, pose.front, shortsColor, bootColor);
+
+  // torso (jersey)
+  const torsoTop = -50, torsoH = 27, torsoW = 30;
+  roundRectPath(ctx, -torsoW/2, torsoTop, torsoW, torsoH, 9);
+  ctx.fillStyle = color;
+  ctx.fill();
+  // jersey side trim
   ctx.fillStyle = color2;
-  ctx.beginPath(); ctx.arc(p.x, headY-10, HEAD_R*0.9, Math.PI, 0); ctx.fill();
-  // eyes
-  ctx.fillStyle='#222';
-  ctx.beginPath(); ctx.arc(p.x + p.facing*7, headY+2, 3, 0, Math.PI*2); ctx.fill();
+  ctx.fillRect(-torsoW/2, torsoTop, 4, torsoH);
+  ctx.fillRect(torsoW/2-4, torsoTop, 4, torsoH);
+  // number
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.font = '700 13px Tajawal, Segoe UI, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(p.facing===1 ? '10':'7', 0, torsoTop+torsoH/2+1);
+
+  // arms
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 7;
+  ctx.lineCap = 'round';
+  const armY = torsoTop+6;
+  if(celebrating){
+    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-12, armY-24); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+12, armY-24); ctx.stroke();
+  } else {
+    const swing = p.grounded && Math.abs(p.vx)>12 ? Math.sin(p.animPhase+Math.PI)*8 : 2;
+    ctx.beginPath(); ctx.moveTo(-torsoW/2+2, armY); ctx.lineTo(-torsoW/2-9, armY+14+swing); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(torsoW/2-2, armY); ctx.lineTo(torsoW/2+9, armY+14-swing); ctx.stroke();
+  }
+
+  // neck + head
+  const headCY = torsoTop - HEAD_R*0.62;
+  ctx.fillStyle = p.skinTone;
+  ctx.beginPath(); ctx.arc(0, headCY, HEAD_R, 0, Math.PI*2); ctx.fill();
+
+  // hair
+  ctx.fillStyle = p.hairColor;
+  ctx.beginPath();
+  ctx.arc(0, headCY-2, HEAD_R*0.98, Math.PI*1.02, Math.PI*1.98);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(p.facing*HEAD_R*0.55, headCY-HEAD_R*0.55, HEAD_R*0.42, HEAD_R*0.3, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // face
+  ctx.fillStyle = '#20140c';
+  ctx.beginPath(); ctx.arc(p.facing*6.5, headCY+1, 2.1, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(p.facing*6.5-p.facing*8, headCY+1, 1.7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = '#20140c'; ctx.lineWidth = 1.4; ctx.lineCap='round';
+  if(celebrating){
+    ctx.beginPath(); ctx.arc(p.facing*2, headCY+7, 5, 0.15*Math.PI, 0.85*Math.PI); ctx.stroke();
+  } else {
+    ctx.beginPath(); ctx.moveTo(p.facing*-2, headCY+8); ctx.lineTo(p.facing*4, headCY+8); ctx.stroke();
+  }
+
   ctx.restore();
+
+  // name tag (kept unscaled so it never looks squashed)
+  const headWorldY = feetY + (torsoTop - HEAD_R*0.62)*p.squash;
   ctx.fillStyle='#fff';
-  ctx.font='13px Tajawal';
+  ctx.font='600 12px Tajawal, Segoe UI, sans-serif';
   ctx.textAlign='center';
-  ctx.fillText(name, p.x, headY - HEAD_R - 10);
+  ctx.textBaseline='alphabetic';
+  ctx.fillText(name, p.x, headWorldY - HEAD_R - 8);
+}
+
+function polygonPath(ctx,cx,cy,r,sides,rot){
+  ctx.moveTo(cx+r*Math.cos(rot), cy+r*Math.sin(rot));
+  for(let i=1;i<=sides;i++){
+    const a = rot + i*(Math.PI*2/sides);
+    ctx.lineTo(cx+r*Math.cos(a), cy+r*Math.sin(a));
+  }
+}
+
+function drawBall(ctx, b){
+  b.trail.forEach(t=>{
+    ctx.fillStyle = `rgba(255,255,255,${t.life*0.18})`;
+    ctx.beginPath(); ctx.arc(t.x, t.y, BALL_R*0.85, 0, Math.PI*2); ctx.fill();
+  });
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  ctx.rotate(b.spin);
+  ctx.fillStyle = '#f3f3f0';
+  ctx.beginPath(); ctx.arc(0,0,BALL_R,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#161616';
+  for(let i=0;i<5;i++){
+    const a = i*(Math.PI*2/5) - Math.PI/2;
+    const px = Math.cos(a)*BALL_R*0.52, py = Math.sin(a)*BALL_R*0.52;
+    ctx.beginPath(); polygonPath(ctx, px, py, BALL_R*0.28, 5, a); ctx.fill();
+  }
+  ctx.beginPath(); polygonPath(ctx, 0, 0, BALL_R*0.24, 5, Math.PI/2); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(0,0,BALL_R,0,Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+// Fixed (seeded-looking but stable) crowd dots so the stadium doesn't flicker every frame
+const CROWD_DOTS = (() => {
+  const palette = ['#e0c9a6','#caa473','#8a6b4d','#3a3a3a','#5c4a3a','#c2b280','#7a5c3e'];
+  const dots = [];
+  let seed = 42;
+  const rnd = () => { seed = (seed*1103515245+12345)&0x7fffffff; return (seed/0x7fffffff); };
+  for(let i=0;i<170;i++){
+    dots.push({ x: rnd()*FIELD_W, y: 6+rnd()*40, r: 2+rnd()*2.2, c: palette[Math.floor(rnd()*palette.length)] });
+  }
+  return dots;
+})();
+
+function drawGoalNet(ctx, x0, y0, w, h){
+  ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+  ctx.lineWidth = 1;
+  for(let i=1;i<6;i++){
+    const gx = x0 + (w/6)*i;
+    ctx.beginPath(); ctx.moveTo(gx, y0); ctx.lineTo(gx, y0+h); ctx.stroke();
+  }
+  for(let j=1;j<8;j++){
+    const gy = y0 + (h/8)*j;
+    ctx.beginPath(); ctx.moveTo(x0, gy); ctx.lineTo(x0+w, gy); ctx.stroke();
+  }
+}
+
+function drawStadium(ctx){
+  // sky behind the crowd
+  const skyGrad = ctx.createLinearGradient(0,0,0,60);
+  skyGrad.addColorStop(0,'#0a1c12'); skyGrad.addColorStop(1,'#0e2416');
+  ctx.fillStyle = skyGrad; ctx.fillRect(0,0,FIELD_W,60);
+  // crowd band
+  ctx.fillStyle = '#152a1c';
+  ctx.fillRect(0,0,FIELD_W,58);
+  CROWD_DOTS.forEach(d=>{ ctx.fillStyle = d.c; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2); ctx.fill(); });
+  ctx.fillStyle = 'rgba(10,20,14,0.55)';
+  ctx.fillRect(0,44,FIELD_W,14);
+  // floodlight glows
+  [70, FIELD_W-70].forEach(fx=>{
+    const g = ctx.createRadialGradient(fx,-10,4,fx,-10,120);
+    g.addColorStop(0,'rgba(255,250,210,0.35)');
+    g.addColorStop(1,'rgba(255,250,210,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(fx-120,-20,240,180);
+  });
+  // pitch base
+  const grad = ctx.createLinearGradient(0,58,0,GROUND_Y);
+  grad.addColorStop(0,'#173c22'); grad.addColorStop(1,'#0e2b1a');
+  ctx.fillStyle = grad; ctx.fillRect(0,58,FIELD_W,GROUND_Y-58);
+  // mow stripes on the ground band
+  const stripeW = 46;
+  for(let x=0, i=0; x<FIELD_W; x+=stripeW, i++){
+    ctx.fillStyle = i%2===0 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.035)';
+    ctx.fillRect(x, GROUND_Y, stripeW, FIELD_H-GROUND_Y);
+  }
+  ctx.fillStyle = '#1c8a4c';
+  ctx.globalCompositeOperation = 'destination-over';
+  ctx.fillRect(0,GROUND_Y,FIELD_W,FIELD_H-GROUND_Y);
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function drawConfetti(ctx, gs){
+  gs.confetti.forEach(c=>{
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.globalAlpha = Math.max(0, c.life);
+    ctx.fillStyle = c.color;
+    ctx.fillRect(-c.w/2, -c.h/2, c.w, c.h);
+    ctx.restore();
+  });
+  ctx.globalAlpha = 1;
 }
 
 function render(ctx){
   ctx.clearRect(0,0,FIELD_W,FIELD_H);
-  // sky
-  const grad = ctx.createLinearGradient(0,0,0,GROUND_Y);
-  grad.addColorStop(0,'#123a24'); grad.addColorStop(1,'#0e2b1a');
-  ctx.fillStyle = grad; ctx.fillRect(0,0,FIELD_W,GROUND_Y);
-  // ground
-  ctx.fillStyle = '#1c8a4c';
-  ctx.fillRect(0,GROUND_Y,FIELD_W,FIELD_H-GROUND_Y);
-  ctx.strokeStyle='rgba(255,255,255,0.4)';
+  const gs = gameState;
+  const shakeX = gs ? (Math.random()-0.5)*gs.shake : 0;
+  const shakeY = gs ? (Math.random()-0.5)*gs.shake*0.6 : 0;
+
+  ctx.save();
+  ctx.translate(shakeX, shakeY);
+
+  drawStadium(ctx);
+
+  // pitch lines
+  ctx.strokeStyle='rgba(255,255,255,0.45)';
   ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(0,GROUND_Y); ctx.lineTo(FIELD_W,GROUND_Y); ctx.stroke();
-  // center line
-  ctx.beginPath(); ctx.moveTo(FIELD_W/2,0); ctx.lineTo(FIELD_W/2,GROUND_Y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(FIELD_W/2,58); ctx.lineTo(FIELD_W/2,GROUND_Y); ctx.stroke();
   ctx.beginPath(); ctx.arc(FIELD_W/2,GROUND_Y,50,Math.PI,0); ctx.stroke();
 
-  // goals
+  // goal frames + nets
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.fillRect(0, GOAL_TOP, GOAL_W, GOAL_H);
+  ctx.fillRect(FIELD_W-GOAL_W, GOAL_TOP, GOAL_W, GOAL_H);
+  drawGoalNet(ctx, 0, GOAL_TOP, GOAL_W, GOAL_H);
+  drawGoalNet(ctx, FIELD_W-GOAL_W, GOAL_TOP, GOAL_W, GOAL_H);
   ctx.strokeStyle='#fff'; ctx.lineWidth=4;
   ctx.strokeRect(0, GOAL_TOP, GOAL_W, GOAL_H);
   ctx.strokeRect(FIELD_W-GOAL_W, GOAL_TOP, GOAL_W, GOAL_H);
 
-  if(!gameState) return;
-  const gs = gameState;
-  drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.name, 1);
-  drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.name, -1);
+  if(gs){
+    drawPlayer(ctx, gs.p1, match.p1.color, match.p1.color2, match.p1.name);
+    drawPlayer(ctx, gs.p2, match.p2.color, match.p2.color2, match.p2.name);
+    drawBall(ctx, gs.ball);
+    drawConfetti(ctx, gs);
+  }
 
-  // ball
-  ctx.save();
-  ctx.fillStyle='#fff';
-  ctx.beginPath(); ctx.arc(gs.ball.x, gs.ball.y, BALL_R, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#222'; ctx.lineWidth=1.5; ctx.stroke();
   ctx.restore();
+
+  if(gs && gs.flash > 0){
+    ctx.fillStyle = `rgba(255,255,255,${gs.flash*0.35})`;
+    ctx.fillRect(0,0,FIELD_W,FIELD_H);
+  }
 }
 
 window.initHeadballUI = initHeadballUI;
