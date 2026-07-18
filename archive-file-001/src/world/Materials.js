@@ -97,6 +97,28 @@ function plasterTexture({ base = [70, 60, 48] } = {}) {
   return tex;
 }
 
+function brickTexture({ base = [64, 44, 36], mortar = [38, 34, 30], rows = 8 } = {}) {
+  const size = 256;
+  const c = canvas(size);
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = `rgb(${mortar.join(',')})`;
+  ctx.fillRect(0, 0, size, size);
+  const rowH = size / rows;
+  const brickW = rowH * 2.2;
+  for (let r = 0; r < rows; r++) {
+    const offset = r % 2 === 0 ? 0 : -brickW / 2;
+    for (let x = offset; x < size; x += brickW) {
+      const shade = base.map((v) => v + (Math.random() - 0.5) * 12);
+      ctx.fillStyle = `rgb(${shade.join(',')})`;
+      ctx.fillRect(x + 1.5, r * rowH + 1.5, brickW - 3, rowH - 3);
+    }
+  }
+  const tex = new THREE.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function paperTexture({ base = [222, 206, 168], lines = false } = {}) {
   const size = 512;
   const c = canvas(size);
@@ -163,6 +185,18 @@ export function buildMaterialLibrary() {
   const steelTex = steelTexture();
   steelTex.repeat.set(2, 2);
 
+  // Substrata (Case 002) — brick vault, distinct from both other wings'
+  // wood/marble language (GDD: "older than the rest of the building reads
+  // from outside").
+  const brickTex = brickTexture();
+  brickTex.repeat.set(3, 2);
+
+  // Conservatory (Case 003) — the same marble generator as the Rotunda
+  // floor, but a cooler, lighter stone reads as a completely different
+  // room without a second procedural-texture function to maintain.
+  const conservatoryFloorTex = marbleTexture({ base: [214, 214, 206], vein: [150, 158, 156] });
+  conservatoryFloorTex.repeat.set(5, 5);
+
   return {
     floor: new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.45, metalness: 0.05 }),
     floorPlank: new THREE.MeshStandardMaterial({ map: floorPlankTex, roughness: 0.75, metalness: 0.01 }),
@@ -178,5 +212,7 @@ export function buildMaterialLibrary() {
     ceiling: new THREE.MeshStandardMaterial({ color: 0x1c1712, roughness: 0.9 }),
     ink: new THREE.MeshStandardMaterial({ color: 0x14100b, roughness: 0.8 }),
     leather: new THREE.MeshStandardMaterial({ color: 0x27301f, roughness: 0.55, metalness: 0.05 }),
+    brick: new THREE.MeshStandardMaterial({ map: brickTex, roughness: 0.85, metalness: 0 }),
+    conservatoryFloor: new THREE.MeshStandardMaterial({ map: conservatoryFloorTex, roughness: 0.3, metalness: 0.05 }),
   };
 }

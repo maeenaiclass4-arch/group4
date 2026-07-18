@@ -143,6 +143,16 @@ export class CaseOneSystem {
     this.ui.showCaption('case1.key.caption');
     this.ui.addCasebookEntry('case1.key.entry');
     this.onStateChanged?.();
+
+    // A distinct closing beat, handed off after the pickup line above has
+    // had a moment to read — this is the "you're done here" sensation, not
+    // just another interaction result.
+    setTimeout(() => {
+      this.audio.caseClosed();
+      this.ui.showCaption('case1.closed.caption');
+      this.ui.addCasebookEntry('case1.closed.entry');
+      this.onStateChanged?.();
+    }, 2200);
   }
 
   update(dt) {

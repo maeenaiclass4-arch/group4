@@ -127,7 +127,9 @@ function buildIntakeDesk(materials) {
 
 export function buildRotunda({ materials, collisionWorld }) {
   const group = new THREE.Group();
-  let statusLamp = null;
+  // One per open gate now (Registry/Substrata/Conservatory) rather than a
+  // single lamp — each case's world-response signal lives at its own gate.
+  const statusLamps = {};
 
   // Floor — built directly from the octagon vertices (see OctagonGeometry.js)
   // rather than a rotated CircleGeometry, so it lines up exactly with the
@@ -237,9 +239,10 @@ export function buildRotunda({ materials, collisionWorld }) {
       const lampBody = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.12, 10), materials.brass);
       lampBody.position.set(lampX, GATE_HEIGHT - 0.3, lampZ);
       group.add(lampBody);
-      statusLamp = new THREE.PointLight(0x8fae7c, 0, 3.4, 2);
+      const statusLamp = new THREE.PointLight(0x8fae7c, 0, 3.4, 2);
       statusLamp.position.set(lampX, GATE_HEIGHT - 0.3, lampZ);
       group.add(statusLamp);
+      if (edge.key) statusLamps[edge.key] = statusLamp;
 
       continue;
     }
@@ -295,5 +298,5 @@ export function buildRotunda({ materials, collisionWorld }) {
     }
   }
 
-  return { group, statusLamp };
+  return { group, statusLamps };
 }

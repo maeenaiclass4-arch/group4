@@ -39,11 +39,11 @@ export const ROTUNDA_EDGES = [
   { role: 'gate-locked', label: 'Reading Room' }, // 0 — NE
   { role: 'solid-intake' }, // 1 — S
   { role: 'solid-memorial' }, // 2 — SW
-  { role: 'gate-locked', label: 'Substrata' }, // 3 — W
+  { role: 'gate-open', label: 'Substrata', key: 'substrata' }, // 3 — W — Case 002
   { role: 'gate-locked', label: 'Clockwork Wing' }, // 4 — NW
-  { role: 'gate-open', label: 'Registry Wing' }, // 5 — N
+  { role: 'gate-open', label: 'Registry Wing', key: 'registry' }, // 5 — N — Case 001
   { role: 'solid-lamp' }, // 6 — SE
-  { role: 'gate-locked', label: 'Conservatory' }, // 7 — E
+  { role: 'gate-open', label: 'Conservatory', key: 'conservatory' }, // 7 — E — Case 003
 ];
 
 // North gate mouth: edge 5 runs from vertex 5 (-3.444,-8.315) to vertex 6
@@ -76,3 +76,35 @@ export const CHAIR_SOLUTION_SLOT = 3;
 
 export const CORKBOARD_POSITION = { x: -ROOM_HALF_WIDTH + 0.05, z: ROOM_FAR_Z + 2.4 };
 export const COMPARTMENT_POSITION = { x: 0.9, z: ROOM_FAR_Z + 1.75 };
+
+// ---- West wing: Substrata / Sound Vaults (Case 002) — the west gate
+// mirrors the north gate's geometry (edge 3 vs edge 5 in ROTUNDA_EDGES are
+// both flat, axis-aligned spans by construction of a regular octagon), so
+// the corridor simply runs along -X instead of -Z. Deliberately shorter
+// than the Registry Wing (~2-3 minutes of play, GDD "vertical showcase"
+// scope, not a full wing).
+export const WEST_WALL_X = -8.3147;
+export const AUDIO_CORRIDOR_LENGTH = 6;
+export const AUDIO_CORRIDOR_HEIGHT = 3;
+export const AUDIO_CORRIDOR_START_X = WEST_WALL_X;
+export const AUDIO_CORRIDOR_END_X = AUDIO_CORRIDOR_START_X - AUDIO_CORRIDOR_LENGTH;
+
+export const AUDIO_ROOM_HALF_WIDTH = 3;
+export const AUDIO_ROOM_DEPTH = 6;
+export const AUDIO_ROOM_HEIGHT = 3.4;
+export const AUDIO_ROOM_NEAR_X = AUDIO_CORRIDOR_END_X;
+export const AUDIO_ROOM_FAR_X = AUDIO_ROOM_NEAR_X - AUDIO_ROOM_DEPTH;
+
+// ---- East wing: Conservatory (Case 003) — the mirror image of the west
+// wing along +X.
+export const EAST_WALL_X = 8.3147;
+export const LIGHT_CORRIDOR_LENGTH = 6;
+export const LIGHT_CORRIDOR_HEIGHT = 3.4;
+export const LIGHT_CORRIDOR_START_X = EAST_WALL_X;
+export const LIGHT_CORRIDOR_END_X = LIGHT_CORRIDOR_START_X + LIGHT_CORRIDOR_LENGTH;
+
+export const LIGHT_ROOM_HALF_WIDTH = 3;
+export const LIGHT_ROOM_DEPTH = 6;
+export const LIGHT_ROOM_HEIGHT = 4.2;
+export const LIGHT_ROOM_NEAR_X = LIGHT_CORRIDOR_END_X;
+export const LIGHT_ROOM_FAR_X = LIGHT_ROOM_NEAR_X + LIGHT_ROOM_DEPTH;

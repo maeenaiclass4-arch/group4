@@ -3,6 +3,8 @@ const SAVE_KEY = 'archive_file001_save_v1';
 const DEFAULT_STATE = {
   player: { x: 0, y: 1.68, z: 7.9, yaw: 0, pitch: 0 },
   case001: { chairSlot: 0, solved: false },
+  case002: { dialState: 0, solved: false },
+  case003: { lensState: 0, solved: false },
 };
 
 export class SaveManager {

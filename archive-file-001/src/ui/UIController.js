@@ -1,5 +1,11 @@
 import { t, applyStaticTranslations, onLanguageChange } from '../core/i18n.js';
 
+const CASE_GROUPS = [
+  { prefix: 'case1.', titleKey: 'casebook.case1.title' },
+  { prefix: 'case2.', titleKey: 'casebook.case2.title' },
+  { prefix: 'case3.', titleKey: 'casebook.case3.title' },
+];
+
 /**
  * The entire on-screen interface: a loading screen, a one-time start
  * prompt (pointer-lock requires a user gesture), a reticle/glint pair,
@@ -110,8 +116,17 @@ export class UIController {
       this.casebookContents.innerHTML = `<div class="casebook__empty">${t('casebook.empty')}</div>`;
       return;
     }
-    this.casebookContents.innerHTML = this.#casebookEntries
-      .map((key) => `<div class="casebook__entry">${t(key)}</div>`)
+    // Entry keys are namespaced by case ('case1.', 'case2.', 'case3.') —
+    // grouping on that prefix needs no separate bookkeeping of which case
+    // an entry belongs to, and naturally keeps each case's findings
+    // together as more cases add entries to the same flat list.
+    this.casebookContents.innerHTML = CASE_GROUPS
+      .map(({ prefix, titleKey }) => {
+        const entries = this.#casebookEntries.filter((key) => key.startsWith(prefix));
+        if (entries.length === 0) return '';
+        const rows = entries.map((key) => `<div class="casebook__entry">${t(key)}</div>`).join('');
+        return `<div class="casebook__group"><div class="casebook__group-title">${t(titleKey)}</div>${rows}</div>`;
+      })
       .join('');
   }
 

@@ -205,20 +205,27 @@ html[lang='ar'] body {
 }
 .casebook__header {
   display: flex;
-  justify-content: space-between;
   align-items: baseline;
   border-bottom: 2px solid var(--green);
   padding-bottom: 0.75rem;
   margin-bottom: 1.25rem;
 }
 .casebook__case-id {
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
   color: var(--green);
   font-weight: bold;
 }
-.casebook__case-name { font-size: 1.15rem; font-style: italic; }
 .casebook__contents { min-height: 6rem; font-size: 0.9rem; line-height: 1.7; }
+.casebook__group { margin-bottom: 1.5rem; }
+.casebook__group:last-child { margin-bottom: 0; }
+.casebook__group-title {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--ink);
+  opacity: 0.8;
+  margin-bottom: 0.6rem;
+}
 .casebook__entry { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px dashed rgba(0, 0, 0, 0.2); }
 .casebook__entry:last-child { border-bottom: none; }
 .casebook__empty { opacity: 0.55; font-style: italic; }

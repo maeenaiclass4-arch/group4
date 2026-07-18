@@ -9,13 +9,18 @@ import { CollisionWorld } from './world/CollisionWorld.js';
 import { PlayerController } from './world/PlayerController.js';
 import { buildRotunda } from './world/buildRotunda.js';
 import { buildRegistryWing } from './world/buildRegistryWing.js';
+import { buildAudioWing } from './world/buildAudioWing.js';
+import { buildLightWing } from './world/buildLightWing.js';
 import { InteractionSystem } from './systems/InteractionSystem.js';
 import { CaseOneSystem } from './systems/CaseOneSystem.js';
+import { CaseTwoSystem } from './systems/CaseTwoSystem.js';
+import { CaseThreeSystem } from './systems/CaseThreeSystem.js';
 import { UIController } from './ui/UIController.js';
 import { SettingsPanel } from './ui/SettingsPanel.js';
-import { SPAWN_POSE, NORTH_WALL_Z } from './world/LevelLayout.js';
+import { SPAWN_POSE, NORTH_WALL_Z, WEST_WALL_X, EAST_WALL_X } from './world/LevelLayout.js';
 import { updateFlicker } from './world/Flicker.js';
 import { IntroPan } from './world/IntroPan.js';
+import { OutroPan } from './world/OutroPan.js';
 import { TouchControls } from './ui/TouchControls.js';
 
 async function boot() {
@@ -63,16 +68,24 @@ async function boot() {
 
   scene.add(new THREE.HemisphereLight(0x8a7f68, 0x241c14, 0.9));
 
-  ui.setLoadingProgress(0.3);
+  ui.setLoadingProgress(0.2);
   const materials = buildMaterialLibrary();
   const collisionWorld = new CollisionWorld();
 
-  const { group: rotundaGroup, statusLamp } = buildRotunda({ materials, collisionWorld });
+  const { group: rotundaGroup, statusLamps } = buildRotunda({ materials, collisionWorld });
   scene.add(rotundaGroup);
 
-  ui.setLoadingProgress(0.6);
+  ui.setLoadingProgress(0.4);
   const registry = buildRegistryWing({ materials, collisionWorld });
   scene.add(registry.group);
+
+  ui.setLoadingProgress(0.6);
+  const audioWing = buildAudioWing({ materials, collisionWorld });
+  scene.add(audioWing.group);
+
+  ui.setLoadingProgress(0.8);
+  const lightWing = buildLightWing({ materials, collisionWorld });
+  scene.add(lightWing.group);
 
   const input = new InputManager(canvas);
   input.attach();
@@ -115,13 +128,42 @@ async function boot() {
   });
   interaction.register(rotundaGroup);
   interaction.register(registry.group);
+  interaction.register(audioWing.group);
+  interaction.register(lightWing.group);
 
   const caseOne = new CaseOneSystem({
     chair: registry.chair,
     hatch: registry.hatch,
     key: registry.key,
     corkboard: registry.corkboard,
-    statusLamp,
+    statusLamp: statusLamps.registry,
+    audio,
+    ui,
+    onStateChanged: () => save(),
+  });
+
+  const caseTwo = new CaseTwoSystem({
+    horn: audioWing.horn,
+    dial: audioWing.dial,
+    needleGroup: audioWing.needleGroup,
+    hatch: audioWing.hatch,
+    key: audioWing.key,
+    compartmentGroup: audioWing.compartmentGroup,
+    statusLamp: statusLamps.substrata,
+    audio,
+    ui,
+    onStateChanged: () => save(),
+  });
+
+  const caseThree = new CaseThreeSystem({
+    mark: lightWing.mark,
+    lens: lightWing.lens,
+    yoke: lightWing.yoke,
+    beamMat: lightWing.beamMat,
+    hatch: lightWing.hatch,
+    key: lightWing.key,
+    compartmentGroup: lightWing.compartmentGroup,
+    statusLamp: statusLamps.conservatory,
     audio,
     ui,
     onStateChanged: () => save(),
@@ -133,17 +175,47 @@ async function boot() {
   player.setPose(savedState.player);
   player.update(0, { processInput: false }); // sync the camera before the first paint
   caseOne.hydrate(savedState.case001);
+  caseTwo.hydrate(savedState.case002);
+  caseThree.hydrate(savedState.case003);
   ui.hydrateCasebook(savedState.casebook ?? []);
   if (savedState.case001?.solved && registry.hatch) {
     registry.hatch.rotation.x = -1.3;
+  }
+  if (savedState.case002?.solved && audioWing.hatch) {
+    audioWing.hatch.rotation.x = -1.3;
+  }
+  if (savedState.case003?.solved && lightWing.hatch) {
+    lightWing.hatch.rotation.x = -1.3;
   }
 
   function save() {
     saveManager.save({
       player: player.getPose(),
       case001: caseOne.serialize(),
+      case002: caseTwo.serialize(),
+      case003: caseThree.serialize(),
       casebook: ui.getCasebookEntries(),
     });
+    checkEnding();
+  }
+
+  // The closing beat, only for the live moment all three are actually
+  // finished — checkEnding() runs on every state change (including the
+  // periodic autosave), but hydrate() never calls onStateChanged, so a
+  // returning session with all three already solved does not replay it.
+  const outroPan = new OutroPan();
+  let endingTriggered = false;
+  function checkEnding() {
+    if (endingTriggered) return;
+    if (caseOne.keyCollected && caseTwo.keyCollected && caseThree.keyCollected) {
+      endingTriggered = true;
+      // Delayed past the last case's own 2.2s-later closing beat so the
+      // two never talk over each other.
+      setTimeout(() => {
+        outroPan.start(camera);
+        ui.showCaption('ending.caption');
+      }, 3200);
+    }
   }
 
   function handleInteract() {
@@ -221,23 +293,33 @@ async function boot() {
   const clock = new THREE.Clock();
   let saveClock = 0;
   let elapsed = 0;
-  const dustMotes = [...(rotundaGroup.userData.dustMotes ?? []), ...(registry.dustMotes ?? [])];
+  const dustMotes = [
+    ...(rotundaGroup.userData.dustMotes ?? []),
+    ...(registry.dustMotes ?? []),
+    ...(audioWing.dustMotes ?? []),
+    ...(lightWing.dustMotes ?? []),
+  ];
 
   function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.08);
     elapsed += dt;
 
-    // Moves anything animated (the chair tween, the hatch, the key bob)
+    // Moves anything animated (chair/dial/lens tweens, hatches, key bobs)
     // before the raycast below, and scene.updateMatrixWorld() then
     // refreshes every object's world transform from those new positions —
     // without it, interaction.update() would raycast against last frame's
     // transforms for anything that just moved, one frame behind reality.
     caseOne.update(dt);
+    caseTwo.update(dt);
+    caseThree.update(dt);
 
     if (introPan.active) {
       input.consumeLookDelta(); // discard mouse movement gathered during the pan
       introPan.update(camera, dt);
+    } else if (outroPan.active) {
+      input.consumeLookDelta();
+      outroPan.update(camera, dt);
     } else {
       // input.isLocked already goes false on desktop the moment settings
       // exits pointer lock; touch has no such signal, hence the explicit
@@ -249,10 +331,18 @@ async function boot() {
         interaction.update();
       }
     }
-    audio.setZone(player.position.z > NORTH_WALL_Z ? 'hall' : 'room');
+    // "hall" only while still inside the Rotunda proper — past any gate
+    // (north into the Registry Wing, west into Substrata, east into the
+    // Conservatory) reads as "room", the same footstep/ambient split as
+    // before, just no longer assuming the Registry Wing is the only place
+    // to leave the Rotunda through.
+    const inRotunda = player.position.z > NORTH_WALL_Z && player.position.x > WEST_WALL_X && player.position.x < EAST_WALL_X;
+    audio.setZone(inRotunda ? 'hall' : 'room');
 
     updateFlicker(rotundaGroup, elapsed);
     updateFlicker(registry.group, elapsed);
+    updateFlicker(audioWing.group, elapsed);
+    updateFlicker(lightWing.group, elapsed);
     for (const dust of dustMotes) dust.userData.update(elapsed);
 
     saveClock += dt;
@@ -267,8 +357,8 @@ async function boot() {
 
   if (import.meta.env.DEV) {
     window.__ARCHIVE__ = {
-      scene, camera, player, caseOne, saveManager, collisionWorld, interaction, registry, introPan,
-      settingsPanel, input, SPAWN_POSE,
+      scene, camera, player, caseOne, caseTwo, caseThree, saveManager, collisionWorld, interaction,
+      registry, audioWing, lightWing, introPan, outroPan, settingsPanel, input, SPAWN_POSE,
     };
   }
 }

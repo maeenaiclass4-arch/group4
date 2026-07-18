@@ -136,6 +136,22 @@ export class AudioManager {
     this.#blip({ freq: 660, duration: 0.12, type: 'sine', gain: 0.08, sweep: 900 });
   }
 
+  /** A single short tone at an arbitrary pitch — Case 002's only new sound
+   * need (compare a selector's pitch against a reference), built from the
+   * same #blip primitive everything else here already uses. */
+  chime(freq, { duration = 0.22, gain = 0.09 } = {}) {
+    this.#blip({ freq, duration, type: 'sine', gain });
+  }
+
+  /** A warm, resolving three-note rise — the "you're done here" beat,
+   * distinct from mechanismOpen()'s single reveal sting. Shared by every
+   * case's closing moment. */
+  caseClosed() {
+    this.#blip({ freq: 440, duration: 0.16, type: 'sine', gain: 0.07, sweep: 440 });
+    setTimeout(() => this.#blip({ freq: 554, duration: 0.16, type: 'sine', gain: 0.07, sweep: 554 }), 160);
+    setTimeout(() => this.#blip({ freq: 659, duration: 0.36, type: 'sine', gain: 0.08, sweep: 990 }), 320);
+  }
+
   /** A single, quiet settling-creak — an old building, never a jump scare (GDD §10). */
   #playCreak() {
     if (!this.#ctx) return;
