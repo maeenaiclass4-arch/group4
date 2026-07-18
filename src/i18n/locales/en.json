@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "History Animation Studio",
+    "subtitle": "A professional tool for historical map animations"
+  },
+  "nav": {
+    "events": "Events",
+    "inspector": "Inspector",
+    "newEvent": "New Event",
+    "language": "العربية"
+  },
+  "map": {
+    "resetCamera": "Reset Camera",
+    "autoFollow": "Auto Follow",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out"
+  },
+  "timeline": {
+    "title": "Timeline",
+    "play": "Play",
+    "pause": "Pause",
+    "addTrack": "New Track",
+    "speed": "Playback Speed",
+    "year": "Year",
+    "yearBCE": "BCE",
+    "yearCE": "CE",
+    "zoomIn": "Zoom Timeline In",
+    "zoomOut": "Zoom Timeline Out",
+    "fitAll": "Fit All",
+    "jumpToStart": "Start",
+    "jumpToEnd": "End",
+    "trackPlaceholder": "No events on this track",
+    "deleteTrack": "Delete Track",
+    "renameTrack": "Rename"
+  },
+  "event": {
+    "title": "Title",
+    "titlePlaceholder": "e.g. Conquest of Mecca",
+    "description": "Description",
+    "descriptionPlaceholder": "Write a short description of the historical event...",
+    "startYear": "Start Year",
+    "endYear": "End Year",
+    "endYearOptional": "optional",
+    "region": "Country / Region",
+    "regionPlaceholder": "Choose a country or historical empire...",
+    "targetRegion": "Target Region",
+    "targetRegionPlaceholder": "Choose the destination or opposing party...",
+    "animationType": "Animation Type",
+    "color": "Color",
+    "duration": "Animation Duration (seconds)",
+    "speed": "Speed",
+    "track": "Track",
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "create": "Create Event",
+    "update": "Update Event",
+    "confirmDelete": "Delete this event?",
+    "noSelection": "Select an event from the list or timeline to view its details",
+    "empty": "No events yet. Create your first historical event to start the story.",
+    "searchPlaceholder": "Search events..."
+  },
+  "animationTypes": {
+    "battle": "Battle",
+    "peaceTreaty": "Peace Treaty",
+    "spreadOfIslam": "Spread of Islam",
+    "spreadOfReligion": "Spread of Religion",
+    "empireExpansion": "Empire Expansion",
+    "newKingdom": "New Kingdom",
+    "empireCollapse": "Empire Collapse",
+    "navalMovement": "Naval Movement",
+    "migration": "Migration",
+    "politicalAgreement": "Political Agreement",
+    "conquest": "Conquest"
+  },
+  "track": {
+    "political": "Political",
+    "military": "Military",
+    "religious": "Religious"
+  },
+  "common": {
+    "years": "years",
+    "bce": "BCE",
+    "ce": "CE",
+    "loading": "Loading..."
+  }
+}

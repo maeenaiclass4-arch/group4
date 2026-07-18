@@ -1,0 +1,87 @@
+{
+  "app": {
+    "title": "استوديو الرسوم التاريخية",
+    "subtitle": "أداة احترافية لصناعة رسوم الخرائط التاريخية"
+  },
+  "nav": {
+    "events": "الأحداث",
+    "inspector": "الخصائص",
+    "newEvent": "حدث جديد",
+    "language": "English"
+  },
+  "map": {
+    "resetCamera": "إعادة ضبط الكاميرا",
+    "autoFollow": "متابعة تلقائية",
+    "zoomIn": "تكبير",
+    "zoomOut": "تصغير"
+  },
+  "timeline": {
+    "title": "خط زمني",
+    "play": "تشغيل",
+    "pause": "إيقاف مؤقت",
+    "addTrack": "مسار جديد",
+    "speed": "سرعة العرض",
+    "year": "السنة",
+    "yearBCE": "ق.م",
+    "yearCE": "م",
+    "zoomIn": "تكبير الخط الزمني",
+    "zoomOut": "تصغير الخط الزمني",
+    "fitAll": "عرض الكل",
+    "jumpToStart": "البداية",
+    "jumpToEnd": "النهاية",
+    "trackPlaceholder": "مسار بلا أحداث",
+    "deleteTrack": "حذف المسار",
+    "renameTrack": "إعادة تسمية"
+  },
+  "event": {
+    "title": "العنوان",
+    "titlePlaceholder": "مثال: فتح مكة",
+    "description": "الوصف",
+    "descriptionPlaceholder": "اكتب وصفاً موجزاً للحدث التاريخي...",
+    "startYear": "سنة البداية",
+    "endYear": "سنة النهاية",
+    "endYearOptional": "اختياري",
+    "region": "الدولة / المنطقة",
+    "regionPlaceholder": "اختر دولة أو إمبراطورية تاريخية...",
+    "targetRegion": "المنطقة المستهدفة",
+    "targetRegionPlaceholder": "اختر الوجهة أو الطرف الآخر...",
+    "animationType": "نوع الرسوم المتحركة",
+    "color": "اللون",
+    "duration": "مدة الرسم المتحرك (ثانية)",
+    "speed": "السرعة",
+    "track": "المسار",
+    "save": "حفظ",
+    "delete": "حذف",
+    "cancel": "إلغاء",
+    "create": "إنشاء الحدث",
+    "update": "تحديث الحدث",
+    "confirmDelete": "هل تريد حذف هذا الحدث؟",
+    "noSelection": "اختر حدثاً من القائمة أو الخط الزمني لعرض تفاصيله",
+    "empty": "لا توجد أحداث بعد. أنشئ أول حدث تاريخي لبدء القصة.",
+    "searchPlaceholder": "ابحث في الأحداث..."
+  },
+  "animationTypes": {
+    "battle": "معركة",
+    "peaceTreaty": "معاهدة سلام",
+    "spreadOfIslam": "انتشار الإسلام",
+    "spreadOfReligion": "انتشار دين",
+    "empireExpansion": "توسع إمبراطورية",
+    "newKingdom": "مملكة جديدة",
+    "empireCollapse": "سقوط إمبراطورية",
+    "navalMovement": "تحرك بحري",
+    "migration": "هجرة",
+    "politicalAgreement": "اتفاق سياسي",
+    "conquest": "فتح / غزو"
+  },
+  "track": {
+    "political": "سياسي",
+    "military": "عسكري",
+    "religious": "ديني"
+  },
+  "common": {
+    "years": "سنة",
+    "bce": "ق.م",
+    "ce": "م",
+    "loading": "جارٍ التحميل..."
+  }
+}
