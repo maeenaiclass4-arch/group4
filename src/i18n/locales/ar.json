@@ -5,6 +5,7 @@
   },
   "nav": {
     "events": "الأحداث",
+    "territories": "المناطق",
     "inspector": "الخصائص",
     "newEvent": "حدث جديد",
     "language": "English"
@@ -77,6 +78,33 @@
     "political": "سياسي",
     "military": "عسكري",
     "religious": "ديني"
+  },
+  "territory": {
+    "draw": "رسم منطقة",
+    "cancelDraw": "إلغاء الرسم",
+    "drawHint": "انقر لإضافة نقاط، انقر مرتين أو Enter للإنهاء، Esc للإلغاء",
+    "selectHint": "Ctrl+Click على الخريطة لتحديد عدة دول أو مناطق ثم دمجها أو تنفيذ عمليات منطقية عليها",
+    "selected": "محدد",
+    "merge": "دمج / اتحاد",
+    "subtract": "طرح",
+    "subtractHint": "يطرح الثاني من الأول",
+    "intersect": "تقاطع",
+    "intersectHint": "تقاطع الشكلين",
+    "empty": "لا توجد مناطق مخصصة بعد. استخدم \"رسم منطقة\" أو ادمج عدة دول.",
+    "name": "الاسم",
+    "fillColor": "لون التعبئة",
+    "strokeColor": "لون الحدود",
+    "opacity": "الشفافية",
+    "strokeWidth": "سُمك الحد",
+    "multiPolygonHint": "تعديل النقاط متاح فقط للأشكال المفردة. هذا الشكل مكوّن من عدة أجزاء منفصلة.",
+    "moveUp": "لأعلى",
+    "moveDown": "لأسفل",
+    "toggleVisibility": "إظهار/إخفاء",
+    "toggleLock": "قفل/فتح",
+    "duplicate": "تكرار",
+    "duplicateSuffix": "(نسخة)",
+    "newTerritory": "منطقة جديدة",
+    "customTerritory": "منطقة مخصصة"
   },
   "common": {
     "years": "سنة",

@@ -1,9 +1,8 @@
 import type { ActiveEvent } from '../playback/engine';
 import { ANIMATION_TYPE_BY_ID } from '../../data/animationTypes';
-import { getRegionCentroid, resolveCountryIds } from '../../data/historicalRegions';
-import { COUNTRY_BY_ID } from '../../data/countries';
 import { project, buildArcPath, sampleArcPoints } from '../../lib/geo';
 import { withAlpha } from '../../lib/color';
+import { resolveRegionCentroid } from '../../lib/regions';
 
 interface EffectsLayerProps {
   activeEvents: ActiveEvent[];
@@ -11,12 +10,7 @@ interface EffectsLayerProps {
 }
 
 function regionAnchor(regionId: string | undefined): [number, number] | null {
-  if (!regionId) return null;
-  const centroid = getRegionCentroid(regionId);
-  if (centroid) return centroid;
-  const ids = resolveCountryIds(regionId);
-  const first = ids[0] ? COUNTRY_BY_ID[ids[0]] : undefined;
-  return first?.centroid ?? null;
+  return resolveRegionCentroid(regionId);
 }
 
 export function EffectsLayer({ activeEvents, clock }: EffectsLayerProps) {

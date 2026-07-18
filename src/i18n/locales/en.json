@@ -5,6 +5,7 @@
   },
   "nav": {
     "events": "Events",
+    "territories": "Territories",
     "inspector": "Inspector",
     "newEvent": "New Event",
     "language": "العربية"
@@ -77,6 +78,33 @@
     "political": "Political",
     "military": "Military",
     "religious": "Religious"
+  },
+  "territory": {
+    "draw": "Draw Territory",
+    "cancelDraw": "Cancel Drawing",
+    "drawHint": "Click to add points, double-click or Enter to finish, Esc to cancel",
+    "selectHint": "Ctrl+Click countries or territories on the map to select several, then merge or run a boolean operation on them",
+    "selected": "selected",
+    "merge": "Merge / Union",
+    "subtract": "Subtract",
+    "subtractHint": "Subtracts the second shape from the first",
+    "intersect": "Intersect",
+    "intersectHint": "Intersection of the two shapes",
+    "empty": "No custom territories yet. Use \"Draw Territory\" or merge a few countries.",
+    "name": "Name",
+    "fillColor": "Fill Color",
+    "strokeColor": "Outline Color",
+    "opacity": "Opacity",
+    "strokeWidth": "Outline Width",
+    "multiPolygonHint": "Vertex editing is only available for single-part shapes. This shape has multiple disjoint parts.",
+    "moveUp": "Move Up",
+    "moveDown": "Move Down",
+    "toggleVisibility": "Show/Hide",
+    "toggleLock": "Lock/Unlock",
+    "duplicate": "Duplicate",
+    "duplicateSuffix": "(copy)",
+    "newTerritory": "New Territory",
+    "customTerritory": "custom territory"
   },
   "common": {
     "years": "years",

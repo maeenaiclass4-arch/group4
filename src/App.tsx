@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Globe2 } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Globe2, CalendarClock, MapPinned } from 'lucide-react';
 import { PlaybackDriver } from './features/playback/PlaybackDriver';
 import { MapCanvas } from './features/map/MapCanvas';
 import { TimelineEditor } from './features/timeline/TimelineEditor';
 import { EventList } from './features/events/EventList';
 import { EventInspector } from './features/events/EventInspector';
+import { TerritoryPanel } from './features/territories/TerritoryPanel';
 import { useUiStore } from './store/uiStore';
 import { useLanguage } from './hooks/useLanguage';
 import './App.css';
@@ -16,6 +17,8 @@ function App() {
   const eventListOpen = useUiStore((s) => s.eventListOpen);
   const toggleInspector = useUiStore((s) => s.toggleInspector);
   const toggleEventList = useUiStore((s) => s.toggleEventList);
+  const leftPanelTab = useUiStore((s) => s.leftPanelTab);
+  const setLeftPanelTab = useUiStore((s) => s.setLeftPanelTab);
 
   return (
     <div className="studio">
@@ -47,7 +50,25 @@ function App() {
       <div className="studio-body">
         {eventListOpen && (
           <aside className="studio-panel studio-panel--left">
-            <EventList />
+            <div className="left-panel-tabs">
+              <button
+                type="button"
+                className={`left-panel-tab${leftPanelTab === 'events' ? ' left-panel-tab--active' : ''}`}
+                onClick={() => setLeftPanelTab('events')}
+              >
+                <CalendarClock size={14} />
+                {t('nav.events')}
+              </button>
+              <button
+                type="button"
+                className={`left-panel-tab${leftPanelTab === 'territories' ? ' left-panel-tab--active' : ''}`}
+                onClick={() => setLeftPanelTab('territories')}
+              >
+                <MapPinned size={14} />
+                {t('nav.territories')}
+              </button>
+            </div>
+            {leftPanelTab === 'events' ? <EventList /> : <TerritoryPanel />}
           </aside>
         )}
 

@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { Locate, Minus, Plus } from 'lucide-react';
-import { MAP_WIDTH, MAP_HEIGHT, project } from '../../lib/geo';
+import { MAP_WIDTH, MAP_HEIGHT, project, projection } from '../../lib/geo';
 import { useActiveEventsStore } from '../playback/engine';
 import { useCountryFills } from './useCountryFills';
 import { useCameraTarget } from './useCameraTarget';
@@ -11,6 +11,11 @@ import { EffectsLayer } from './EffectsLayer';
 import { useMapStore } from '../../store/mapStore';
 import { useUiStore } from '../../store/uiStore';
 import { NowPlayingCard } from './NowPlayingCard';
+import { TerritoryLayer } from '../territories/TerritoryLayer';
+import { DrawingLayer } from '../territories/DrawingLayer';
+import { VertexHandles } from '../territories/VertexHandles';
+import { useTerritoriesStore } from '../../store/territoriesStore';
+import { polygonFromPoints } from '../../lib/geometry';
 import './map.css';
 
 export function MapCanvas() {
@@ -27,6 +32,17 @@ export function MapCanvas() {
   const setCamera = useMapStore((s) => s.setCamera);
   const resetCamera = useMapStore((s) => s.resetCamera);
   const pickingField = useUiStore((s) => s.pickingField);
+  const mapTool = useUiStore((s) => s.mapTool);
+  const setMapTool = useUiStore((s) => s.setMapTool);
+  const leftPanelTab = useUiStore((s) => s.leftPanelTab);
+  const setLeftPanelTab = useUiStore((s) => s.setLeftPanelTab);
+
+  const territories = useTerritoriesStore((s) => s.territories);
+  const selectedTerritoryId = useTerritoriesStore((s) => s.selectedTerritoryId);
+  const selectTerritory = useTerritoriesStore((s) => s.selectTerritory);
+  const addTerritory = useTerritoriesStore((s) => s.addTerritory);
+  const updateTerritory = useTerritoriesStore((s) => s.updateTerritory);
+  const selectedTerritory = territories.find((tr) => tr.id === selectedTerritoryId);
 
   const { center, zoom } = autoFollow ? autoTarget : { center: manualCenter, zoom: manualZoom };
   const [px, py] = project(center);
@@ -36,6 +52,54 @@ export function MapCanvas() {
   const svgRef = useRef<SVGSVGElement>(null);
   const dragState = useRef<{ x: number; y: number; center: [number, number] } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [drawPoints, setDrawPoints] = useState<[number, number][]>([]);
+  const [cursorPoint, setCursorPoint] = useState<[number, number] | null>(null);
+
+  const svgToLonLat = (clientX: number, clientY: number): [number, number] | null => {
+    const svg = svgRef.current;
+    if (!svg) return null;
+    const rect = svg.getBoundingClientRect();
+    const svgX = ((clientX - rect.left) / rect.width) * MAP_WIDTH;
+    const svgY = ((clientY - rect.top) / rect.height) * MAP_HEIGHT;
+    const localX = (svgX - tx) / zoom;
+    const localY = (svgY - ty) / zoom;
+    return projection.invert?.([localX, localY]) ?? null;
+  };
+
+  const finishDrawing = () => {
+    if (drawPoints.length < 3) return;
+    const id = addTerritory({
+      name: `${t('territory.newTerritory')} ${territories.length + 1}`,
+      geometry: polygonFromPoints(drawPoints),
+      fillColor: '#a67c27',
+      strokeColor: '#8b6b3d',
+      opacity: 0.35,
+      strokeWidth: 1.5,
+      visible: true,
+      locked: false,
+    });
+    setDrawPoints([]);
+    setCursorPoint(null);
+    setMapTool('idle');
+    setLeftPanelTab('territories');
+    selectTerritory(id);
+  };
+
+  useEffect(() => {
+    if (mapTool !== 'draw') return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setDrawPoints([]);
+        setCursorPoint(null);
+        setMapTool('idle');
+      } else if (e.key === 'Enter') {
+        finishDrawing();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapTool, drawPoints]);
 
   const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
     e.preventDefault();
@@ -46,7 +110,7 @@ export function MapCanvas() {
   };
 
   const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (pickingField) return;
+    if (pickingField || mapTool === 'draw') return;
     (e.target as Element).setPointerCapture?.(e.pointerId);
     dragState.current = { x: e.clientX, y: e.clientY, center: autoFollow ? autoTarget.center : manualCenter };
     setIsDragging(true);
@@ -54,6 +118,11 @@ export function MapCanvas() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (mapTool === 'draw') {
+      const lonlat = svgToLonLat(e.clientX, e.clientY);
+      if (lonlat) setCursorPoint(lonlat);
+      return;
+    }
     if (!dragState.current) return;
     const svg = svgRef.current;
     if (!svg) return;
@@ -70,23 +139,34 @@ export function MapCanvas() {
     setIsDragging(false);
   };
 
+  const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (mapTool !== 'draw' || e.detail > 1) return;
+    const lonlat = svgToLonLat(e.clientX, e.clientY);
+    if (lonlat) setDrawPoints((pts) => [...pts, lonlat]);
+  };
+
   const zoomButton = (dir: 1 | -1) => {
     const cur = autoFollow ? autoTarget : { center: manualCenter, zoom: manualZoom };
     setAutoFollow(false);
     setCamera(cur.center, Math.min(8, Math.max(1, cur.zoom * (dir === 1 ? 1.25 : 0.8))));
   };
 
+  const canEditVertices =
+    selectedTerritory && leftPanelTab === 'territories' && mapTool === 'idle' && !selectedTerritory.locked;
+
   return (
     <div className="map-canvas-wrap">
       <svg
         ref={svgRef}
-        className={`map-canvas${isDragging ? ' map-canvas--dragging' : ''}${pickingField ? ' map-canvas--picking' : ''}`}
+        className={`map-canvas${isDragging ? ' map-canvas--dragging' : ''}${pickingField ? ' map-canvas--picking' : ''}${mapTool === 'draw' ? ' map-canvas--drawing' : ''}`}
         viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`}
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerLeave={endDrag}
+        onClick={handleClick}
+        onDoubleClick={finishDrawing}
         role="img"
         aria-label={t('app.title')}
       >
@@ -97,7 +177,16 @@ export function MapCanvas() {
           style={{ originX: 0, originY: 0, transformBox: 'view-box' }}
         >
           <CountryLayer fillsResult={fillsResult} />
+          <TerritoryLayer />
           <EffectsLayer activeEvents={activeEvents} clock={clock} />
+          <DrawingLayer points={drawPoints} cursor={cursorPoint} />
+          {canEditVertices && (
+            <VertexHandles
+              territory={selectedTerritory}
+              onChangeGeometry={(geometry) => updateTerritory(selectedTerritory.id, { geometry })}
+              svgToLonLat={svgToLonLat}
+            />
+          )}
         </motion.g>
       </svg>
 
@@ -106,6 +195,12 @@ export function MapCanvas() {
       {pickingField && (
         <div className="map-picking-banner">
           {t(pickingField === 'region' ? 'event.region' : 'event.targetRegion')} — انقر على دولة في الخريطة
+        </div>
+      )}
+
+      {mapTool === 'draw' && (
+        <div className="map-picking-banner">
+          {t('territory.drawHint')} ({drawPoints.length})
         </div>
       )}
 

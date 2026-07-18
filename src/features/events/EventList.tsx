@@ -4,7 +4,7 @@ import { Plus, Search } from 'lucide-react';
 import { useEventsStore } from '../../store/eventsStore';
 import { usePlaybackStore } from '../../store/playbackStore';
 import { ANIMATION_TYPE_BY_ID } from '../../data/animationTypes';
-import { getRegionName } from '../../data/historicalRegions';
+import { resolveRegionName } from '../../lib/regions';
 import { formatYear } from '../timeline/timelineUtils';
 import './events.css';
 
@@ -76,7 +76,7 @@ export function EventList() {
                 <span className="event-list-item__title">{event.title || t('event.titlePlaceholder')}</span>
                 <span className="event-list-item__meta">
                   {formatYear(event.startYear, t)}
-                  {event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''} · {getRegionName(event.region, lang)}
+                  {event.endYear !== undefined ? ` – ${formatYear(event.endYear, t)}` : ''} · {resolveRegionName(event.region, lang)}
                 </span>
               </span>
             </button>

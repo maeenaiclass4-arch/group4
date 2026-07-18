@@ -44,6 +44,10 @@
   cursor: crosshair;
 }
 
+.map-canvas--drawing {
+  cursor: crosshair;
+}
+
 .country {
   stroke-linejoin: round;
   transition: fill 0.6s ease, stroke-width 0.3s ease;

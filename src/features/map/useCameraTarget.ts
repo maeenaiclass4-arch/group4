@@ -2,13 +2,23 @@ import { useMemo } from 'react';
 import type { ActiveEvent } from '../playback/engine';
 import { resolveCountryIds } from '../../data/historicalRegions';
 import { COUNTRY_BY_ID } from '../../data/countries';
+import { findTerritory } from '../../lib/regions';
+import { geometryBbox } from '../../lib/geometry';
 
 const DEFAULT_CENTER: [number, number] = [30, 25];
 const DEFAULT_ZOOM = 1;
 
-/** All country centroids covered by a region (a whole multi-country empire, or just the one country). */
+/** All anchor points covering a region: a custom territory's bbox corners, or member-country centroids. */
 function anchorPoints(regionId: string | undefined): [number, number][] {
   if (!regionId) return [];
+  const territory = findTerritory(regionId);
+  if (territory) {
+    const [minLon, minLat, maxLon, maxLat] = geometryBbox(territory.geometry);
+    return [
+      [minLon, minLat],
+      [maxLon, maxLat],
+    ];
+  }
   return resolveCountryIds(regionId)
     .map((id) => COUNTRY_BY_ID[id]?.centroid)
     .filter((c): c is [number, number] => Boolean(c));

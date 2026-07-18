@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MapPin, Trash2 } from 'lucide-react';
 import { useEventsStore } from '../../store/eventsStore';
 import { useUiStore } from '../../store/uiStore';
+import { useTerritoriesStore } from '../../store/territoriesStore';
 import { ANIMATION_TYPES, ANIMATION_TYPE_BY_ID } from '../../data/animationTypes';
 import { getAllRegionOptions, isHistoricalRegion } from '../../data/historicalRegions';
 import { ComboBox, type ComboBoxOption } from '../../components/ui/ComboBox';
@@ -23,14 +24,21 @@ export function EventInspector() {
   const setPickingField = useUiStore((s) => s.setPickingField);
 
   const event = events.find((e) => e.id === selectedEventId);
+  const territories = useTerritoriesStore((s) => s.territories);
 
   const regionOptions: ComboBoxOption[] = useMemo(() => {
-    return getAllRegionOptions().map((r) => ({
+    const territoryOptions: ComboBoxOption[] = territories.map((terr) => ({
+      value: terr.id,
+      label: terr.name,
+      meta: t('territory.customTerritory'),
+    }));
+    const builtInOptions: ComboBoxOption[] = getAllRegionOptions().map((r) => ({
       value: r.id,
       label: lang === 'ar' ? r.nameAr : r.nameEn,
       meta: isHistoricalRegion(r) ? (lang === 'ar' ? 'تاريخي' : 'historical') : undefined,
     }));
-  }, [lang]);
+    return [...territoryOptions, ...builtInOptions];
+  }, [lang, territories]);
 
   if (!event) {
     return (
