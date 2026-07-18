@@ -1,0 +1,233 @@
+{
+  "name": "Thumbnail Director AI - Module 3 - Prompt Engineer",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "trigger",
+      "name": "🔽 استلام المدخل | Input Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "concepts",
+        "options": {}
+      },
+      "id": "split_out",
+      "name": "🔀 تقسيم الأفكار | Split Concepts",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "system_prompt",
+              "value": "أنت مهندس أوامر (Prompt Engineer) خبير عالمي في نماذج توليد الصور بالذكاء الاصطناعي (Midjourney v6/v7، DALL·E 3، Stable Diffusion XL، Flux).\n\nستستلم في رسالة المستخدم كائن JSON يمثل فكرة (concept) واحدة لصورة يوتيوب مصغرة، بكل تفاصيلها (العنوان، الشرح، زاوية الكاميرا، التكوين، الخلفية، وضعية الشخصية، الانفعال، الإضاءة، لوحة الألوان، مكان النص).\n\nYou are a world-class AI image-generation prompt engineer (Midjourney v6/v7, DALL·E 3, Stable Diffusion XL, Flux). You will receive one thumbnail concept as JSON with full details (title, explanation, camera angle, composition, background, character pose, emotion, lighting, color palette, text placement).\n\nمهمتك: حوّل هذه الفكرة إلى أمر (prompt) جاهز للإنتاج الاحترافي لنموذج توليد صور، مكتوب بالإنجليزية الدقيقة والمكثفة بأسلوب احترافي لتصوير الصور المصغرة الواقعية عالية التباين (photorealistic, high-contrast, YouTube thumbnail style)، مع الحفاظ على مساحة فارغة واضحة لمكان النص المذكور.\n\nTransform this concept into a production-ready prompt for an AI image model, written in precise, token-efficient English in a professional photorealistic high-contrast YouTube-thumbnail style, while preserving clear negative space for the specified text placement.\n\nأرجع حصراً كائن JSON صالح فقط (بدون ```، بدون أي نص خارج JSON) بهذا المخطط بالضبط:\n\n{\n  \"image_prompt_en\": \"...\",\n  \"prompt_explanation_ar\": \"...\",\n  \"negative_prompt\": \"...\",\n  \"aspect_ratio\": \"16:9\",\n  \"recommended_models\": [\"Midjourney v6\", \"DALL·E 3\", \"Stable Diffusion XL / Flux\"],\n  \"style_tags\": [\"...\", \"...\", \"...\"]\n}\n\nاكتب \"image_prompt_en\" بالإنجليزية فقط (لأن نماذج توليد الصور تفهم الإنجليزية بدقة أعلى)، واكتب \"prompt_explanation_ar\" بالعربية الفصحى لشرح ما يفعله الأمر ولماذا يخدم الفكرة.",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "user_prompt",
+              "value": "=فكرة الصورة المصغرة (JSON) | Thumbnail Concept (JSON):\n{{ JSON.stringify($json.concepts) }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "model",
+              "value": "gpt-4o-mini",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "temperature",
+              "value": 0.6,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "build_request",
+      "name": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, response_format: { type: \"json_object\" }, messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ] }) }}",
+        "options": {}
+      },
+      "id": "call_ai",
+      "name": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge",
+      "name": "🔗 دمج | Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const concept = $json.concepts;\nconst raw = $json.choices[0].message.content;\nlet cleaned = raw.trim();\ncleaned = cleaned.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error('AI response is not valid JSON | استجابة الذكاء الاصطناعي ليست JSON صالحاً: ' + e.message);\n}\nreturn { json: { ...concept, ...parsed } };\n"
+      },
+      "id": "parse_merge",
+      "name": "🧠 دمج وتحليل البرومبت | Parse & Merge Image Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "concepts_with_prompts",
+        "options": {}
+      },
+      "id": "aggregate",
+      "name": "📦 تجميع النتائج | Aggregate Results",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🖼️ وحدة 3: هندسة أوامر توليد الصور\n## Module 3: Image-Generation Prompt Engineer\n\n**المدخل | Input:** `{ concepts: [ 10 عناصر ] }` (مخرجات الوحدة 2)\n\nتعمل هذه الوحدة على كل فكرة على حدة (Split → AI → Merge) ثم تجمّع كل النتائج في مصفوفة واحدة `concepts_with_prompts`.\nThis module processes each concept individually (Split → AI → Merge) then aggregates all results back into a single `concepts_with_prompts` array.\n\n**المخرج | Output:** `{ concepts_with_prompts: [ ... ] }` — كل عنصر يحتوي بيانات الفكرة الأصلية + `image_prompt_en`, `prompt_explanation_ar`, `negative_prompt`, `aspect_ratio`, `recommended_models`, `style_tags`.",
+        "height": 260,
+        "width": 560,
+        "color": 3
+      },
+      "id": "note1",
+      "name": "Sticky note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "🔽 استلام المدخل | Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "🔀 تقسيم الأفكار | Split Concepts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 تقسيم الأفكار | Split Concepts": {
+      "main": [
+        [
+          {
+            "node": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request": {
+      "main": [
+        [
+          {
+            "node": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 دمج | Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model": {
+      "main": [
+        [
+          {
+            "node": "🔗 دمج | Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 دمج | Merge": {
+      "main": [
+        [
+          {
+            "node": "🧠 دمج وتحليل البرومبت | Parse & Merge Image Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧠 دمج وتحليل البرومبت | Parse & Merge Image Prompt": {
+      "main": [
+        [
+          {
+            "node": "📦 تجميع النتائج | Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

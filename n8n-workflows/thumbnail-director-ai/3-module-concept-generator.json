@@ -1,0 +1,151 @@
+{
+  "name": "Thumbnail Director AI - Module 2 - Concept Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "trigger",
+      "name": "🔽 استلام المدخل | Input Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "system_prompt",
+              "value": "أنت مخرج إبداعي محترف (Creative Director) وخبير تحسين نسبة النقر (CTR) متخصص في تصميم صور يوتيوب المصغرة (Thumbnails).\n\nستستلم في رسالة المستخدم: نص السكربت الأصلي، بالإضافة إلى تحليل إبداعي (Creative Analysis) سبق إعداده لهذا الفيديو.\n\nYou are a professional Creative Director and CTR optimization expert specializing in YouTube thumbnail design. You will receive the original script plus a prior creative analysis covering the emotional hook, curiosity trigger, strongest moment, main subject, facial expression, composition, lighting, color psychology, and CTR optimization notes.\n\nمهمتك: ولّد بالضبط 10 أفكار (concepts) مختلفة وفريدة تماماً لصورة مصغرة واحدة لهذا الفيديو، بحيث يستكشف كل مفهوم زاوية بصرية أو عاطفية مختلفة (مثال: صدمة، فضول، تباين قبل/بعد، رقم كبير، وجه معبّر، غموض، إنجاز، خطر) — بدون تكرار الفكرة نفسها بصياغة مختلفة.\n\nGenerate exactly 10 distinct thumbnail concepts, each exploring a different visual or emotional angle (e.g. shock, curiosity gap, before/after contrast, big number, expressive face, mystery, achievement, danger). Do not repeat the same idea with different wording.\n\nأرجع حصراً كائن JSON صالح فقط (بدون ``` وبدون أي نص خارج JSON) بهذا المخطط بالضبط:\n\n{\n  \"concepts\": [\n    {\n      \"id\": 1,\n      \"title\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"explanation\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"camera_angle\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"composition\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"background\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"character_pose\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"emotion\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"lighting\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"color_palette\": {\"ar\": \"...\", \"en\": \"...\"},\n      \"text_placement\": {\"ar\": \"...\", \"en\": \"...\"}\n    }\n  ]\n}\n\nيجب أن تحتوي مصفوفة \"concepts\" على 10 عناصر بالضبط، بترقيم id من 1 إلى 10. اكتب كل حقل \"ar\" بالعربية الفصحى الاحترافية أولاً (اللغة الأساسية)، مع ترجمة إنجليزية مكافئة في \"en\".",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "user_prompt",
+              "value": "=السكربت الأصلي | Original Script:\n{{ $json.script }}\n\nالتحليل الإبداعي (JSON) | Creative Analysis (JSON):\n{{ JSON.stringify($json.analysis) }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "model",
+              "value": "gpt-4o-mini",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "temperature",
+              "value": 0.9,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "build_request",
+      "name": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, response_format: { type: \"json_object\" }, messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ] }) }}",
+        "options": {}
+      },
+      "id": "call_ai",
+      "name": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.choices[0].message.content;\nlet cleaned = raw.trim();\ncleaned = cleaned.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error('AI response is not valid JSON | استجابة الذكاء الاصطناعي ليست JSON صالحاً: ' + e.message);\n}\nreturn { json: parsed };\n"
+      },
+      "id": "parse",
+      "name": "🧠 تحليل استجابة JSON | Parse Concepts JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 💡 وحدة 2: توليد 10 أفكار للصورة المصغرة\n## Module 2: 10 Thumbnail Concepts Generator\n\n**المدخل | Input:** `{ script, analysis }` (مخرجات الوحدة 1)\n\n**المخرج | Output:** `{ concepts: [ 10 عناصر ] }` — كل عنصر يحتوي: Title, Explanation, Camera Angle, Composition, Background, Character Pose, Emotion, Lighting, Color Palette, Text Placement (ثنائي اللغة).\n\nدرجة الحرارة (temperature) مرتفعة نسبياً (0.9) لتشجيع تنوّع الأفكار.\nTemperature is set higher (0.9) to encourage creative diversity across the 10 concepts.",
+        "height": 260,
+        "width": 480,
+        "color": 6
+      },
+      "id": "note1",
+      "name": "Sticky note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "🔽 استلام المدخل | Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request": {
+      "main": [
+        [
+          {
+            "node": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model": {
+      "main": [
+        [
+          {
+            "node": "🧠 تحليل استجابة JSON | Parse Concepts JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

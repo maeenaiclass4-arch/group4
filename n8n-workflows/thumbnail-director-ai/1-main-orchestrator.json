@@ -1,0 +1,468 @@
+{
+  "name": "Thumbnail Director AI - Main Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "🎬 Thumbnail Director AI | مخرج الصور المصغرة بالذكاء الاصطناعي",
+        "formDescription": "الصق سكربت فيديو اليوتيوب الخاص بك أدناه، وسيقوم الذكاء الاصطناعي بتحليله كمخرج إبداعي وتوليد 10 أفكار احترافية لصورة مصغرة عالية النقر مع أوامر جاهزة لنماذج توليد الصور.\n\nPaste your YouTube video script below and the AI will analyze it like a Creative Director and generate 10 professional high-CTR thumbnail concepts with production-ready image-generation prompts.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "سكربت الفيديو | YouTube Script",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "form_trigger",
+      "name": "📝 استلام السكربت | Script Input",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        200,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "n1",
+              "name": "script",
+              "value": "={{ $json[\"سكربت الفيديو | YouTube Script\"].trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "normalize",
+      "name": "🧹 تنظيف المدخل | Normalize Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json.script.length }}",
+              "rightValue": 50,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "validate_if",
+      "name": "✅ التحقق من الطول | Validate Length",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1",
+              "name": "error",
+              "value": "يرجى لصق سكربت أطول (50 حرفاً على الأقل) لتحليله بدقة. | Please paste a longer script (at least 50 characters) for accurate analysis.",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "error_set",
+      "name": "❌ خطأ: سكربت قصير جداً | Error: Script Too Short",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Thumbnail Director AI - Module 1 - Script Analysis"
+        },
+        "options": {}
+      },
+      "id": "module1",
+      "name": "🎬 وحدة 1: تحليل السكربت | Module 1: Script Analysis",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        860,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge1",
+      "name": "🔗 دمج 1 | Merge 1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1080,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "w1",
+              "name": "script",
+              "value": "={{ $json.script }}",
+              "type": "string"
+            },
+            {
+              "id": "w2",
+              "name": "analysis",
+              "value": "={{ { emotional_hook: $json.emotional_hook, curiosity_trigger: $json.curiosity_trigger, strongest_moment: $json.strongest_moment, main_subject: $json.main_subject, facial_expression: $json.facial_expression, composition: $json.composition, lighting: $json.lighting, color_psychology: $json.color_psychology, ctr_optimization: $json.ctr_optimization } }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "wrap_analysis",
+      "name": "🧭 تغليف التحليل | Wrap Analysis",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1300,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Thumbnail Director AI - Module 2 - Concept Generator"
+        },
+        "options": {}
+      },
+      "id": "module2",
+      "name": "💡 وحدة 2: توليد 10 أفكار | Module 2: Concept Generation",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1520,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge2",
+      "name": "🔗 دمج 2 | Merge 2",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1740,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "p1",
+              "name": "concepts",
+              "value": "={{ $json.concepts }}",
+              "type": "array"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "prepare_prompts_input",
+      "name": "🧩 تجهيز مدخل البرومبت | Prepare Prompts Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1960,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": "Thumbnail Director AI - Module 3 - Prompt Engineer"
+        },
+        "options": {}
+      },
+      "id": "module3",
+      "name": "🖼️ وحدة 3: هندسة أوامر الصور | Module 3: Prompt Engineering",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2180,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "merge3",
+      "name": "🔗 دمج 3 | Merge 3",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        2400,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return { json: {\n  workflow: \"Thumbnail Director AI\",\n  generated_at: new Date().toISOString(),\n  source_script: $json.script,\n  creative_director_analysis: $json.analysis,\n  thumbnail_concepts: $json.concepts_with_prompts\n} };"
+      },
+      "id": "build_final",
+      "name": "📦 بناء التقرير النهائي | Build Final Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2620,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎬 Thumbnail Director AI\n### المخرج الرئيسي | Main Orchestrator\n\nسير عمل معياري (modular) مكوّن من 3 وحدات مستقلة قابلة لإعادة الاستخدام (Execute Workflow):\n1️⃣ تحليل السكربت (Creative Analysis)\n2️⃣ توليد 10 أفكار للصورة المصغرة (Concepts)\n3️⃣ هندسة أوامر توليد الصور (Image Prompts)\n\nA modular workflow made of 3 independent, reusable sub-workflows (Execute Workflow): Script Analysis → 10 Thumbnail Concepts → Image-Generation Prompts.\n\n⚠️ بعد الاستيراد، افتح كل عقدة Execute Workflow واختر سير العمل الفرعي المطابق من القائمة (workflow ID يُعاد ربطه محلياً بعد الاستيراد).\nAfter import, open each Execute Workflow node and (re)select the matching sub-workflow from the dropdown.",
+        "height": 220,
+        "width": 640,
+        "color": 7
+      },
+      "id": "note_overview",
+      "name": "Sticky note_overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🚀 التوسّع لاحقاً | Expand Later\n\nأفكار لوحدات إضافية يمكن إضافتها كسير عمل فرعي جديد يُستدعى بنفس الطريقة:\n- وحدة 4: تسجيل/تقييم A-B للمفاهيم (A/B Concept Scoring)\n- وحدة 5: تحليل المنافسين والاتجاهات (Trend & Competitor Analysis)\n- وحدة 6: استدعاء API لتوليد الصورة فعلياً (Midjourney/DALL·E API)\n- وحدة 7: رفع الصورة تلقائياً على يوتيوب (Auto Upload)\n\nIdeas for additional modules — each can be added as a new sub-workflow called the same way: A/B concept scoring, trend/competitor analysis, actual image generation via API, auto-upload to YouTube.",
+        "height": 220,
+        "width": 560,
+        "color": 6
+      },
+      "id": "note_expand",
+      "name": "Sticky note_expand",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "📝 استلام السكربت | Script Input": {
+      "main": [
+        [
+          {
+            "node": "🧹 تنظيف المدخل | Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧹 تنظيف المدخل | Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "✅ التحقق من الطول | Validate Length",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ التحقق من الطول | Validate Length": {
+      "main": [
+        [
+          {
+            "node": "🎬 وحدة 1: تحليل السكربت | Module 1: Script Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 دمج 1 | Merge 1",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "❌ خطأ: سكربت قصير جداً | Error: Script Too Short",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎬 وحدة 1: تحليل السكربت | Module 1: Script Analysis": {
+      "main": [
+        [
+          {
+            "node": "🔗 دمج 1 | Merge 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 دمج 1 | Merge 1": {
+      "main": [
+        [
+          {
+            "node": "🧭 تغليف التحليل | Wrap Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧭 تغليف التحليل | Wrap Analysis": {
+      "main": [
+        [
+          {
+            "node": "💡 وحدة 2: توليد 10 أفكار | Module 2: Concept Generation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 دمج 2 | Merge 2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "💡 وحدة 2: توليد 10 أفكار | Module 2: Concept Generation": {
+      "main": [
+        [
+          {
+            "node": "🔗 دمج 2 | Merge 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 دمج 2 | Merge 2": {
+      "main": [
+        [
+          {
+            "node": "🧩 تجهيز مدخل البرومبت | Prepare Prompts Input",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔗 دمج 3 | Merge 3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "🧩 تجهيز مدخل البرومبت | Prepare Prompts Input": {
+      "main": [
+        [
+          {
+            "node": "🖼️ وحدة 3: هندسة أوامر الصور | Module 3: Prompt Engineering",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🖼️ وحدة 3: هندسة أوامر الصور | Module 3: Prompt Engineering": {
+      "main": [
+        [
+          {
+            "node": "🔗 دمج 3 | Merge 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔗 دمج 3 | Merge 3": {
+      "main": [
+        [
+          {
+            "node": "📦 بناء التقرير النهائي | Build Final Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}

@@ -1,0 +1,151 @@
+{
+  "name": "Thumbnail Director AI - Module 1 - Script Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "trigger",
+      "name": "🔽 استلام المدخل | Input Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "manual",
+        "assignments": {
+          "assignments": [
+            {
+              "id": "s1",
+              "name": "system_prompt",
+              "value": "أنت \"المخرج الإبداعي\" (Creative Director) الأول في وكالة متخصصة بصناعة الصور المصغرة (Thumbnails) عالية الأداء لقنوات يوتيوب الكبرى، وخبير عالمي في تحسين معدل النقر (CTR Optimization) وعلم نفس الألوان والتركيب البصري.\n\nمهمتك: اقرأ سكربت الفيديو المُرسل إليك بعمق، وحلّله تحليلاً استراتيجياً احترافياً كما يفعل مخرج إبداعي حقيقي قبل تصميم صورة مصغرة تحقق أعلى نسبة نقر ممكنة.\n\nYou are the lead Creative Director at a top-tier YouTube thumbnail agency, and a world-class expert in CTR optimization, color psychology, and visual composition. Read the provided script carefully and analyze it exactly as a professional creative director would before designing a high-CTR thumbnail.\n\nأرجع حصراً كائن JSON صالح (valid JSON فقط) — بدون أي نص تمهيدي، بدون شرح، بدون علامات ```، يطابق هذا المخطط بالضبط:\n\n{\n  \"emotional_hook\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"curiosity_trigger\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"strongest_moment\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"main_subject\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"facial_expression\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"composition\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"lighting\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"color_psychology\": {\"ar\": \"...\", \"en\": \"...\"},\n  \"ctr_optimization\": {\"ar\": \"...\", \"en\": \"...\"}\n}\n\nاكتب المحتوى داخل كل حقل \"ar\" باللغة العربية الفصحى الاحترافية أولاً بصفتها اللغة الأساسية، مع ترجمة إنجليزية دقيقة ومكافئة في حقل \"en\". لا تُضف أي حقول أخرى، ولا تُغيّر أسماء المفاتيح.",
+              "type": "string"
+            },
+            {
+              "id": "s2",
+              "name": "user_prompt",
+              "value": "=نص السكربت | Script:\n{{ $json.script }}",
+              "type": "string"
+            },
+            {
+              "id": "s3",
+              "name": "model",
+              "value": "gpt-4o-mini",
+              "type": "string"
+            },
+            {
+              "id": "s4",
+              "name": "temperature",
+              "value": 0.5,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": false,
+        "options": {}
+      },
+      "id": "build_request",
+      "name": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, response_format: { type: \"json_object\" }, messages: [ { role: \"system\", content: $json.system_prompt }, { role: \"user\", content: $json.user_prompt } ] }) }}",
+        "options": {}
+      },
+      "id": "call_ai",
+      "name": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const raw = $json.choices[0].message.content;\nlet cleaned = raw.trim();\ncleaned = cleaned.replace(/^```json/i, '').replace(/^```/, '').replace(/```$/, '').trim();\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  throw new Error('AI response is not valid JSON | استجابة الذكاء الاصطناعي ليست JSON صالحاً: ' + e.message);\n}\nreturn { json: parsed };\n"
+      },
+      "id": "parse",
+      "name": "🧠 تحليل استجابة JSON | Parse Analysis JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## 🎬 وحدة 1: تحليل السكربت الإبداعي\n## Module 1: Creative Script Analysis\n\n**المدخل | Input:** `{ script }`\n\n**المخرج | Output:** كائن `analysis` يحتوي 9 حقول (Emotional Hook, Curiosity Trigger, Strongest Moment, Main Subject, Facial Expression, Composition, Lighting, Color Psychology, CTR Optimization) — كل حقل ثنائي اللغة `{ar, en}`.\n\nيمكن استدعاء هذه الوحدة بشكل مستقل لاختبارها أو إعادة استخدامها في سير عمل آخر.\nThis module can be called independently for testing or reused in another workflow.",
+        "height": 240,
+        "width": 460,
+        "color": 4
+      },
+      "id": "note1",
+      "name": "Sticky note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "🔽 استلام المدخل | Input Trigger": {
+      "main": [
+        [
+          {
+            "node": "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧩 تجهيز طلب الذكاء الاصطناعي | Build AI Request": {
+      "main": [
+        [
+          {
+            "node": "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 استدعاء نموذج الذكاء الاصطناعي | Call AI Model": {
+      "main": [
+        [
+          {
+            "node": "🧠 تحليل استجابة JSON | Parse Analysis JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
