@@ -1,9 +1,8 @@
 import './ui.css';
 
 const PRESET_COLORS = [
-  '#e5484d', '#f43f5e', '#f5a524', '#eab308', '#4ade80', '#22c55e',
-  '#2dd4bf', '#38bdf8', '#0ea5e9', '#6d8bff', '#a78bfa', '#c084fc',
-  '#f472b6', '#94a3b8', '#6b7280',
+  '#8c1f28', '#7a2e33', '#a6532f', '#a67c27', '#4a6741', '#1f5c46',
+  '#2f6b63', '#3f5566', '#2e3a59', '#5b3358', '#5a4a3a', '#3b2a1e',
 ];
 
 interface ColorPickerProps {

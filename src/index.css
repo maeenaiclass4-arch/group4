@@ -1,41 +1,54 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  --bg-0: #0b0d12;
-  --bg-1: #12141b;
-  --bg-2: #181b24;
-  --bg-3: #1f232e;
-  --bg-elevated: #242836;
-  --border: #2a2e3b;
-  --border-strong: #3a3f4f;
+  /* Archive / parchment surfaces */
+  --bg-0: #f2e7cf;
+  --bg-1: #ead9b6;
+  --bg-2: #e2d1a5;
+  --bg-3: #f7eeda;
+  --bg-elevated: #fbf4e5;
 
-  --text-primary: #eef0f5;
-  --text-secondary: #9aa1b4;
-  --text-muted: #6b7085;
+  /* Antique brass linework */
+  --border: #c7a768;
+  --border-strong: #9c7a3d;
 
-  --accent: #6d8bff;
-  --accent-strong: #8aa2ff;
-  --accent-bg: rgba(109, 139, 255, 0.14);
-  --accent-border: rgba(109, 139, 255, 0.4);
+  /* Ink */
+  --text-primary: #3b2a1e;
+  --text-secondary: #6b5842;
+  --text-muted: #93815f;
 
-  --danger: #ef4d5f;
-  --success: #38c987;
-  --warning: #f5a524;
+  /* Deep emerald — primary accent */
+  --accent: #1f5c46;
+  --accent-strong: #163f30;
+  --accent-bg: rgba(31, 92, 70, 0.12);
+  --accent-border: rgba(31, 92, 70, 0.38);
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  /* Burgundy — secondary accent */
+  --secondary: #7a2e33;
+  --secondary-bg: rgba(122, 46, 51, 0.12);
+  --secondary-border: rgba(122, 46, 51, 0.38);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --danger: #8c1f28;
+  --danger-bg: rgba(140, 31, 40, 0.1);
+  --success: #2f7a5c;
+  --warning: #a67c27;
 
-  --map-ocean: #0a0f1a;
-  --map-land: #262c3d;
-  --map-border: #3c4358;
+  --shadow-sm: 0 1px 2px rgba(59, 42, 30, 0.14);
+  --shadow-md: 0 6px 18px rgba(59, 42, 30, 0.16);
+  --shadow-lg: 0 18px 44px rgba(59, 42, 30, 0.24);
 
-  --font-ar: 'Cairo', 'Segoe UI', sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --map-ocean: #d9cca3;
+  --map-land: #ecdfb8;
+  --map-border: #8b6b3d;
+
+  --font-ar: 'Cairo', 'Tahoma', sans-serif;
   --font-en: 'Inter', 'Segoe UI', sans-serif;
+  --font-ar-serif: 'Amiri', 'Traditional Arabic', serif;
+  --font-en-serif: 'Playfair Display', Georgia, serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
   font-synthesis: none;
@@ -46,9 +59,11 @@
 
 html[lang='ar'] {
   --font-ui: var(--font-ar);
+  --font-title: var(--font-ar-serif);
 }
 html[lang='en'] {
   --font-ui: var(--font-en);
+  --font-title: var(--font-en-serif);
 }
 
 * {
@@ -66,6 +81,10 @@ body {
   background: var(--bg-0);
   color: var(--text-primary);
   overflow: hidden;
+  /* Faint fibrous paper grain */
+  background-image:
+    radial-gradient(circle at 20% 15%, rgba(139, 107, 61, 0.05), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgba(139, 107, 61, 0.05), transparent 45%);
 }
 
 #root {
@@ -81,6 +100,10 @@ h3,
 h4 {
   margin: 0;
   font-weight: 700;
+}
+
+.font-title {
+  font-family: var(--font-title, var(--font-ar-serif));
 }
 
 p {
@@ -107,17 +130,22 @@ textarea {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: var(--border);
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--border-strong);
   background-clip: content-box;
 }
 
 *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
+}
+
+/* Thin outline icons throughout, to match the archive aesthetic */
+svg.lucide {
+  stroke-width: 1.5;
 }

@@ -66,6 +66,7 @@
 }
 .event-list-item--active {
   background: var(--accent-bg);
+  border-inline-start-color: var(--accent);
 }
 .event-list-item__icon {
   font-size: 16px;
@@ -78,8 +79,9 @@
   min-width: 0;
 }
 .event-list-item__title {
-  font-size: 13px;
-  font-weight: 600;
+  font-family: var(--font-title);
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -146,6 +148,6 @@
 }
 .map-pick-btn--active {
   background: var(--accent);
-  border-color: var(--accent);
-  color: #0b0d12;
+  border-color: var(--accent-strong);
+  color: var(--bg-0);
 }

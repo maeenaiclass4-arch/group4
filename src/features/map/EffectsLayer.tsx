@@ -61,7 +61,7 @@ export function EffectsLayer({ activeEvents, clock }: EffectsLayerProps) {
                 cy={y}
                 r={14 - rawT * 8}
                 fill="none"
-                stroke={withAlpha('#3a3f4f', 0.7)}
+                stroke={withAlpha('#8a7a5f', 0.7)}
                 strokeDasharray="3 4"
                 strokeWidth={2}
                 opacity={0.8}

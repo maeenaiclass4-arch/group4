@@ -37,7 +37,7 @@ export function CountryLayer({ fillsResult }: CountryLayerProps) {
             strokeWidth={highlight ? 1.1 + highlight.intensity * 1.1 : 0.5}
             style={
               highlight
-                ? { filter: `drop-shadow(0 0 ${2 + highlight.intensity * 4}px ${withAlpha(highlight.color, 0.55)})` }
+                ? { filter: `drop-shadow(0 0 ${1 + highlight.intensity * 1.5}px ${withAlpha(highlight.color, 0.35)})` }
                 : undefined
             }
             onClick={() => {

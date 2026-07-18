@@ -21,7 +21,7 @@ export interface CountryFillsResult {
   highlights: Map<string, CountryHighlight>;
 }
 
-const COLLAPSE_TARGET = '#3a3f4f';
+const COLLAPSE_TARGET = '#8a7a5f';
 
 function sortByDistanceFromCentroid(countryIds: string[], centroid: [number, number]): string[] {
   return [...countryIds].sort((a, b) => {
