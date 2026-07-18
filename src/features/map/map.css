@@ -155,6 +155,39 @@
   letter-spacing: 0.03em;
 }
 
+.map-label-card {
+  width: 152px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  cursor: grab;
+  font-family: var(--font-ui);
+  user-select: none;
+}
+.map-label-card:active {
+  cursor: grabbing;
+}
+.map-label-card__name {
+  padding: 4px 8px;
+  font-family: var(--font-title);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-inline-start: 3px solid var(--border-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.map-label-card__body {
+  padding: 0 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 10.5px;
+  color: var(--text-secondary);
+}
+
 .map-picking-banner {
   position: absolute;
   inset-block-start: 14px;

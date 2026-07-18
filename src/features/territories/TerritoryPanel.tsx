@@ -61,6 +61,7 @@ export function TerritoryPanel() {
       strokeWidth: 1.5,
       visible: true,
       locked: false,
+      labelVisible: false,
       sourceCountryIds: selectedShapeIds.filter((id) => !findTerritory(id)),
     });
     consumeSourceTerritories(selectedShapeIds);
@@ -71,14 +72,26 @@ export function TerritoryPanel() {
   return (
     <div className="territory-panel">
       <div className="territory-panel__toolbar">
-        <button
-          type="button"
-          className={`btn btn--block${mapTool === 'draw' ? ' btn--primary' : ''}`}
-          onClick={() => setMapTool(mapTool === 'draw' ? 'idle' : 'draw')}
-        >
-          <PenLine size={14} />
-          {mapTool === 'draw' ? t('territory.cancelDraw') : t('territory.draw')}
-        </button>
+        <div className="territory-panel__tool-row">
+          <button
+            type="button"
+            className={`btn${mapTool === 'draw' ? ' btn--primary' : ''}`}
+            onClick={() => setMapTool(mapTool === 'draw' ? 'idle' : 'draw')}
+          >
+            <PenLine size={14} />
+            {mapTool === 'draw' ? t('territory.cancelDraw') : t('territory.draw')}
+          </button>
+          <button
+            type="button"
+            className={`btn${mapTool === 'split' ? ' btn--primary' : ''}`}
+            disabled={!selectedTerritoryId && mapTool !== 'split'}
+            title={!selectedTerritoryId ? t('territory.splitSelectFirst') : undefined}
+            onClick={() => setMapTool(mapTool === 'split' ? 'idle' : 'split')}
+          >
+            <Scissors size={14} />
+            {mapTool === 'split' ? t('territory.cancelSplit') : t('territory.split')}
+          </button>
+        </div>
         <p className="territory-panel__hint">{t('territory.selectHint')}</p>
       </div>
 
@@ -215,6 +228,57 @@ export function TerritoryPanel() {
                   </div>
                 </div>
                 {terr.geometry.type === 'MultiPolygon' && <p className="territory-panel__hint">{t('territory.multiPolygonHint')}</p>}
+
+                <div className="territory-label-section">
+                  <label className="territory-label-section__toggle">
+                    <input
+                      type="checkbox"
+                      checked={terr.labelVisible}
+                      onChange={(e) => updateTerritory(terr.id, { labelVisible: e.target.checked })}
+                    />
+                    {t('territory.showLabel')}
+                  </label>
+                  {terr.labelVisible && (
+                    <>
+                      <div className="field">
+                        <label className="field__label">{t('territory.labelYears')}</label>
+                        <input
+                          className="text-input"
+                          value={terr.labelYears ?? ''}
+                          placeholder={t('territory.labelYearsPlaceholder')}
+                          onChange={(e) => updateTerritory(terr.id, { labelYears: e.target.value })}
+                        />
+                      </div>
+                      <div className="field__row">
+                        <div className="field">
+                          <label className="field__label">{t('territory.labelCapital')}</label>
+                          <input
+                            className="text-input"
+                            value={terr.labelCapital ?? ''}
+                            onChange={(e) => updateTerritory(terr.id, { labelCapital: e.target.value })}
+                          />
+                        </div>
+                        <div className="field">
+                          <label className="field__label">{t('territory.labelPopulation')}</label>
+                          <input
+                            className="text-input"
+                            value={terr.labelPopulation ?? ''}
+                            onChange={(e) => updateTerritory(terr.id, { labelPopulation: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label className="field__label">{t('territory.labelNotes')}</label>
+                        <textarea
+                          className="textarea-input"
+                          value={terr.labelNotes ?? ''}
+                          onChange={(e) => updateTerritory(terr.id, { labelNotes: e.target.value })}
+                        />
+                      </div>
+                      <p className="territory-panel__hint">{t('territory.labelHint')}</p>
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>

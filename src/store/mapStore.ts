@@ -5,9 +5,12 @@ interface MapCameraState {
   zoom: number;
   /** When true, the playback engine drives the camera toward active events automatically. */
   autoFollow: boolean;
+  /** Base countries layer visibility — toggled from the Layers panel. */
+  baseMapVisible: boolean;
   setCamera: (center: [number, number], zoom: number) => void;
   setAutoFollow: (v: boolean) => void;
   resetCamera: () => void;
+  toggleBaseMapVisible: () => void;
 }
 
 const DEFAULT_CENTER: [number, number] = [30, 25];
@@ -17,7 +20,9 @@ export const useMapStore = create<MapCameraState>((set) => ({
   center: DEFAULT_CENTER,
   zoom: DEFAULT_ZOOM,
   autoFollow: true,
+  baseMapVisible: true,
   setCamera: (center, zoom) => set({ center, zoom }),
   setAutoFollow: (autoFollow) => set({ autoFollow }),
   resetCamera: () => set({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM }),
+  toggleBaseMapVisible: () => set((s) => ({ baseMapVisible: !s.baseMapVisible })),
 }));

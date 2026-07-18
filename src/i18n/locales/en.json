@@ -6,6 +6,8 @@
   "nav": {
     "events": "Events",
     "territories": "Territories",
+    "assets": "Assets",
+    "layers": "Layers",
     "inspector": "Inspector",
     "newEvent": "New Event",
     "language": "العربية"
@@ -90,6 +92,10 @@
     "subtractHint": "Subtracts the second shape from the first",
     "intersect": "Intersect",
     "intersectHint": "Intersection of the two shapes",
+    "split": "Split",
+    "splitHint": "Draw a line across the selected territory, then double-click or Enter to split it",
+    "cancelSplit": "Cancel Split",
+    "splitSelectFirst": "Select a single territory first to split it",
     "empty": "No custom territories yet. Use \"Draw Territory\" or merge a few countries.",
     "name": "Name",
     "fillColor": "Fill Color",
@@ -104,7 +110,35 @@
     "duplicate": "Duplicate",
     "duplicateSuffix": "(copy)",
     "newTerritory": "New Territory",
-    "customTerritory": "custom territory"
+    "customTerritory": "custom territory",
+    "showLabel": "Show info card on the map",
+    "labelYears": "Years",
+    "labelYearsPlaceholder": "e.g. 622 – 661 CE",
+    "labelCapital": "Capital",
+    "labelPopulation": "Population",
+    "labelNotes": "Notes",
+    "labelSection": "Info Card (Smart Label)",
+    "labelHint": "Drag the card on the map to reposition it"
+  },
+  "asset": {
+    "dragHint": "Drag any item and drop it on the map to place it",
+    "scale": "Scale",
+    "rotation": "Rotation",
+    "empty": "No assets placed yet. Drag one from above onto the map."
+  },
+  "layers": {
+    "background": "Background",
+    "mapCountries": "Map & Countries",
+    "territories": "Custom Territories",
+    "assets": "Assets & Armies",
+    "camera": "Camera"
+  },
+  "camera": {
+    "addKeyframe": "Add a camera keyframe at the current year",
+    "empty": "No camera keyframes yet. Frame the map how you want it, then add a keyframe.",
+    "rotation": "Rotation",
+    "tilt": "Tilt",
+    "hint": "With two or more keyframes, the camera moves between them automatically during playback instead of auto-following events."
   },
   "common": {
     "years": "years",

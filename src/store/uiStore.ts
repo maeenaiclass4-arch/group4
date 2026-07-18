@@ -2,8 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 export type PickableField = 'region' | 'targetRegion' | null;
-export type LeftPanelTab = 'events' | 'territories';
-export type MapTool = 'idle' | 'draw';
+export type LeftPanelTab = 'events' | 'territories' | 'assets' | 'layers';
+export type MapTool = 'idle' | 'draw' | 'split' | 'place-label' | 'place-asset';
 
 interface UiState {
   inspectorOpen: boolean;

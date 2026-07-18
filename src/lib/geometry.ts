@@ -5,7 +5,10 @@ import turfCentroid from '@turf/centroid';
 import turfBbox from '@turf/bbox';
 import turfArea from '@turf/area';
 import turfRewind from '@turf/rewind';
-import { featureCollection, polygon, feature as turfFeature } from '@turf/helpers';
+import turfBuffer from '@turf/buffer';
+import turfBearing from '@turf/bearing';
+import turfDestination from '@turf/destination';
+import { featureCollection, polygon, lineString, feature as turfFeature } from '@turf/helpers';
 import type { Feature, Polygon, MultiPolygon } from 'geojson';
 import type { TerritoryGeometry } from '../types/territory';
 
@@ -61,6 +64,42 @@ export function geometryBbox(geometry: TerritoryGeometry): [number, number, numb
 
 export function geometryArea(geometry: TerritoryGeometry): number {
   return turfArea(toFeature(geometry));
+}
+
+/**
+ * Splits a polygon along a user-drawn cutting line. The line is extended well past the
+ * polygon's bounds, turned into a thin "blade" polygon via buffer, then subtracted from the
+ * target — this reliably yields two (or more) disjoint pieces without needing a dedicated
+ * polygon-by-line split algorithm.
+ */
+export function splitGeometry(target: TerritoryGeometry, linePoints: [number, number][]): TerritoryGeometry[] {
+  if (linePoints.length < 2) return [target];
+
+  const [minLon, minLat, maxLon, maxLat] = geometryBbox(target);
+  const extend = Math.max(maxLon - minLon, maxLat - minLat) * 2 + 2;
+
+  const first = linePoints[0];
+  const second = linePoints[1];
+  const secondLast = linePoints[linePoints.length - 2];
+  const last = linePoints[linePoints.length - 1];
+
+  const startBearing = turfBearing(second, first);
+  const endBearing = turfBearing(secondLast, last);
+  const extendedStart = turfDestination(first, extend, startBearing, { units: 'degrees' }).geometry.coordinates as [number, number];
+  const extendedEnd = turfDestination(last, extend, endBearing, { units: 'degrees' }).geometry.coordinates as [number, number];
+
+  const cuttingLine = lineString([extendedStart, ...linePoints, extendedEnd]);
+  const bladeWidth = Math.max(maxLon - minLon, maxLat - minLat) * 0.01 + 0.002;
+  const blade = turfBuffer(cuttingLine, bladeWidth, { units: 'degrees' });
+  if (!blade) return [target];
+
+  const result = differenceGeometries(target, blade.geometry as TerritoryGeometry);
+  if (!result) return [target];
+
+  if (result.type === 'MultiPolygon') {
+    return result.coordinates.map((coords) => normalizeWinding({ type: 'Polygon', coordinates: coords }));
+  }
+  return [result];
 }
 
 /** Builds a simple Polygon geometry from an ordered ring of [lon, lat] points (auto-closes the ring). */

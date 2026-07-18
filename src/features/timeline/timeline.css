@@ -134,6 +134,15 @@
   color: var(--danger);
   background: var(--bg-3);
 }
+.timeline-track-name--camera {
+  border-inline-start-color: var(--secondary);
+  color: var(--text-secondary);
+}
+.timeline-track-name--camera span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 .timeline-scroll-area {
   flex: 1;
@@ -182,6 +191,33 @@
     rgba(139, 107, 61, 0.06) 50px
   );
 }
+.timeline-track--camera {
+  background: var(--bg-1);
+}
+.camera-track__lane {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.camera-keyframe {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  background: var(--secondary);
+  border: 1.5px solid var(--bg-0);
+  transform: translate(-50%, -50%) rotate(45deg);
+  cursor: grab;
+  box-shadow: var(--shadow-sm);
+}
+.camera-keyframe:active {
+  cursor: grabbing;
+}
+.camera-keyframe--selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .timeline-empty {
   padding: 16px;
   color: var(--text-muted);

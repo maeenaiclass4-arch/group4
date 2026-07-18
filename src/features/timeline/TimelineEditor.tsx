@@ -1,11 +1,12 @@
 import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
+import { X, Camera as CameraIcon } from 'lucide-react';
 import { usePlaybackStore } from '../../store/playbackStore';
 import { useEventsStore } from '../../store/eventsStore';
 import { TransportControls } from './TransportControls';
 import { TimelineRuler } from './TimelineRuler';
 import { TimelineTrack } from './TimelineTrack';
+import { CameraTrack } from './CameraTrack';
 import { Playhead } from './Playhead';
 import './timeline.css';
 
@@ -51,6 +52,11 @@ export function TimelineEditor() {
               </button>
             </div>
           ))}
+          <div className="timeline-track-name timeline-track-name--camera">
+            <span>
+              <CameraIcon size={12} /> {t('layers.camera')}
+            </span>
+          </div>
         </div>
 
         <div className="timeline-scroll-area" ref={scrollAreaRef} onWheel={handleWheel}>
@@ -65,6 +71,9 @@ export function TimelineEditor() {
               />
             ))}
             {sortedTracks.length === 0 && <div className="timeline-empty">{t('timeline.trackPlaceholder')}</div>}
+            <div className="timeline-track timeline-track--camera">
+              <CameraTrack />
+            </div>
           </div>
           <Playhead containerRef={scrollAreaRef} />
         </div>
