@@ -1,0 +1,143 @@
+{
+  "settings": {
+    "logo": "/uploads/seed/logo.webp",
+    "eyebrowAr": "بورتفوليو احترافي",
+    "eyebrowEn": "Professional Portfolio",
+    "heroTitleAr": "<span class=\"accent\">YAZ</span><br>تصميم، مونتاج، وبرمجة — بهوية واحدة",
+    "heroTitleEn": "<span class=\"accent\">YAZ</span><br>Design, video, and development — one identity",
+    "heroSubAr": "بورتفوليو يجمع خبراتي في التصميم الجرافيكي، مونتاج الفيديو، تطوير البرمجيات، والذكاء الاصطناعي. اختر التخصص من الأعلى لاستعراض الأعمال والتفاصيل.",
+    "heroSubEn": "A portfolio bringing together my experience in graphic design, video editing, software development, and AI. Choose a specialty above to explore the work and details.",
+    "sectionLabelAr": "أعمال سابقة",
+    "sectionLabelEn": "Selected Work",
+    "previewAr": "معاينة المشروع",
+    "previewEn": "Project preview",
+    "footerAr": "تصميم، مونتاج، برمجة، وذكاء اصطناعي — خبرات متعددة بهوية واحدة.",
+    "footerEn": "Design, video editing, development, and AI — multiple disciplines, one identity.",
+    "contactTitleAr": "تواصل معي",
+    "contactTitleEn": "Get in Touch",
+    "contactTextAr": "لمناقشة مشروع أو فرصة تعاون، يسعدني تواصلكم عبر البريد الإلكتروني أو منصات التواصل أدناه.",
+    "contactTextEn": "For project inquiries or collaboration opportunities, feel free to reach out via email or the platforms below.",
+    "contactEmail": "hello@yaz.design",
+    "contactEmailLabelAr": "ارسل إيميل",
+    "contactEmailLabelEn": "Send an email",
+    "socialInstagram": "#",
+    "socialBehance": "#",
+    "socialLinkedin": "#",
+    "socialX": "#"
+  },
+  "categories": [
+    {
+      "slug": "design",
+      "order": 0,
+      "colorFrom": "#ec4899",
+      "colorTo": "#8b5cf6",
+      "glowColorHex": "#ec4899",
+      "image": "/uploads/seed/cat-design.webp",
+      "labelAr": "YAZ التصميم",
+      "labelEn": "YAZ Design",
+      "greetTitleAr": "التصميم الجرافيكي",
+      "greetTitleEn": "Graphic Design",
+      "greetTextAr": "أبني هويات بصرية متكاملة، من الشعار إلى تطبيقاته على مختلف الوسائط، مع اهتمام بالتفاصيل التي تعكس شخصية العلامة التجارية.",
+      "greetTextEn": "I build complete visual identities — from logo design to its application across different media — with close attention to the details that define a brand's character.",
+      "projects": [
+        { "titleAr": "هوية بصرية — YAZ", "titleEn": "Brand Identity — YAZ", "descAr": "تصميم شعار وهوية كاملة للبراند الشخصي.", "descEn": "Logo and full identity design for my personal brand." },
+        { "titleAr": "تصاميم سوشيال ميديا", "titleEn": "Social Media Designs", "descAr": "حزمة منشورات وقوالب لعملاء متنوعين.", "descEn": "A set of posts and templates for various clients." },
+        { "titleAr": "تصميم مطبوعات", "titleEn": "Print Design", "descAr": "بروشورات وبطاقات أعمال بلمسة عصرية.", "descEn": "Brochures and business cards with a modern touch." },
+        { "titleAr": "شخصيات كارتونية", "titleEn": "Cartoon Characters", "descAr": "تصميم أفاتار وشخصيات تعبيرية للبراندات.", "descEn": "Avatar and character design for brands." }
+      ]
+    },
+    {
+      "slug": "video",
+      "order": 1,
+      "colorFrom": "#22d3ee",
+      "colorTo": "#2563eb",
+      "glowColorHex": "#22d3ee",
+      "image": "/uploads/seed/cat-video.webp",
+      "labelAr": "YAZ المونتاج",
+      "labelEn": "YAZ Video",
+      "greetTitleAr": "مونتاج الفيديو",
+      "greetTitleEn": "Video Editing",
+      "greetTextAr": "تحرير فيديوهات احترافية يشمل القص، تصحيح الألوان، والموشن جرافيك، بما يتناسب مع طبيعة المحتوى ومنصة النشر.",
+      "greetTextEn": "Professional video editing covering cutting, color grading, and motion graphics — tailored to the content and the platform.",
+      "projects": [
+        { "image": "/uploads/seed/proj-video-1.webp", "softTag": "Photoshop", "catLabelAr": "قناة الأرشيف — وثائقي", "catLabelEn": "The Archive — Documentary", "titleAr": "هل حقيقة الذكاء الاصطناعي كما يقال؟", "titleEn": "Is AI Really What They Say?", "descAr": "رحلة تستكشف حقيقة الذكاء الاصطناعي، بين الواقع والمبالغات، وكيف يعمل بعيدًا عن الصورة التي ترسمها الأفلام.", "descEn": "Exploring what AI really is — separating fact from hype, far from the picture Hollywood paints." },
+        { "image": "/uploads/seed/proj-video-2.webp", "softTag": "Photoshop", "catLabelAr": "قناة الأرشيف — وثائقي", "catLabelEn": "The Archive — Documentary", "titleAr": "أعظم عملية خداع في التاريخ", "titleEn": "The Greatest Deception in History", "descAr": "وثائقي يكشف واحدة من أكبر عمليات التضليل التي غيّرت مجرى التاريخ وأثرت على قرارات دول وشعوب.", "descEn": "Uncovering one of the biggest deception operations in history — one that reshaped nations and decisions." },
+        { "image": "/uploads/seed/proj-video-3.webp", "softTag": "Photoshop", "catLabelAr": "قناة الأرشيف — وثائقي", "catLabelEn": "The Archive — Documentary", "titleAr": "ماذا يوجد في أعماق المحيطات؟", "titleEn": "What Lies in the Ocean Depths?", "descAr": "رحلة إلى أكثر الأماكن غموضًا على الأرض، حيث الكائنات المجهولة والظلام الذي لم يُكتشف بالكامل.", "descEn": "A journey into Earth's most mysterious realm — unknown creatures and depths never fully explored." },
+        { "image": "/uploads/seed/proj-video-4.webp", "softTag": "Photoshop", "catLabelAr": "قناة الأرشيف — وثائقي", "catLabelEn": "The Archive — Documentary", "titleAr": "الحضارات التي اختفت بلا أثر", "titleEn": "Civilizations That Vanished", "descAr": "كيف تزدهر حضارات كاملة ثم تختفي وكأنها لم تكن؟ أبرز النظريات والأدلة التاريخية.", "descEn": "How do entire civilizations flourish, then vanish without a trace? The leading theories and evidence." },
+        { "softTag": "Premiere Pro", "catLabelAr": "إعلاني", "catLabelEn": "Promo", "titleAr": "فيديو ترويجي", "titleEn": "Promo Video", "descAr": "مونتاج تسويقي لمنتج تقني بإيقاع سريع.", "descEn": "Fast-paced marketing edit for a tech product." },
+        { "softTag": "Premiere Pro", "catLabelAr": "محتوى", "catLabelEn": "Content", "titleAr": "محتوى يوتيوب", "titleEn": "YouTube Content", "descAr": "تحرير حلقة بودكاست وتقطيعها لكليبات قصيرة.", "descEn": "Podcast episode edited and cut into short clips." },
+        { "softTag": "After Effects", "catLabelAr": "موشن", "catLabelEn": "Motion", "titleAr": "موشن جرافيك", "titleEn": "Motion Graphics", "descAr": "انتقالات ونصوص متحركة لفيديو تعريفي.", "descEn": "Transitions and animated text for an intro video." },
+        { "softTag": "Audition", "catLabelAr": "صوت", "catLabelEn": "Audio", "titleAr": "تصميم صوتي", "titleEn": "Sound Design", "descAr": "مزامنة الصوت والموسيقى مع المشاهد.", "descEn": "Sound and music synced to the scenes." }
+      ]
+    },
+    {
+      "slug": "dev",
+      "order": 2,
+      "colorFrom": "#22c55e",
+      "colorTo": "#0ea5e9",
+      "glowColorHex": "#22c55e",
+      "image": "/uploads/seed/cat-dev.webp",
+      "labelAr": "YAZ البرمجة",
+      "labelEn": "YAZ Dev",
+      "greetTitleAr": "تطوير البرمجيات",
+      "greetTitleEn": "Software Development",
+      "greetTextAr": "تصميم وبناء مواقع وتطبيقات ويب، مع التركيز على الأداء، وتجربة استخدام سلسة، وكود منظم قابل للتطوير.",
+      "greetTextEn": "Designing and building websites and web apps, with a focus on performance, smooth UX, and clean, scalable code.",
+      "projects": [
+        { "titleAr": "موقع بورتفوليو", "titleEn": "Portfolio Website", "descAr": "تصميم وبرمجة موقع شخصي متجاوب بالكامل.", "descEn": "Designed and built a fully responsive personal site." },
+        { "titleAr": "تطبيق ويب صغير", "titleEn": "Small Web App", "descAr": "أداة تفاعلية ببيانات حية وواجهة بسيطة.", "descEn": "An interactive tool with live data and a simple UI." },
+        { "titleAr": "لوحة تحكم", "titleEn": "Dashboard", "descAr": "داشبورد لعرض بيانات وتقارير بشكل مباشر.", "descEn": "A dashboard for live data and reports." },
+        { "titleAr": "أتمتة وسكربتات", "titleEn": "Automation Scripts", "descAr": "أدوات تسهّل مهام متكررة بلمسة برمجية.", "descEn": "Tools that automate repetitive tasks." }
+      ]
+    },
+    {
+      "slug": "ai",
+      "order": 3,
+      "colorFrom": "#8b5cf6",
+      "colorTo": "#38bdf8",
+      "glowColorHex": "#8b5cf6",
+      "image": "/uploads/seed/cat-ai.webp",
+      "labelAr": "YAZ AI",
+      "labelEn": "YAZ AI",
+      "greetTitleAr": "الذكاء الاصطناعي",
+      "greetTitleEn": "Artificial Intelligence",
+      "greetTextAr": "توظيف أدوات الذكاء الاصطناعي في التصميم والتطوير وأتمتة سير العمل، لتسريع الإنتاج دون التأثير على الجودة.",
+      "greetTextEn": "Applying AI tools across design, development, and workflow automation to speed up production without compromising quality.",
+      "projects": [
+        { "titleAr": "توليد صور بالـ AI", "titleEn": "AI Image Generation", "descAr": "تجارب توليد صور وشخصيات باستخدام أدوات AI.", "descEn": "Experiments generating images and characters with AI tools." },
+        { "titleAr": "أتمتة سير العمل", "titleEn": "Workflow Automation", "descAr": "ربط أدوات AI بمهام تصميم ومونتاج متكررة.", "descEn": "Connecting AI tools to repetitive design and editing tasks." },
+        { "titleAr": "مساعد داخلي", "titleEn": "Internal Assistant", "descAr": "أداة صغيرة تلخّص وتنظم محتوى باستخدام AI.", "descEn": "A small tool that summarizes and organizes content using AI." }
+      ]
+    },
+    {
+      "slug": "games",
+      "order": 4,
+      "colorFrom": "#f97316",
+      "colorTo": "#dc2626",
+      "glowColorHex": "#f97316",
+      "image": "/uploads/seed/cat-games.webp",
+      "labelAr": "YAZ الألعاب",
+      "labelEn": "YAZ Gaming",
+      "greetTitleAr": "صناعة الألعاب",
+      "greetTitleEn": "Game Development",
+      "greetTextAr": "شغف بالألعاب تحوّل من الهواية إلى الصناعة — من تحليل تجارب اللعب إلى تصميم وتطوير ألعاب خاصة.",
+      "greetTextEn": "A gaming passion turned craft — from analyzing play experiences to designing and building original games.",
+      "projects": [
+        { "catLabelAr": "تطوير ألعاب", "catLabelEn": "Game Dev", "titleAr": "لعبة قيد التطوير", "titleEn": "Game In Development", "descAr": "مشروع لعبة من تصميمي وتطويري بالكامل — التفاصيل قريبًا.", "descEn": "A game fully designed and developed by me — details soon." },
+        { "catLabelAr": "تصميم", "catLabelEn": "Design", "titleAr": "تصميم تجربة اللعب", "titleEn": "Gameplay Design", "descAr": "بناء أنظمة اللعب والمستويات وموازنة التجربة.", "descEn": "Building game systems, levels, and balancing the experience." },
+        { "catLabelAr": "إلهام", "catLabelEn": "Inspiration", "titleAr": "مكتبة الألعاب", "titleEn": "Game Library", "descAr": "الألعاب التي شكّلت ذائقتي وتلهم مشاريعي.", "descEn": "The games that shaped my taste and inspire my projects." }
+      ]
+    },
+    {
+      "slug": "contact",
+      "order": 5,
+      "isContact": true,
+      "colorFrom": "#94a3b8",
+      "colorTo": "#475569",
+      "glowColorHex": "#94a3b8",
+      "labelAr": "تواصل",
+      "labelEn": "Contact",
+      "projects": []
+    }
+  ]
+}

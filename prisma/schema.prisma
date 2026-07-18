@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String   @default("Admin")
+  createdAt    DateTime @default(now())
+}
+
+model Category {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  order         Int      @default(0)
+  isContact     Boolean  @default(false)
+  published     Boolean  @default(true)
+
+  colorFrom     String   @default("#2f9bf5")
+  colorTo       String   @default("#8b5cf6")
+  glowColorHex  String   @default("#2f9bf5")
+
+  image         String?
+
+  labelAr       String
+  labelEn       String
+  greetTitleAr  String?
+  greetTitleEn  String?
+  greetTextAr   String?
+  greetTextEn   String?
+
+  projects      Project[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameAr    String
+  nameEn    String
+  projects  Project[] @relation("ProjectTags")
+  createdAt DateTime  @default(now())
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  order        Int      @default(0)
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+
+  titleAr      String
+  titleEn      String
+  descAr       String   @default("")
+  descEn       String   @default("")
+
+  image        String?
+  video        String?
+  softTag      String?
+  catLabelAr   String?
+  catLabelEn   String?
+
+  tags         Tag[]    @relation("ProjectTags")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  mime      String
+  size      Int
+  kind      String
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id                 Int     @id @default(1)
+  logo               String?
+
+  eyebrowAr          String  @default("")
+  eyebrowEn          String  @default("")
+  heroTitleAr        String  @default("")
+  heroTitleEn        String  @default("")
+  heroSubAr          String  @default("")
+  heroSubEn          String  @default("")
+  sectionLabelAr     String  @default("")
+  sectionLabelEn     String  @default("")
+  previewAr          String  @default("")
+  previewEn          String  @default("")
+  footerAr           String  @default("")
+  footerEn           String  @default("")
+
+  contactTitleAr     String  @default("")
+  contactTitleEn     String  @default("")
+  contactTextAr      String  @default("")
+  contactTextEn      String  @default("")
+  contactEmail       String  @default("")
+  contactEmailLabelAr String @default("")
+  contactEmailLabelEn String @default("")
+
+  socialInstagram    String?
+  socialBehance      String?
+  socialLinkedin     String?
+  socialX            String?
+
+  updatedAt          DateTime @updatedAt
+}
