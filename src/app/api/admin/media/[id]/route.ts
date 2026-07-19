@@ -4,6 +4,8 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-utils";
 
+export const dynamic = "force-dynamic";
+
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const media = await prisma.media.findUnique({ where: { id: params.id } });
   if (!media) return jsonError("Not found", 404);

@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-utils";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   const categories = await prisma.category.findMany({
     orderBy: { order: "asc" },

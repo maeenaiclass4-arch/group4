@@ -5,6 +5,8 @@ import path from "path";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-utils";
 
+export const dynamic = "force-dynamic";
+
 const MAX_SIZE = 50 * 1024 * 1024; // 50MB
 const ALLOWED_PREFIXES = ["image/", "video/"];
 
