@@ -45,6 +45,7 @@ export default async function HomePage() {
       descEn: p.descEn,
       image: p.image,
       video: p.video,
+      link: p.link,
       softTag: p.softTag,
       catLabelAr: p.catLabelAr,
       catLabelEn: p.catLabelEn,

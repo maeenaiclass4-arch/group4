@@ -10,6 +10,7 @@ export interface ProjectDTO {
   descEn: string;
   image: string | null;
   video: string | null;
+  link: string | null;
   softTag: string | null;
   catLabelAr: string | null;
   catLabelEn: string | null;

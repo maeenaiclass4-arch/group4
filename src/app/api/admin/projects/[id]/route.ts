@@ -25,6 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     "descEn",
     "image",
     "video",
+    "link",
     "softTag",
     "catLabelAr",
     "catLabelEn",

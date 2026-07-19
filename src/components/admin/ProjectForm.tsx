@@ -33,6 +33,7 @@ interface ProjectFormData {
   descEn: string;
   image: string | null;
   video: string | null;
+  link: string;
   softTag: string;
   catLabelAr: string;
   catLabelEn: string;
@@ -49,6 +50,7 @@ const EMPTY: ProjectFormData = {
   descEn: "",
   image: null,
   video: null,
+  link: "",
   softTag: "",
   catLabelAr: "",
   catLabelEn: "",
@@ -92,6 +94,7 @@ export default function ProjectForm({ id }: { id?: string }) {
           descEn: p.descEn,
           image: p.image,
           video: p.video,
+          link: p.link ?? "",
           softTag: p.softTag ?? "",
           catLabelAr: p.catLabelAr ?? "",
           catLabelEn: p.catLabelEn ?? "",
@@ -227,6 +230,18 @@ export default function ProjectForm({ id }: { id?: string }) {
               </div>
 
               <div className="field">
+                <label>{t("editor_linkUrl")}</label>
+                <input
+                  className="input"
+                  dir="ltr"
+                  placeholder="https://..."
+                  value={data.link}
+                  onChange={(e) => update("link", e.target.value)}
+                />
+                <div className="field-hint">{t("editor_linkUrlHint")}</div>
+              </div>
+
+              <div className="field">
                 <label>{t("common_tags")}</label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
                   {tags.map((tg) => (
@@ -327,8 +342,9 @@ function ProjectCardPreview({ data, category, lang }: { data: ProjectFormData; c
   return (
     <div dir={lang === "ar" ? "rtl" : "ltr"}>
       <div className={"p-card" + (data.image ? " has-img" : "")} style={{ maxWidth: 280 }}>
-        <div className={"p-thumb" + (data.image ? " has-img" : "")}>
+        <div className={"p-thumb" + (data.image ? " has-img" : "")} style={{ position: "relative" }}>
           {data.image ? <img src={data.image} alt={title} /> : "—"}
+          {data.link && <span className="p-run-badge" style={{ opacity: 1, transform: "none" }}>▶ {lang === "ar" ? "تشغيل" : "Launch"}</span>}
         </div>
         <div className="p-body">
           <h3>{title || "..."}</h3>

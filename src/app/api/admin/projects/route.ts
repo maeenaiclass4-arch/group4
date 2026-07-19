@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
       descEn: body.descEn ?? "",
       image: body.image ?? null,
       video: body.video ?? null,
+      link: body.link ?? null,
       softTag: body.softTag ?? null,
       catLabelAr: body.catLabelAr ?? null,
       catLabelEn: body.catLabelEn ?? null,

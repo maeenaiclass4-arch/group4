@@ -225,9 +225,16 @@ function Panel({
             const catLabel = (lang === "ar" ? p.catLabelAr : p.catLabelEn) || label;
             return (
               <div key={p.id} className={"p-card" + (p.image ? " has-img" : "")}>
-                <div className={"p-thumb" + (p.image ? " has-img" : "")}>
-                  {p.image ? <img src={p.image} alt={title} loading="lazy" /> : previewText}
-                </div>
+                {p.link ? (
+                  <a className={"p-thumb p-thumb-link" + (p.image ? " has-img" : "")} href={p.link} target="_blank" rel="noopener noreferrer" title={title}>
+                    {p.image ? <img src={p.image} alt={title} loading="lazy" /> : previewText}
+                    <span className="p-run-badge">▶ {lang === "ar" ? "تشغيل" : "Launch"}</span>
+                  </a>
+                ) : (
+                  <div className={"p-thumb" + (p.image ? " has-img" : "")}>
+                    {p.image ? <img src={p.image} alt={title} loading="lazy" /> : previewText}
+                  </div>
+                )}
                 <div className="p-body">
                   <h3>{title}</h3>
                   <p>{desc}</p>
