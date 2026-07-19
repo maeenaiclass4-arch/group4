@@ -828,6 +828,30 @@ img{max-width:100%;}
 }
 .p-card.has-img{background:rgba(10,14,26,0.55);}
 
+/* ---- Show more projects button ---- */
+.show-more-btn{
+  display:flex;
+  margin:18px auto 0;
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--muted);
+  padding:11px 26px;
+  border-radius:100px;
+  font-family:inherit;
+  font-size:13.5px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .25s ease;
+}
+.show-more-btn:hover{
+  color:#fff;
+  border-color:transparent;
+  background:var(--grad);
+  box-shadow:0 6px 20px -6px rgba(47,155,245,0.5);
+  transform:translateY(-2px);
+}
+.show-more-btn:active{transform:translateY(0);}
+
 /* ---- Runnable project thumbnails (clickable link) ---- */
 a.p-thumb-link{display:flex; text-decoration:none; cursor:pointer;}
 .p-run-badge{

@@ -202,6 +202,12 @@ function Panel({
   }
 
   const label = lang === "ar" ? cat.labelAr : cat.labelEn;
+  const showMoreText = lang === "ar" ? "عرض المزيد" : "Show more";
+  const INITIAL_COUNT = 4;
+  const STEP = 8;
+  const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
+  const visibleProjects = cat.projects.slice(0, visibleCount);
+  const hasMore = cat.projects.length > visibleCount;
 
   return (
     <div className={"panel" + (active ? " active" : "")} style={{ "--tab-glow-soft": glowSoft } as React.CSSProperties}>
@@ -219,7 +225,7 @@ function Panel({
           <span className="line"></span>
         </div>
         <div className="portfolio-grid">
-          {cat.projects.map((p) => {
+          {visibleProjects.map((p) => {
             const title = lang === "ar" ? p.titleAr : p.titleEn;
             const desc = lang === "ar" ? p.descAr : p.descEn;
             const catLabel = (lang === "ar" ? p.catLabelAr : p.catLabelEn) || label;
@@ -247,6 +253,11 @@ function Panel({
             );
           })}
         </div>
+        {hasMore && (
+          <button className="show-more-btn" onClick={() => setVisibleCount((c) => c + STEP)} type="button">
+            {showMoreText} ({cat.projects.length - visibleCount}+)
+          </button>
+        )}
         {cat.slug === "video" && <DocGenerator lang={lang} />}
       </div>
     </div>
