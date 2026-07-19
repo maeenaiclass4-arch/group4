@@ -15,24 +15,41 @@ both the public site and the admin dashboard.
 ## Stack
 
 - Next.js 14 (App Router) + TypeScript
-- Prisma + SQLite (swap the `DATABASE_URL` for Postgres/MySQL later if needed)
+- Prisma + Postgres (any free Postgres works — Vercel Postgres, Neon, Supabase...)
 - NextAuth (credentials login, single admin account)
-- Local filesystem uploads (`/public/uploads`)
+- Local filesystem uploads (`/public/uploads`) — note: on serverless hosts
+  (Vercel, etc.) the filesystem is ephemeral/read-only at runtime, so
+  uploads made through the deployed dashboard won't persist. Fine for a
+  local server or a VM; for a serverless deploy, swap in an object storage
+  provider (S3, Cloudinary, Vercel Blob) if persistent uploads matter.
 - dnd-kit for drag-and-drop reordering
 
 ## Setup
 
 ```bash
 npm install
-cp .env.example .env   # fill in ADMIN_EMAIL / ADMIN_PASSWORD / NEXTAUTH_SECRET
-npx prisma migrate deploy   # or: npx prisma migrate dev
-npm run db:seed             # loads the original portfolio content
+cp .env.example .env   # fill in DATABASE_URL / ADMIN_EMAIL / ADMIN_PASSWORD / NEXTAUTH_SECRET
+npx prisma db push      # creates the schema in your Postgres database
+npm run db:seed          # loads the original portfolio content
 npm run dev
 ```
 
 Visit `http://localhost:3000` for the site and `http://localhost:3000/admin`
 for the dashboard (log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` from your
 `.env`).
+
+### Deploying (e.g. Vercel)
+
+Set the same four environment variables in your host's dashboard, and set
+the build command to:
+
+```
+npx prisma db push && npx prisma db seed && next build
+```
+
+`prisma db push` is used instead of `prisma migrate deploy` since this
+project ships without versioned migrations (`db push` syncs the schema
+directly, which is simplest for a fresh deploy).
 
 ## Project structure
 
