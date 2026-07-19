@@ -130,6 +130,12 @@ const I18N = {
 let currentLang = localStorage.getItem(LANG_KEY) || "ar";
 let loadingTimer = null;
 
+const DEFAULT_MODELS = {
+  anthropic: "claude-sonnet-5",
+  openai: "gpt-4o",
+  google: "gemini-2.5-flash"
+};
+
 // ---------- i18n ----------
 
 function applyLanguage(lang) {
@@ -285,6 +291,29 @@ async function callAnthropic(apiKey, model, systemPrompt, userMessage) {
   }
   const data = await res.json();
   return data.content.map((b) => b.text || "").join("");
+}
+
+async function callGemini(apiKey, model, systemPrompt, userMessage) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: "user", parts: [{ text: userMessage }] }],
+      generationConfig: { temperature: 0.9 }
+    })
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`${res.status} ${res.statusText} — ${errText.slice(0, 300)}`);
+  }
+  const data = await res.json();
+  const candidate = data.candidates && data.candidates[0];
+  if (!candidate || !candidate.content || !candidate.content.parts) {
+    throw new Error("empty-response");
+  }
+  return candidate.content.parts.map((p) => p.text || "").join("");
 }
 
 async function callOpenAI(apiKey, model, systemPrompt, userMessage) {
@@ -492,9 +521,10 @@ async function generate() {
   try {
     const systemPrompt = buildSystemPrompt(currentLang);
     const userMessage = buildUserMessage(clientName, notes, currentLang);
-    const raw = provider === "anthropic"
-      ? await callAnthropic(apiKey, model, systemPrompt, userMessage)
-      : await callOpenAI(apiKey, model, systemPrompt, userMessage);
+    let raw;
+    if (provider === "anthropic") raw = await callAnthropic(apiKey, model, systemPrompt, userMessage);
+    else if (provider === "google") raw = await callGemini(apiKey, model, systemPrompt, userMessage);
+    else raw = await callOpenAI(apiKey, model, systemPrompt, userMessage);
 
     let data;
     try {
@@ -537,6 +567,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("generate-btn").addEventListener("click", generate);
+
+  document.getElementById("provider").addEventListener("change", (e) => {
+    const modelField = document.getElementById("model");
+    const knownDefaults = Object.values(DEFAULT_MODELS);
+    if (!modelField.value.trim() || knownDefaults.includes(modelField.value.trim())) {
+      modelField.value = DEFAULT_MODELS[e.target.value] || "";
+    }
+  });
 
   document.getElementById("copy-brief").addEventListener("click", () => {
     const text = document.getElementById("brief-content").textContent;

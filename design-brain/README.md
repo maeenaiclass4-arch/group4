@@ -12,8 +12,8 @@ senior Art Director.
 
 1. افتح `index.html` في المتصفح (أو استضفه كملف ثابت).
    Open `index.html` in a browser (or host it as a static file).
-2. اضغط ⚙️ **الإعدادات** وأدخل مفتاح API الخاص بك (Anthropic أو OpenAI). المفتاح يُستخدم مباشرة من متصفحك ولا يُرسل لأي خادم آخر.
-   Click ⚙️ **Settings** and enter your own API key (Anthropic or OpenAI). The key is used directly from your browser and never sent anywhere else.
+2. اضغط ⚙️ **الإعدادات** وأدخل مفتاح API الخاص بك (Anthropic، OpenAI، أو Google Gemini). المفتاح يُستخدم مباشرة من متصفحك ولا يُرسل لأي خادم آخر.
+   Click ⚙️ **Settings** and enter your own API key (Anthropic, OpenAI, or Google Gemini). The key is used directly from your browser and never sent anywhere else.
 3. الصق ملاحظات الاجتماع، واضغط **حلّل وابتكر 5 مفاهيم**.
    Paste your meeting notes and click **Analyze & generate 5 concepts**.
 4. استعرض التحليل والمفاهيم الخمسة، ثم انسخ أو نزّل البريف الإبداعي النهائي.
