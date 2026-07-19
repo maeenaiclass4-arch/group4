@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-utils";
 
@@ -43,6 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data,
       include: { tags: true, category: true },
     });
+    revalidatePath("/");
     return jsonOk(project);
   } catch {
     return jsonError("Not found", 404);
@@ -52,6 +54,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   try {
     await prisma.project.delete({ where: { id: params.id } });
+    revalidatePath("/");
     return jsonOk({ ok: true });
   } catch {
     return jsonError("Not found", 404);

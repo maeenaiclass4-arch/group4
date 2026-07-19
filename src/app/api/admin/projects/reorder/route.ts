@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/lib/api-utils";
 
@@ -20,5 +21,6 @@ export async function POST(req: NextRequest) {
       })
     )
   );
+  revalidatePath("/");
   return jsonOk({ ok: true });
 }

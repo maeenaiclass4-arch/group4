@@ -1,8 +1,41 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import PortfolioApp from "@/components/site/PortfolioApp";
 import type { CategoryDTO, SiteSettingsDTO } from "@/lib/types";
 
-export const dynamic = "force-dynamic";
+// Serve the homepage from cache and re-fetch from the database at most
+// every 30s, instead of hitting Postgres on every single page view — keeps
+// a traffic burst (e.g. a class opening the link at once) from overloading
+// the database connection pool. Saving from the CMS invalidates this cache
+// immediately via revalidatePath, so edits still show up right away.
+export const revalidate = 30;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
+  const title = "YAZ — Portfolio";
+  const description =
+    settings?.heroSubAr ||
+    settings?.heroSubEn ||
+    "بورتفوليو تصميم، مونتاج، برمجة، وذكاء اصطناعي.";
+  const logo = settings?.logo ?? "/uploads/seed/logo.webp";
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: logo }],
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+      images: [logo],
+    },
+  };
+}
 
 export default async function HomePage() {
   const [categories, settings] = await Promise.all([

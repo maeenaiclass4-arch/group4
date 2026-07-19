@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { jsonOk } from "@/lib/api-utils";
 
@@ -47,5 +48,6 @@ export async function PATCH(req: NextRequest) {
     update: data,
     create: { id: 1, ...data },
   });
+  revalidatePath("/");
   return jsonOk(settings);
 }
